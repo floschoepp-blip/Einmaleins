@@ -1,0 +1,1633 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Baum-Profi">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="apple-touch-icon.png">
+<style>
+:root{color-scheme:light;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html,body{height:auto}
+body{margin:0}
+img{max-width:100%}
+[hidden]{display:none!important}
+</style>
+<title>Baum-Profi</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fredoka:wght@500;600;700&family=Nunito:wght@500;700;800&display=swap">
+<style>
+/* Layout wie der Einmaleins-Trainer: eine schmale Spalte, grosse Tasten fuer Daumen. */
+:root {
+  --bg: #F2F5FB; --grid: #DCE4F2; --surface: #FFFFFF; --ink: #17213B; --muted: #55627F; --line: #C4CFE6;
+  --blue: #2F5BEA; --blue-ink: #FFFFFF; --sun: #FFC233; --sun-ink: #3A2A00;
+  --good: #0E8F78; --good-bg: #D6F3EB; --bad: #D63E30; --bad-bg: #FFE0DB;
+  --c0: #E3E9F5; --c1: #FFB4A8; --c2: #FFE08A; --c3: #A9E4D4; --c4: #4FC3A8; --cell-ink: #17213B;
+  --bgimg: linear-gradient(var(--grid) 1px, transparent 1px), linear-gradient(90deg, var(--grid) 1px, transparent 1px);
+  --bgsize: 24px 24px;
+  --display: 'Fredoka', ui-rounded, 'Arial Rounded MT Bold', system-ui, sans-serif;
+  --body: 'Nunito', system-ui, -apple-system, 'Segoe UI', sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0F1730; --grid: #1A2548; --surface: #18223F; --ink: #EAF0FF; --muted: #9FADD0; --line: #2D3B66;
+    --blue: #7C99FF; --blue-ink: #0B1330; --good: #52D1B3; --good-bg: #123B38; --bad: #FF8B7D; --bad-bg: #4A2323;
+    --c0: #26314F; --c1: #A8473B; --c2: #7D6618; --c3: #1F7A68; --c4: #26A07F; --cell-ink: #EAF0FF;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0F1730; --grid: #1A2548; --surface: #18223F; --ink: #EAF0FF; --muted: #9FADD0; --line: #2D3B66;
+  --blue: #7C99FF; --blue-ink: #0B1330; --good: #52D1B3; --good-bg: #123B38; --bad: #FF8B7D; --bad-bg: #4A2323;
+  --c0: #26314F; --c1: #A8473B; --c2: #7D6618; --c3: #1F7A68; --c4: #26A07F; --cell-ink: #EAF0FF;
+  color-scheme: dark;
+}
+:root[data-look="space"] {
+  --bg: #0B1030; --grid: #161E4C; --surface: #151C48; --ink: #F1F3FF; --muted: #A9B1DE; --line: #2E3A7A;
+  --blue: #8795FF; --blue-ink: #0B1030; --sun: #FFC94A; --sun-ink: #3A2A00;
+  --good: #49E0B5; --good-bg: #10404A; --bad: #FF8597; --bad-bg: #4A1E3A;
+  --c0: #232C66; --c1: #B04668; --c2: #8E7420; --c3: #1F8C7A; --c4: #2BB58F; --cell-ink: #F1F3FF;
+  --bgimg: radial-gradient(1.5px 1.5px at 20px 30px, rgba(255,255,255,0.7) 50%, transparent 52%), radial-gradient(1px 1px at 95px 82px, rgba(255,255,255,0.5) 50%, transparent 52%), radial-gradient(2px 2px at 150px 140px, rgba(255,201,74,0.7) 50%, transparent 52%);
+  --bgsize: 180px 180px;
+  color-scheme: dark;
+}
+:root[data-look="sloth"] {
+  --bg: #DAF1D6; --grid: #BFE3BD; --surface: #FAFFF6; --ink: #14361F; --muted: #3F6A4A; --line: #A8D5A6;
+  --blue: #1E7A3C; --blue-ink: #FFFFFF; --sun: #FFB020; --sun-ink: #3A2400;
+  --good: #137A3A; --good-bg: #CFF0D2; --bad: #D1384A; --bad-bg: #FFE0DD;
+  --c0: #CFE8CC; --c1: #FFB3A0; --c2: #FFE08A; --c3: #A8E0A0; --c4: #3DB35A; --cell-ink: #14361F;
+  --bgimg: radial-gradient(circle at 30px 30px, #FF8FB3 3px, transparent 3.5px), repeating-linear-gradient(120deg, transparent 0 26px, var(--grid) 26px 30px);
+  --bgsize: 90px 90px, auto;
+  color-scheme: light;
+}
+:root[data-look="football"] {
+  --bg: #D9F0DE; --grid: #C9E8D0; --surface: #FFFFFF; --ink: #0F2A1B; --muted: #47624F; --line: #A5CBB0;
+  --blue: #0E7A3E; --blue-ink: #FFFFFF; --sun: #FFD21F; --sun-ink: #3A2A00;
+  --good: #0B8A44; --good-bg: #D4F3DF; --bad: #D32F2F; --bad-bg: #FFE0DC;
+  --c0: #D8EADC; --c1: #FFB4A8; --c2: #FFE08A; --c3: #A9E4B8; --c4: #3FB86A; --cell-ink: #0F2A1B;
+  --bgimg: repeating-linear-gradient(90deg, var(--grid) 0 56px, transparent 56px 112px);
+  --bgsize: auto;
+  color-scheme: light;
+}
+:root[data-look="kiwi"] {
+  --bg: #EAF5C9; --grid: #D6E8A4; --surface: #FBFFEE; --ink: #26340F; --muted: #55672F; --line: #BFD78A;
+  --blue: #3F7F0A; --blue-ink: #FFFFFF; --sun: #FFC93C; --sun-ink: #3A2A00;
+  --good: #1B7F37; --good-bg: #D8F2CC; --bad: #C23B2B; --bad-bg: #FFE0D4;
+  --c0: #DDEBB9; --c1: #FFB59C; --c2: #FFE08A; --c3: #BFE5A8; --c4: #62B83C; --cell-ink: #26340F;
+  --bgimg: radial-gradient(circle at 12px 12px, var(--grid) 3px, transparent 3.5px);
+  --bgsize: 36px 36px;
+  color-scheme: light;
+}
+:root[data-look="bear"] {
+  --bg: #F6E7C1; --grid: #EBD5A0; --surface: #FFFBF0; --ink: #3B2416; --muted: #6E5538; --line: #DFC384;
+  --blue: #8A4B1F; --blue-ink: #FFFFFF; --sun: #FFB627; --sun-ink: #3A2A00;
+  --good: #2A7A2E; --good-bg: #DDF0D2; --bad: #C0392B; --bad-bg: #FFE0D4;
+  --c0: #F0E1BC; --c1: #FFB59C; --c2: #FFE08A; --c3: #BFE5A8; --c4: #6DBE6A; --cell-ink: #3B2416;
+  --bgimg: radial-gradient(circle at 20px 20px, var(--grid) 6px, transparent 6.5px);
+  --bgsize: 60px 60px;
+  color-scheme: light;
+}
+:root[data-look="unicorn"] {
+  --bg: #FCEAF4; --grid: #F6D3E6; --surface: #FFF8FC; --ink: #3B1F4A; --muted: #75558A; --line: #EBC3DC;
+  --blue: #B03A8E; --blue-ink: #FFFFFF; --sun: #FFC857; --sun-ink: #3A2A00;
+  --good: #1F8A6B; --good-bg: #D6F3EA; --bad: #C8325A; --bad-bg: #FFDDE6;
+  --c0: #F3DDEB; --c1: #FFB3C1; --c2: #FFE29A; --c3: #BDE8D6; --c4: #63C7A6; --cell-ink: #3B1F4A;
+  --bgimg: radial-gradient(circle at 10px 10px, var(--grid) 3px, transparent 3.5px), radial-gradient(circle at 40px 34px, #D9C6F5 2.5px, transparent 3px);
+  --bgsize: 56px 56px;
+  color-scheme: light;
+}
+:root[data-look="mermaid"] {
+  --bg: #DFF6F5; --grid: #BFE8E6; --surface: #F7FFFE; --ink: #0F3B45; --muted: #3F6C77; --line: #A9DAD8;
+  --blue: #0B7F8E; --blue-ink: #FFFFFF; --sun: #FFC857; --sun-ink: #3A2A00;
+  --good: #12806A; --good-bg: #D3F3E8; --bad: #C93C4B; --bad-bg: #FFE1E0;
+  --c0: #D0EEEC; --c1: #FFB5B0; --c2: #FFE29A; --c3: #A9E6D6; --c4: #3FBFA6; --cell-ink: #0F3B45;
+  --bgimg: radial-gradient(circle at 16px 16px, transparent 5px, var(--grid) 5.5px 7px, transparent 7.5px);
+  --bgsize: 64px 64px;
+  color-scheme: light;
+}
+:root[data-look="butterfly"] {
+  --bg: #EEE7FB; --grid: #DDD0F5; --surface: #FBF9FF; --ink: #2D1B55; --muted: #66558F; --line: #CDBDF0;
+  --blue: #6A3FCF; --blue-ink: #FFFFFF; --sun: #FFD23F; --sun-ink: #3A2A00;
+  --good: #1F8A5B; --good-bg: #D9F2E4; --bad: #C8325A; --bad-bg: #FFDDE6;
+  --c0: #E3D9F6; --c1: #FFB3C1; --c2: #FFE29A; --c3: #BDE8D0; --c4: #5FC08F; --cell-ink: #2D1B55;
+  --bgimg: radial-gradient(circle at 18px 18px, var(--grid) 5px, transparent 5.5px), radial-gradient(circle at 54px 54px, #FFE58A 3px, transparent 3.5px);
+  --bgsize: 72px 72px;
+  color-scheme: light;
+}
+:root[data-look="cat"] {
+  --bg: #FFF0B3; --grid: #F7DE80; --surface: #FFFCEB; --ink: #4A3000; --muted: #7B6120; --line: #EACF70;
+  --blue: #B5560E; --blue-ink: #FFFFFF; --sun: #FF9F43; --sun-ink: #3A2000;
+  --good: #2E7D32; --good-bg: #DDF0D2; --bad: #C0392B; --bad-bg: #FFE0D4;
+  --c0: #F6E7A6; --c1: #FFB59C; --c2: #FFD98A; --c3: #BFE5A8; --c4: #6DBE6A; --cell-ink: #4A3000;
+  --bgimg: radial-gradient(circle at 14px 14px, var(--grid) 4px, transparent 4.5px), radial-gradient(circle at 26px 8px, var(--grid) 2.5px, transparent 3px);
+  --bgsize: 44px 44px;
+  color-scheme: light;
+}
+
+* { box-sizing: border-box; }
+body {
+  background-color: var(--bg); background-image: var(--bgimg); background-size: var(--bgsize);
+  color: var(--ink); font-family: var(--body); font-size: 17px; line-height: 1.45;
+  padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); padding-block: 20px 32px; min-height: 100%;
+}
+button, input { font: inherit; color: inherit; }
+button { touch-action: manipulation; cursor: pointer; -webkit-tap-highlight-color: transparent; }
+:focus-visible { outline: 3px solid var(--blue); outline-offset: 2px; }
+
+.app { max-width: 560px; margin-inline: auto; display: flex; flex-direction: column; gap: 20px; }
+section { display: flex; flex-direction: column; gap: 20px; }
+
+h1, h2, h3 { font-family: var(--display); margin: 0; line-height: 1.1; text-wrap: balance; }
+h1 { font-size: 2.3rem; font-weight: 700; }
+h1 span { background: linear-gradient(transparent 62%, var(--sun) 62%); padding-inline: 2px; }
+h2 { font-size: 1.5rem; font-weight: 600; }
+h3 { font-size: 1.35rem; font-weight: 600; }
+.lead { margin: 0; color: var(--muted); font-weight: 700; }
+.label { font-size: 0.78rem; font-weight: 800; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); margin: 0 0 8px; }
+.panel { background: var(--surface); border: 2px solid var(--line); border-radius: 16px; padding: 16px; }
+
+.players { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.player { background: var(--surface); border: 2px solid var(--line); border-radius: 14px; padding: 12px 14px; text-align: left; display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.player[aria-pressed="true"] { border-color: var(--blue); box-shadow: 0 0 0 2px var(--blue); }
+.player b { font-family: var(--display); font-size: 1.25rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.player small { font-weight: 800; color: var(--muted); }
+.player small i { color: #E5A100; font-style: normal; }
+.name-row { display: flex; align-items: center; gap: 10px; margin-top: 12px; }
+.name-row label { font-weight: 800; color: var(--muted); font-size: 0.9rem; }
+.name-row input { flex: 1; min-width: 0; background: var(--bg); border: 2px solid var(--line); border-radius: 10px; padding: 8px 12px; font-weight: 700; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip { min-width: 48px; height: 48px; padding-inline: 12px; border-radius: 12px; border: 2px solid var(--line); background: var(--surface); font-family: var(--display); font-weight: 600; font-size: 1.2rem; }
+.chip[aria-pressed="true"] { background: var(--blue); border-color: var(--blue); color: var(--blue-ink); }
+.chip.wide { font-family: var(--body); font-weight: 800; font-size: 0.95rem; }
+.hint { margin: 8px 0 0; color: var(--bad); font-weight: 700; font-size: 0.9rem; min-height: 1.3em; }
+
+.btn { border: 0; border-radius: 14px; padding: 14px 18px; font-family: var(--display); font-weight: 600; font-size: 1.25rem; background: var(--blue); color: var(--blue-ink); box-shadow: 0 4px 0 rgba(0,0,0,0.22); }
+.btn:active { transform: translateY(2px); box-shadow: 0 2px 0 rgba(0,0,0,0.22); }
+.btn.sun { background: var(--sun); color: var(--sun-ink); }
+.btn.ghost { background: var(--surface); color: var(--ink); border: 2px solid var(--line); box-shadow: none; }
+.btn.full { width: 100%; text-align: left; }
+.btn small { display: block; font-family: var(--body); font-weight: 700; font-size: 0.82rem; opacity: 0.85; }
+.modes { display: grid; gap: 12px; grid-template-columns: 1fr 1fr; margin-top: 4px; }
+.modes .btn { text-align: left; }
+.link { background: none; border: 0; padding: 8px 0; color: var(--blue); font-weight: 800; text-decoration: underline; text-underline-offset: 3px; align-self: flex-start; }
+
+.topbar { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
+.who { font-weight: 800; color: var(--muted); }
+.dots { display: flex; gap: 5px; }
+.dots i { flex: 1; height: 10px; border-radius: 5px; background: var(--c0); border: 1px solid var(--line); }
+.dots i.ok { background: var(--good); border-color: var(--good); }
+.dots i.no { background: var(--bad); border-color: var(--bad); }
+.dots i.now { background: var(--sun); border-color: var(--sun); }
+.timer { display: flex; align-items: center; gap: 12px; }
+.bar { flex: 1; height: 14px; border-radius: 7px; background: var(--c0); border: 1px solid var(--line); overflow: hidden; }
+.bar i { display: block; height: 100%; width: 100%; background: var(--sun); transform-origin: left; }
+.bar.green i { background: var(--good); }
+.timer b { font-family: var(--display); font-size: 1.3rem; font-variant-numeric: tabular-nums; min-width: 2.4ch; text-align: right; }
+.score { font-weight: 800; color: var(--muted); }
+.score b { color: var(--good); font-family: var(--display); font-size: 1.2rem; }
+
+.card { background: var(--surface); border: 2px solid var(--line); border-radius: 20px; padding: 18px 16px 16px; text-align: center; display: flex; flex-direction: column; gap: 12px; }
+.card.flash-ok { border-color: var(--good); background: var(--good-bg); }
+.card.flash-no { border-color: var(--bad); background: var(--bad-bg); animation: shake 0.3s; }
+@keyframes shake { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
+.qtext { font-family: var(--display); font-weight: 600; font-size: 1.4rem; line-height: 1.2; text-wrap: balance; }
+.art { background: #F4F9EC; border: 2px solid #D3E4BE; border-radius: 16px; aspect-ratio: 1; padding: 6px; }
+.art svg { width: 100%; height: 100%; display: block; }
+#qimg { width: min(230px, 62vw); margin-inline: auto; }
+.fb { min-height: 1.4em; font-weight: 800; font-size: 1.1rem; }
+.fb.good { color: var(--good); }
+.fb.bad { color: var(--bad); }
+.explain { margin: 0; text-align: left; font-weight: 700; background: var(--surface); border: 2px dashed var(--line); border-radius: 12px; padding: 10px 12px; color: var(--ink); }
+
+.opts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.opts.one { grid-template-columns: 1fr; }
+.opt { min-height: 62px; border-radius: 14px; border: 2px solid var(--line); background: var(--surface); font-family: var(--body); font-weight: 800; font-size: 1.08rem; line-height: 1.25; padding: 10px 12px; box-shadow: 0 3px 0 var(--line); }
+.opt:active { transform: translateY(2px); box-shadow: 0 1px 0 var(--line); }
+.opt.pic { padding: 6px; background: #F4F9EC; border-color: #D3E4BE; }
+.opt.pic svg { width: 100%; aspect-ratio: 1; display: block; }
+.opt.right { background: var(--good-bg); border-color: var(--good); box-shadow: 0 0 0 3px var(--good); color: var(--ink); }
+.opt.wrongpick { background: var(--bad-bg); border-color: var(--bad); box-shadow: 0 0 0 3px var(--bad); color: var(--ink); }
+.opt.dim { opacity: 0.45; }
+.opts[data-locked="true"] .opt { pointer-events: none; }
+
+.stars { font-size: 3rem; letter-spacing: 6px; text-align: center; line-height: 1; color: var(--c0); }
+.stars i { font-style: normal; }
+.stars i.on { color: #F5B100; }
+.big { font-family: var(--display); font-size: 1.6rem; font-weight: 600; text-align: center; margin: 0; }
+.redo { display: flex; flex-direction: column; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.redo li { background: var(--bad-bg); color: var(--ink); border-radius: 10px; padding: 8px 12px; font-weight: 800; }
+.actions { display: grid; gap: 12px; }
+
+/* Steckbriefe */
+.sb { display: flex; flex-direction: column; gap: 12px; }
+.sb-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; }
+.pill { font-size: 0.8rem; font-weight: 800; color: var(--muted); background: var(--bg); border: 1px solid var(--line); border-radius: 999px; padding: 3px 10px; white-space: nowrap; }
+.arts { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+.art.big { aspect-ratio: 1; max-width: 360px; width: 100%; margin-inline: auto; }
+.facts { margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; }
+.facts li { line-height: 1.35; }
+.facts b { font-family: var(--display); font-weight: 600; }
+
+.rw-next { margin: 0; font-weight: 800; color: var(--muted); }
+.rw-tiles { display: grid; grid-template-columns: repeat(auto-fit, minmax(104px, 1fr)); gap: 8px; margin-top: 12px; }
+.rw-tile { border: 2px solid var(--line); border-radius: 12px; padding: 8px 10px; text-align: left; background: var(--surface); display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.rw-tile b { font-family: var(--display); font-size: 0.95rem; font-weight: 600; overflow-wrap: anywhere; }
+.rw-tile small { font-weight: 800; color: var(--muted); }
+.rw-tile.on { background: var(--good-bg); border-color: var(--good); }
+.rw-tile:disabled { opacity: 0.65; cursor: default; }
+#reward { position: fixed; inset: 0; z-index: 60; background: rgba(8, 12, 30, 0.62); display: grid; place-items: center; padding: 16px; overflow-y: auto; }
+.rw-card { background: var(--surface); border: 2px solid var(--line); border-radius: 20px; padding: 18px 16px; width: 100%; max-width: 360px; display: flex; flex-direction: column; gap: 12px; text-align: center; }
+.rw-card .label { margin: 0; }
+.stage { position: relative; width: 100%; max-width: 300px; aspect-ratio: 1 / 1; margin-inline: auto; border-radius: 16px; overflow: hidden; }
+.sc { position: absolute; inset: 0; overflow: hidden; }
+.sc .actor { position: absolute; left: 27%; bottom: 12%; width: 46%; aspect-ratio: 1; }
+.sc .mimg, .sc .mimg svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.sc-dance { background: linear-gradient(160deg, #2a1456, #6b2b8f 60%, #c2438f); }
+.sc-dance .lt { position: absolute; width: 60%; aspect-ratio: 1; border-radius: 50%; filter: blur(22px); opacity: 0.45; }
+.sc-dance .lt1 { left: -15%; top: -10%; background: #ff5ea8; }
+.sc-dance .lt2 { right: -18%; top: 5%; background: #3fd9ff; }
+.sc-dance .lt3 { left: 20%; bottom: -25%; background: #ffd23f; }
+.sc-dance .disco { position: absolute; left: 50%; top: -8%; width: 24%; aspect-ratio: 1; margin-left: -12%; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff, #b9c3ff 40%, #6c78c9 75%); box-shadow: 0 0 24px rgba(255, 255, 255, 0.6); transform-origin: 50% -60%; }
+.sc-dance .hat { position: absolute; left: 50%; top: -24%; width: 44%; margin-left: -22%; z-index: 2; }
+.sc-rocket { background: radial-gradient(1.5px 1.5px at 20px 30px, #fff 50%, transparent 52%), radial-gradient(1px 1px at 90px 80px, #fff 50%, transparent 52%), radial-gradient(2px 2px at 160px 140px, #ffd23f 50%, transparent 52%), linear-gradient(#0b1030, #3a2a7a); background-size: 180px 180px, 180px 180px, 180px 180px, auto; }
+.sc-rocket .rk { position: absolute; left: 50%; top: 14%; width: 34%; aspect-ratio: 1 / 2; margin-left: -17%; }
+.sc-rocket .rk .body { width: 100%; height: 100%; display: block; overflow: visible; }
+.sc-rocket .fl { position: absolute; left: 50%; top: 96%; width: 46%; height: 34%; margin-left: -23%; transform-origin: 50% 0; }
+.sc-rocket .win { position: absolute; left: 50%; top: 22%; width: 54%; aspect-ratio: 1; margin-left: -27%; border-radius: 50%; overflow: hidden; background: #8fd3ff; border: 4px solid #fff; }
+.sc-rocket .win .mimg { position: absolute; width: 150%; height: 150%; left: -25%; top: -18%; }
+.sc-rocket .sk { position: absolute; top: -30%; width: 2px; height: 26%; background: rgba(255, 255, 255, 0.7); border-radius: 2px; }
+.sc-juggle { background: linear-gradient(#e8f6c8, #9ccf7a); }
+.sc-juggle .jx { position: absolute; left: 40%; bottom: 40%; width: 20%; aspect-ratio: 1; }
+.sc-juggle .jy { width: 100%; height: 100%; }
+.sc-juggle .ball { display: block; width: 100%; height: 100%; }
+.sc-juggle .ball svg { width: 100%; height: 100%; display: block; }
+.sc-hero { background: linear-gradient(#6fd0ff, #dff5ff); }
+.sc-hero .cl { position: absolute; height: 10%; width: 32%; border-radius: 999px; background: #fff; opacity: 0.9; }
+.sc-hero .cl1 { top: 14%; left: 8%; }
+.sc-hero .cl2 { top: 58%; left: 60%; width: 26%; }
+.sc-hero .cl3 { top: 80%; left: 20%; width: 22%; }
+.sc-hero .fly { position: absolute; left: 27%; top: 30%; width: 46%; aspect-ratio: 1; transform: rotate(-12deg); }
+.sc-hero .cape { position: absolute; left: -26%; top: 26%; width: 62%; transform-origin: 100% 40%; }
+.sc-hero .fly .mimg { position: relative; z-index: 1; }
+.sc-hero .pow { position: absolute; right: 8%; top: 8%; font-family: var(--display); font-weight: 700; font-size: 1.9rem; color: #ff3d6e; text-shadow: 2px 2px 0 #fff; transform: rotate(8deg); }
+.sc-pizza { background: linear-gradient(#ffe0b0, #ff9f5a); }
+.sc-pizza .pz { position: absolute; top: -20%; width: 16%; }
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes dance { 0%, 100% { transform: translateY(0) rotate(-11deg); } 25%, 75% { transform: translateY(-14%) rotate(0); } 50% { transform: translateY(0) rotate(11deg); } }
+  @keyframes pulse { 50% { opacity: 0.85; transform: scale(1.25); } }
+  @keyframes swing { 0%, 100% { transform: rotate(14deg); } 50% { transform: rotate(-14deg); } }
+  @keyframes rshake { 0%, 100% { transform: translate(-2px, 0) rotate(-1.5deg); } 50% { transform: translate(2px, -6px) rotate(1.5deg); } }
+  @keyframes flame { 50% { transform: scale(0.9, 1.35); } }
+  @keyframes streak { from { transform: translateY(0); } to { transform: translateY(520%); } }
+  @keyframes jx { from { transform: translateX(-280%); } to { transform: translateX(280%); } }
+  @keyframes jy { 0% { transform: translateY(0); animation-timing-function: cubic-bezier(0.2, 0.7, 0.4, 1); } 50% { transform: translateY(-420%); animation-timing-function: cubic-bezier(0.6, 0, 0.8, 0.3); } 100% { transform: translateY(0); } }
+  @keyframes squash { 50% { transform: scale(1.06, 0.94); } }
+  @keyframes heroFly { 0%, 100% { transform: translate(-28%, 6%) rotate(-12deg); } 50% { transform: translate(28%, -10%) rotate(-4deg); } }
+  @keyframes flap { 50% { transform: scaleY(0.7) skewY(8deg); } }
+  @keyframes powpop { 50% { transform: rotate(8deg) scale(1.3); } }
+  @keyframes cloud { from { transform: translateX(120%); } to { transform: translateX(-420%); } }
+  @keyframes fall { 0% { transform: translateY(0) rotate(0); } 100% { transform: translateY(640%) rotate(540deg); } }
+  @keyframes strollx { 0%, 100% { transform: translateX(-70%); } 50% { transform: translateX(70%); } }
+  @keyframes chew { 50% { transform: scale(1.1, 0.9); } }
+  .sc-dance .actor { animation: dance 0.8s ease-in-out infinite; }
+  .sc-dance .lt { animation: pulse 0.8s ease-in-out infinite alternate; }
+  .sc-dance .lt2 { animation-delay: -0.3s; }
+  .sc-dance .lt3 { animation-delay: -0.6s; }
+  .sc-dance .disco { animation: swing 1.6s ease-in-out infinite; }
+  .sc-rocket .rk { animation: rshake 0.35s ease-in-out infinite; }
+  .sc-rocket .fl { animation: flame 0.18s ease-in-out infinite; }
+  .sc-rocket .sk { animation: streak 0.9s linear infinite; }
+  .sc-juggle .jx { animation: jx 1.2s linear infinite alternate; }
+  .sc-juggle .jy { animation: jy 1.2s linear infinite; }
+  .sc-juggle .actor { animation: squash 0.6s ease-in-out infinite; transform-origin: 50% 100%; }
+  .sc-hero .fly { animation: heroFly 2.4s ease-in-out infinite; }
+  .sc-hero .cape { animation: flap 0.3s ease-in-out infinite; }
+  .sc-hero .pow { animation: powpop 0.6s ease-in-out infinite; }
+  .sc-hero .cl1 { animation: cloud 5s linear infinite; }
+  .sc-hero .cl2 { animation: cloud 7s linear infinite -2s; }
+  .sc-hero .cl3 { animation: cloud 6s linear infinite -4s; }
+  .sc-pizza .pz { animation: fall 2.2s linear infinite; }
+  .sc-pizza .actor { animation: strollx 1.8s ease-in-out infinite; }
+  .sc-pizza .chew { animation: chew 0.3s ease-in-out infinite; transform-origin: 50% 100%; }
+}
+
+.coach { display: flex; align-items: center; gap: 12px; }
+.coach.small { gap: 10px; }
+.coach.stack { flex-direction: column; text-align: center; }
+.mascot { flex: 0 0 auto; width: 72px; height: 72px; }
+.mascot svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.coach.small .mascot { width: 56px; height: 56px; }
+.coach.stack .mascot { width: 120px; height: 120px; }
+.bubble { position: relative; flex: 1 1 auto; min-width: 0; background: var(--surface); border: 2px solid var(--line); border-radius: 14px; padding: 8px 12px; font-weight: 800; line-height: 1.3; }
+.bubble::before { content: ""; position: absolute; left: -7px; top: 50%; width: 10px; height: 10px; margin-top: -5px; background: var(--surface); border-left: 2px solid var(--line); border-bottom: 2px solid var(--line); transform: rotate(45deg); }
+.coach.stack .bubble { flex: 0 0 auto; }
+.coach.stack .bubble::before { display: none; }
+.fold { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; background: none; border: 0; padding: 0; text-align: left; border-radius: 12px; }
+.fold .mascot { width: 52px; height: 52px; }
+.fold-text { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 2px; }
+.fold-text .label { margin: 0; }
+.fold-text b { font-family: var(--display); font-size: 1.25rem; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.fold-chev { flex: 0 0 auto; width: 12px; height: 12px; margin-right: 6px; border-right: 3px solid var(--muted); border-bottom: 3px solid var(--muted); transform: translateY(-3px) rotate(45deg); }
+.fold[aria-expanded="true"] .fold-chev { transform: translateY(3px) rotate(-135deg); }
+#look-body { margin-top: 14px; }
+.looks { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 10px; }
+.look-tile { border: 2px solid var(--line); border-radius: 14px; padding: 10px 8px; display: flex; flex-direction: column; align-items: center; gap: 2px; min-width: 0; font-weight: 800; }
+.look-tile .mascot { width: 56px; height: 56px; }
+.look-tile b { font-family: var(--display); font-size: 1.05rem; font-weight: 600; text-align: center; overflow-wrap: anywhere; }
+.look-tile small { font-weight: 700; opacity: 0.75; }
+.look-tile[aria-pressed="true"] { border-color: var(--blue); box-shadow: 0 0 0 3px var(--blue); }
+#fx { position: fixed; inset: 0; pointer-events: none; overflow: hidden; z-index: 70; }
+#fx span { position: absolute; line-height: 1; }
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes bob { 50% { transform: translateY(-3px); } }
+  @keyframes hop { 0% { transform: translateY(0) scale(1); } 30% { transform: translateY(-14px) scale(1.06); } 60% { transform: translateY(0) scale(0.96, 1.04); } 100% { transform: none; } }
+  @keyframes wobble { 25% { transform: rotate(-8deg); } 75% { transform: rotate(8deg); } }
+  @keyframes pop { 0% { transform: scale(0) rotate(-40deg); opacity: 0; } 70% { transform: scale(1.35) rotate(8deg); opacity: 1; } 100% { transform: scale(1) rotate(0); opacity: 1; } }
+  @keyframes fly { 0% { opacity: 1; transform: translate(-50%, -50%) rotate(0) scale(1); } 100% { opacity: 0; transform: translate(calc(-50% + var(--dx)), calc(-50% + var(--dy) + 90px)) rotate(var(--r)) scale(0.6); } }
+  .mascot svg { animation: bob 3.2s ease-in-out infinite; }
+  .mascot.cheer svg { animation: hop 0.6s ease-out; }
+  .mascot.oops svg { animation: wobble 0.4s; }
+  .stars i.on { animation: pop 0.5s both; animation-delay: calc(var(--i, 0) * 0.3s); }
+  #fx span { animation: fly 1.1s ease-out forwards; }
+}
+@media (max-width: 380px) {
+  h1 { font-size: 2rem; }
+  .modes { grid-template-columns: 1fr; }
+  .opt { font-size: 1rem; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .card.flash-no { animation: none; }
+  .btn:active, .opt:active { transform: none; }
+}
+</style>
+</head>
+<body>
+<main class="app">
+
+  <noscript>
+    <div class="panel">
+      <p class="label">Bitte im Browser öffnen</p>
+      <p class="lead">Diese Seite braucht JavaScript und läuft nicht in der Dateivorschau. Öffne sie in Safari.</p>
+    </div>
+  </noscript>
+
+  <!-- Startseite -->
+  <section id="v-home">
+    <div>
+      <h1><span>Baum</span>-Profi</h1>
+      <p class="lead" style="margin-top:6px">HSU 3. Klasse: Bäume, Blätter, Früchte und der Wald</p>
+    </div>
+    <div class="coach" id="coach-home"><div class="mascot"></div><div class="bubble"></div></div>
+
+    <div class="panel">
+      <p class="label">Wer lernt?</p>
+      <div class="players" id="players"></div>
+      <div class="name-row">
+        <label for="name-input">Name</label>
+        <input id="name-input" type="text" maxlength="14" autocomplete="off" autocapitalize="words" spellcheck="false">
+      </div>
+      <p class="rw-next" id="progress" style="margin-top:12px"></p>
+      <div class="bar green" style="margin-top:6px"><i id="prog-bar" style="transform:scaleX(0)"></i></div>
+    </div>
+
+    <button class="btn sun full" id="go-test" type="button">Probetest<small>15 gemischte Fragen wie in der Probe</small></button>
+
+    <div class="panel">
+      <p class="label">Was üben wir?</p>
+      <div class="chips" id="chips"></div>
+      <p class="hint" id="hint"></p>
+      <div class="modes">
+        <button class="btn" id="go-practice" type="button">Üben<small>10 Fragen</small></button>
+        <button class="btn" id="go-blitz" type="button">Blitz<small>60 Sekunden</small></button>
+      </div>
+    </div>
+
+    <button class="btn ghost full" id="go-cards" type="button">Steckbriefe<small>Alle Bäume und der Wald zum Nachlesen</small></button>
+
+    <div class="panel">
+      <p class="label">Meine Belohnungen</p>
+      <p class="rw-next" id="rw-next"></p>
+      <div class="bar" style="margin-top:8px"><i id="rw-bar" style="transform:scaleX(0)"></i></div>
+      <div class="rw-tiles" id="rw-tiles"></div>
+    </div>
+
+    <div class="panel">
+      <button class="fold" id="look-toggle" type="button" aria-expanded="false" aria-controls="look-body">
+        <span class="mascot" id="look-cur"></span>
+        <span class="fold-text"><span class="label">Dein Look</span><b id="look-name"></b></span>
+        <span class="fold-chev" aria-hidden="true"></span>
+      </button>
+      <div id="look-body" hidden>
+        <div class="looks" id="looks"></div>
+        <div class="chips" style="margin-top:12px"><button class="chip wide" id="snd" type="button" aria-pressed="true">Ton an</button></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Spiel -->
+  <section id="v-play" hidden>
+    <div class="topbar">
+      <button class="link" id="quit" type="button">Abbrechen</button>
+      <span class="who" id="who"></span>
+    </div>
+    <div class="dots" id="dots"></div>
+    <div id="timerbox" hidden>
+      <div class="timer">
+        <div class="bar"><i id="barfill"></i></div>
+        <b id="secs">60</b>
+      </div>
+      <div class="score" style="margin-top:6px">Richtig: <b id="blitzscore">0</b></div>
+    </div>
+    <div class="coach small" id="coach-play"><div class="mascot"></div><div class="bubble"></div></div>
+    <div class="card" id="card">
+      <div class="qtext" id="qtext"></div>
+      <div class="art" id="qimg" hidden></div>
+      <div class="opts" id="opts"></div>
+      <div class="fb" id="fb" aria-live="polite"></div>
+      <p class="explain" id="explain" hidden></p>
+      <button class="btn ghost" id="next" type="button" hidden>Weiter</button>
+    </div>
+  </section>
+
+  <!-- Ergebnis -->
+  <section id="v-result" hidden>
+    <h2 id="r-title">Geschafft!</h2>
+    <div class="coach stack" id="coach-res"><div class="mascot"></div><div class="bubble"></div></div>
+    <div class="stars" id="r-stars" aria-label=""></div>
+    <p class="big" id="r-score"></p>
+    <p class="lead" id="r-sub" style="text-align:center"></p>
+    <p class="lead" id="r-next" style="text-align:center"></p>
+    <div id="r-redo-box" hidden>
+      <p class="label">Das merken wir uns</p>
+      <ul class="redo" id="r-redo"></ul>
+    </div>
+    <div class="actions">
+      <button class="btn" id="again" type="button">Nochmal</button>
+      <button class="btn ghost" id="r-home" type="button">Zur Startseite</button>
+    </div>
+  </section>
+
+  <!-- Steckbriefe -->
+  <section id="v-cards" hidden>
+    <div class="topbar">
+      <button class="link" id="c-back" type="button">Zurück</button>
+      <span class="who" id="c-who"></span>
+    </div>
+    <h2>Steckbriefe</h2>
+    <div class="chips" id="c-tabs"></div>
+    <div id="c-list" style="display:flex;flex-direction:column;gap:16px"></div>
+    <button class="btn ghost" id="c-back2" type="button">Zurück zur Startseite</button>
+  </section>
+
+</main>
+
+<div id="reward" hidden role="dialog" aria-modal="true" aria-labelledby="rw-title">
+  <div class="rw-card">
+    <p class="label" id="rw-kicker">Belohnung gewonnen!</p>
+    <h2 id="rw-title"></h2>
+    <div class="stage" id="rw-stage"></div>
+    <p class="lead" id="rw-cap" style="margin:0"></p>
+    <button class="btn" id="rw-close" type="button">Super!</button>
+  </div>
+</div>
+<div id="fx" aria-hidden="true"></div>
+
+<script>
+(function () {
+  var $ = function (s) { return document.querySelector(s); };
+  /* ---------- Bilder: Blaetter, Fruechte, Nadeln, Schaubilder (alles SVG, kein Download) ---------- */
+  var ART = (function () {
+    var G = '#5DA845', E = '#2E6B22';
+    function f1(n) { return (Math.round(n * 10) / 10).toString(); }
+    function poly(pts) { return 'M' + pts.map(function (p) { return f1(p[0]) + ' ' + f1(p[1]); }).join(' L') + ' Z'; }
+    function wrap(inner, label) { return '<svg viewBox="0 0 100 100" role="img" aria-label="' + (label || 'Bild') + '">' + inner + '</svg>'; }
+    function sideOutline(tip, base, W, env, mod) {
+      var r = [], l = [], n = 140, i, t, y, w;
+      for (i = 0; i <= n; i++) {
+        t = i / n; y = tip + (base - tip) * t; w = W * env(t) * mod(t);
+        r.push([50 + w, y]); l.unshift([50 - w, y]);
+      }
+      return { pts: r.concat(l), w: function (t) { return W * env(t) * mod(t); } };
+    }
+    function line(x1, y1, x2, y2, c, w, op) {
+      return '<line x1="' + f1(x1) + '" y1="' + f1(y1) + '" x2="' + f1(x2) + '" y2="' + f1(y2) + '" stroke="' + c + '" stroke-width="' + w + '" stroke-linecap="round"' + (op ? ' stroke-opacity="' + op + '"' : '') + '/>';
+    }
+    function leafShape(tip, base, W, env, mod, veins, stem) {
+      var o = sideOutline(tip, base, W, env, mod), s = '';
+      s += line(50, base - 2, 50, base + stem, E, 2.6);
+      s += '<path d="' + poly(o.pts) + '" fill="' + G + '" stroke="' + E + '" stroke-width="1.6" stroke-linejoin="round"/>';
+      s += line(50, tip + 3, 50, base, E, 1.5, 0.75);
+      veins.forEach(function (v) {
+        var t = v[0], y = tip + (base - tip) * t, w = o.w(t) * 0.85, dy = v[1];
+        s += line(50, y, 50 + w, y - dy, E, 1.1, 0.6) + line(50, y, 50 - w, y - dy, E, 1.1, 0.6);
+      });
+      return s;
+    }
+
+    function leaf(k) {
+      var s = '', i;
+      if (k === 'eiche') {
+        s = leafShape(9, 82, 31, function (t) { return Math.pow(Math.sin(Math.PI * Math.pow(t, 0.8)), 0.7); },
+          function (t) { return 0.42 + 0.58 * Math.pow(Math.abs(Math.cos(Math.PI * 4.5 * t)), 0.55); },
+          [[0.222, 4], [0.444, 4], [0.667, 4], [0.889, 3]], 10);
+      } else if (k === 'buche') {
+        var bv = [];
+        for (i = 0; i < 7; i++) bv.push([0.16 + i * 0.11, 7]);
+        s = leafShape(10, 80, 24, function (t) { return Math.pow(Math.sin(Math.PI * Math.pow(t, 0.9)), 0.75); },
+          function (t) { return 1 + 0.035 * Math.sin(Math.PI * 2 * 7 * t); }, bv, 12);
+      } else if (k === 'birke') {
+        s = leafShape(10, 64, 27, function (t) { return t < 0.72 ? Math.pow(t / 0.72, 0.95) : 0.06 + 0.94 * Math.cos((t - 0.72) / 0.28 * Math.PI / 2); },
+          function (t) { return 1 - 0.09 * ((t * 15) % 1); }, [[0.3, 5], [0.5, 5], [0.7, 5]], 28);
+      } else if (k === 'linde') {
+        s = line(50, 72, 50, 95, E, 2.6) +
+          '<path d="M50 8 C58 20 87 32 87 57 C87 76 70 86 56 79 C53 77 51 75 50 72 C48 75 45 78 40 80 C27 85 13 74 13 57 C13 35 42 20 50 8 Z" fill="' + G + '" stroke="' + E + '" stroke-width="1.6" stroke-linejoin="round"/>' +
+          line(50, 72, 50, 14, E, 1.5, 0.75) + line(50, 72, 28, 40, E, 1.1, 0.6) + line(50, 72, 72, 40, E, 1.1, 0.6) +
+          line(50, 72, 21, 62, E, 1.1, 0.6) + line(50, 72, 79, 62, E, 1.1, 0.6) + line(50, 52, 66, 30, E, 1, 0.5) + line(50, 52, 34, 30, E, 1, 0.5);
+        var tz = '';
+        for (i = 0; i < 20; i++) { var a = -2.4 + i * 0.25; tz += '<circle cx="' + f1(50 + 37 * Math.sin(a)) + '" cy="' + f1(52 - 37 * Math.cos(a) * 0.95) + '" r="1.3" fill="' + E + '" fill-opacity="0.35"/>'; }
+        s += '';
+      } else if (k === 'ahorn') {
+        var lobes = [[0, 41], [52, 37], [-52, 37], [104, 25], [-104, 25]], pts = [], th, r, d, j, cx = 50, cy = 58;
+        for (i = 0; i <= 360; i++) {
+          th = -180 + i; r = 12;
+          for (j = 0; j < lobes.length; j++) {
+            d = Math.abs(th - lobes[j][0]);
+            r += lobes[j][1] * Math.pow(Math.max(0, 1 - d / 25), 1.35);
+            r += lobes[j][1] * 0.3 * Math.pow(Math.max(0, 1 - Math.abs(d - 15) / 6), 1.2);
+          }
+          if (Math.abs(th) > 150) r = Math.min(r, 6 + (180 - Math.abs(th)) * 0.2);
+          pts.push([cx + r * Math.sin(th * Math.PI / 180), cy - r * Math.cos(th * Math.PI / 180)]);
+        }
+        s = line(50, 62, 50, 97, E, 2.6) + '<path d="' + poly(pts) + '" fill="' + G + '" stroke="' + E + '" stroke-width="1.6" stroke-linejoin="round"/>';
+        lobes.forEach(function (L) { var rr = 12 + L[1] - 4, a = L[0] * Math.PI / 180; s += line(cx, cy, cx + rr * Math.sin(a), cy - rr * Math.cos(a), E, 1.3, 0.7); });
+      } else if (k === 'kastanie') {
+        var cxk = 50, cyk = 66, fl = [[0, 46], [36, 42], [-36, 42], [72, 33], [-72, 33], [108, 22], [-108, 22]];
+        s = line(50, 66, 50, 97, E, 2.8);
+        fl.forEach(function (F) {
+          var a = F[0] * Math.PI / 180, L = F[1], R = [], Lf = [], n = 60, q, t, w, sx, sy;
+          for (q = 0; q <= n; q++) {
+            t = q / n; w = L * 0.23 * Math.pow(Math.sin(Math.PI * Math.pow(t, 1.5)), 0.8) * (1 + 0.04 * Math.sin(t * 40));
+            R.push([w, 4 + L * t]); Lf.unshift([-w, 4 + L * t]);
+          }
+          var all = R.concat(Lf).map(function (p) {
+            sx = p[0] * Math.cos(a) + p[1] * Math.sin(a); sy = p[0] * Math.sin(a) - p[1] * Math.cos(a);
+            return [cxk + sx, cyk + sy];
+          });
+          s += '<path d="' + poly(all) + '" fill="' + G + '" stroke="' + E + '" stroke-width="1.4" stroke-linejoin="round"/>';
+          s += line(cxk + 4 * Math.sin(a), cyk - 4 * Math.cos(a), cxk + (L + 1) * Math.sin(a), cyk - (L + 1) * Math.cos(a), E, 1.1, 0.7);
+        });
+      }
+      return wrap(s, 'Blatt');
+    }
+
+    function fruit(k) {
+      var s = '', i;
+      if (k === 'eiche') {
+        s = line(50, 22, 47, 6, '#6E4A22', 3) +
+          '<path d="M31 40 C29 66 38 88 50 92 C62 88 71 66 69 40 Z" fill="#C8903F" stroke="#8A5A20" stroke-width="1.8"/>' +
+          '<path d="M38 50 C37 66 41 78 46 84" fill="none" stroke="#fff" stroke-opacity="0.45" stroke-width="3" stroke-linecap="round"/>' +
+          '<path d="M26 44 C25 26 36 20 50 20 C64 20 75 26 74 44 C60 50 40 50 26 44 Z" fill="#7A5A30" stroke="#4E3518" stroke-width="1.8"/>';
+        for (i = 0; i < 4; i++) s += '<path d="M' + (29 + i * 0) + ' ' + (28 + i * 5) + ' Q50 ' + (22 + i * 5) + ' ' + 71 + ' ' + (28 + i * 5) + '" fill="none" stroke="#4E3518" stroke-width="1" stroke-opacity="0.55" stroke-dasharray="2.5 2"/>';
+        s += '<circle cx="50" cy="94" r="1.6" fill="#6E4A22"/>';
+      } else if (k === 'buche') {
+        var husk = '';
+        [[-62, 'L'], [-24, 'L'], [24, 'R'], [62, 'R']].forEach(function (h) {
+          var a = h[0] * Math.PI / 180, bx = 50, by = 86, L = 44, tx = bx + L * Math.sin(a), ty = by - L * Math.cos(a);
+          var nx = Math.cos(a) * 8, ny = Math.sin(a) * 8;
+          husk += '<path d="M' + f1(bx - nx * 0.7) + ' ' + f1(by - ny * 0.7) + ' Q' + f1((bx + tx) / 2 - nx) + ' ' + f1((by + ty) / 2 - ny) + ' ' + f1(tx) + ' ' + f1(ty) + ' Q' + f1((bx + tx) / 2 + nx) + ' ' + f1((by + ty) / 2 + ny) + ' ' + f1(bx + nx * 0.7) + ' ' + f1(by + ny * 0.7) + ' Z" fill="#A47B45" stroke="#6B4A22" stroke-width="1.5"/>';
+          for (var q = 1; q < 6; q++) {
+            var px = bx + (tx - bx) * q / 6, py = by + (ty - by) * q / 6;
+            husk += line(px - nx * 0.8, py - ny * 0.8, px - nx * 1.4, py - ny * 1.4, '#6B4A22', 1) + line(px + nx * 0.8, py + ny * 0.8, px + nx * 1.4, py + ny * 1.4, '#6B4A22', 1);
+          }
+        });
+        s = husk + line(50, 86, 50, 97, '#6B4A22', 2.6) +
+          '<path d="M36 82 L45 34 L54 82 Z" fill="#7A4524" stroke="#4A2812" stroke-width="1.6" stroke-linejoin="round"/>' +
+          '<path d="M47 82 L57 36 L66 82 Z" fill="#8C5530" stroke="#4A2812" stroke-width="1.6" stroke-linejoin="round"/>' +
+          line(45, 40, 45, 78, '#fff', 1.2, 0.35) + line(57, 42, 57, 78, '#fff', 1.2, 0.35);
+      } else if (k === 'kastanie') {
+        var sp = '';
+        for (i = 0; i < 13; i++) {
+          var a2 = Math.PI * 0.05 + i * Math.PI * 0.9 / 12;
+          sp += line(50 + 36 * Math.cos(a2), 60 + 30 * Math.sin(a2), 50 + 45 * Math.cos(a2), 60 + 38 * Math.sin(a2), '#5E8C2E', 1.6);
+        }
+        s = sp + '<path d="M13 58 A37 31 0 0 0 87 58 L80 60 A30 22 0 0 1 20 60 Z" fill="#8CC152" stroke="#5E8C2E" stroke-width="1.6"/>' +
+          '<ellipse cx="50" cy="48" rx="27" ry="26" fill="#7B3F1A" stroke="#4A230C" stroke-width="1.8"/>' +
+          '<path d="M30 60 Q50 76 70 60 Q66 70 50 73 Q34 70 30 60 Z" fill="#D9C29A"/>' +
+          '<ellipse cx="40" cy="36" rx="8" ry="5" fill="#fff" fill-opacity="0.35" transform="rotate(-30 40 36)"/>';
+      } else if (k === 'ahorn') {
+        s = line(50, 74, 50, 90, '#7A6A30', 2.2) +
+          '<path d="M46 72 C30 70 12 52 12 30 C20 32 34 46 50 66 Z" fill="#D7C27A" stroke="#9C8640" stroke-width="1.5"/>' +
+          '<path d="M54 72 C70 70 88 52 88 30 C80 32 66 46 50 66 Z" fill="#D7C27A" stroke="#9C8640" stroke-width="1.5"/>' +
+          '<path d="M44 66 C34 58 22 46 16 34 M56 66 C66 58 78 46 84 34" fill="none" stroke="#9C8640" stroke-width="1" stroke-opacity="0.7"/>' +
+          '<ellipse cx="43" cy="71" rx="8" ry="6.5" fill="#A8924A" stroke="#7A6A30" stroke-width="1.5"/>' +
+          '<ellipse cx="57" cy="71" rx="8" ry="6.5" fill="#A8924A" stroke="#7A6A30" stroke-width="1.5"/>';
+      } else if (k === 'linde') {
+        s = '<path d="M24 10 C38 6 60 30 70 62 C62 64 40 40 24 10 Z" fill="#D8E59A" stroke="#9AAE4A" stroke-width="1.5"/>' +
+          line(30, 16, 66, 58, '#9AAE4A', 1, 0.8) +
+          '<path d="M47 37 L50 68 M50 68 L42 80 M50 68 L52 86 M50 68 L62 78" fill="none" stroke="#7A6A30" stroke-width="1.8" stroke-linecap="round"/>' +
+          '<circle cx="42" cy="82" r="5" fill="#B9A36A" stroke="#7A6A30" stroke-width="1.4"/><circle cx="52" cy="88" r="5" fill="#B9A36A" stroke="#7A6A30" stroke-width="1.4"/><circle cx="62" cy="80" r="5" fill="#B9A36A" stroke="#7A6A30" stroke-width="1.4"/>';
+      }
+      return wrap(s, 'Frucht');
+    }
+
+    function scales(cx, top, bot, wmax, shape, col, dark) {
+      var s = '', rows = 9, r, c, y, w, n;
+      for (r = 0; r < rows; r++) {
+        y = top + (bot - top) * (r + 0.5) / rows; w = wmax * shape((r + 0.5) / rows); n = 3;
+        for (c = 0; c < n; c++) {
+          var x = cx - w + (2 * w) * (c + 0.5 + (r % 2 ? 0.25 : -0.25)) / n;
+          if (Math.abs(x - cx) > w - 2) continue;
+          s += '<path d="M' + f1(x - 5) + ' ' + f1(y - 2) + ' Q' + f1(x) + ' ' + f1(y + 5) + ' ' + f1(x + 5) + ' ' + f1(y - 2) + '" fill="none" stroke="' + dark + '" stroke-width="1.2" stroke-opacity="0.8"/>';
+        }
+      }
+      return s;
+    }
+    function cone(k) {
+      var s = '', top, bot, shp, pts = [], i, t;
+      if (k === 'fichte') {
+        s += '<path d="M6 12 Q50 6 94 14" fill="none" stroke="#6E4A22" stroke-width="4" stroke-linecap="round"/>';
+        for (i = 0; i < 9; i++) s += line(10 + i * 10, 11, 14 + i * 10, 3, '#2F6E3A', 1.8) + line(10 + i * 10, 13, 13 + i * 10, 20, '#2F6E3A', 1.8);
+        top = 16; bot = 96; shp = function (t) { return Math.pow(Math.sin(Math.PI * Math.min(1, t * 1.05 + 0.05)), 0.5) * (1 - 0.25 * t); };
+      } else if (k === 'tanne') {
+        s += '<path d="M6 90 Q50 96 94 88" fill="none" stroke="#6E4A22" stroke-width="4" stroke-linecap="round"/>';
+        for (i = 0; i < 9; i++) s += line(10 + i * 10, 91, 10 + i * 10, 99, '#2E6B3A', 2.6) + line(10 + i * 10, 89, 12 + i * 10, 82, '#2E6B3A', 2.6);
+        top = 8; bot = 88; shp = function (t) { return Math.pow(Math.sin(Math.PI * Math.min(1, (1 - t) * 1.0 + 0.04)), 0.45); };
+      } else {
+        s += line(50, 4, 50, 22, '#6E4A22', 3);
+        top = 20; bot = 86; shp = function (t) { return Math.pow(Math.sin(Math.PI * t), 0.75); };
+      }
+      var W = k === 'kiefer' ? 22 : 15, R = [], L = [];
+      for (i = 0; i <= 60; i++) { t = i / 60; var y = top + (bot - top) * t, w = W * shp(t); R.push([50 + w, y]); L.unshift([50 - w, y]); }
+      s += '<path d="' + poly(R.concat(L)) + '" fill="' + (k === 'tanne' ? '#8C6A3E' : k === 'kiefer' ? '#8A6A44' : '#A0673A') + '" stroke="#5A3A18" stroke-width="1.6" stroke-linejoin="round"/>';
+      if (k === 'kiefer') {
+        for (i = 0; i < 6; i++) for (var j = 0; j < 4; j++) {
+          var yy = 28 + i * 10, xx = 50 - 12 + j * 8 + (i % 2) * 4, ww = W * shp((yy - top) / (bot - top));
+          if (Math.abs(xx - 50) > ww - 4) continue;
+          s += '<path d="M' + xx + ' ' + (yy - 4) + ' L' + (xx + 4) + ' ' + yy + ' L' + xx + ' ' + (yy + 4) + ' L' + (xx - 4) + ' ' + yy + ' Z" fill="none" stroke="#5A3A18" stroke-width="1.1"/>';
+        }
+      } else s += scales(50, top, bot, W, shp, '', '#5A3A18');
+      return wrap(s, 'Zapfen');
+    }
+
+    function needles(k) {
+      var s = '', i, x, y, a, L;
+      if (k === 'fichte') {
+        for (i = 0; i < 24; i++) {
+          x = 10 + i * 3.4; y = 62.5 - i * 0.68;
+          s += line(x, y, x + 4, y - 10 + (i % 2) * 2, '#2F6E3A', 1.7) + line(x, y, x + 4, y + 9 - (i % 2) * 2, '#2F6E3A', 1.7) + line(x, y, x + 3, y - 3 + (i % 3) * 3, '#3E7E48', 1.7);
+        }
+        s = '<path d="M8 63 Q50 52 94 46" fill="none" stroke="#9A5A2C" stroke-width="3.2" stroke-linecap="round"/>' + s;
+        s += '<g transform="translate(70 80)"><circle r="17" fill="#fff" stroke="#9A5A2C" stroke-width="2"/>' + line(-12, 4, 10, -4, '#2F6E3A', 3) + '<path d="M10 -4 L14 -5.5" stroke="#2F6E3A" stroke-width="1.5"/><text x="0" y="13" font-size="6.5" text-anchor="middle" font-family="sans-serif" font-weight="700" fill="#5A3A18">spitz</text></g>';
+      } else if (k === 'tanne') {
+        s = line(8, 50, 92, 50, '#7A5A3A', 3.4);
+        for (i = 0; i < 20; i++) {
+          x = 11 + i * 4.2;
+          s += line(x, 49, x + 2.5, 36 + (i % 2) * 3, '#2E6B3A', 3.2) + line(x, 51, x + 2.5, 64 - (i % 2) * 3, '#2E6B3A', 3.2);
+        }
+        s += '<g transform="translate(70 82)"><circle r="16" fill="#fff" stroke="#7A5A3A" stroke-width="2"/><rect x="-12" y="-4" width="24" height="8" rx="4" fill="#2E6B3A"/>' + line(-9, -1.5, 9, -1.5, '#fff', 1.4) + line(-9, 1.5, 9, 1.5, '#fff', 1.4) + '<text x="0" y="12" font-size="5.5" text-anchor="middle" font-family="sans-serif" font-weight="700" fill="#5A3A18">unten</text></g>';
+      } else if (k === 'kiefer') {
+        s = '<path d="M10 92 Q40 60 84 20" fill="none" stroke="#B0602A" stroke-width="3.4" stroke-linecap="round"/>';
+        for (i = 0; i < 6; i++) {
+          x = 18 + i * 11; y = 84 - i * 11.4;
+          a = (i % 2 ? 1 : -1);
+          var b1 = (a > 0 ? 40 : -50) * Math.PI / 180, sp = 7 * Math.PI / 180;
+          s += line(x, y, x + 32 * Math.cos(b1 - sp), y - 32 * Math.abs(Math.sin(b1 - sp)) * 0.9 - 6, '#4A7A55', 1.9);
+          s += line(x, y, x + 32 * Math.cos(b1 + sp), y - 32 * Math.abs(Math.sin(b1 + sp)) * 0.9 - 6, '#4A7A55', 1.9);
+          s += '<circle cx="' + x + '" cy="' + y + '" r="2" fill="#7A4E2A"/>';
+        }
+      } else if (k === 'laerche') {
+        s = '<path d="M6 76 Q50 66 94 72" fill="none" stroke="#8A6A4A" stroke-width="3.2" stroke-linecap="round"/>';
+        [[18, 74], [40, 70], [62, 69], [84, 71]].forEach(function (p) {
+          for (var q = 0; q < 15; q++) {
+            var ang = (-70 + q * 10) * Math.PI / 180, Ln = 13 + (q % 3) * 2;
+            s += line(p[0], p[1] - 2, p[0] + Ln * Math.sin(ang), p[1] - 2 - Ln * Math.cos(ang), '#8BC34A', 1.6);
+          }
+          s += '<circle cx="' + p[0] + '" cy="' + (p[1] - 1) + '" r="2.4" fill="#6B4A2A"/>';
+        });
+        s += '<ellipse cx="50" cy="38" rx="0" ry="0"/>';
+      }
+      return wrap(s, 'Nadeln');
+    }
+
+    function parts(hl, labels) {
+      var s = '<rect x="0" y="0" width="100" height="70" fill="#EAF6FF"/><rect x="0" y="70" width="100" height="30" fill="#C9A27A"/>' + line(0, 70, 100, 70, '#7CB342', 3);
+      s += '<path d="M50 72 Q40 80 26 90 M50 72 Q44 86 38 97 M51 72 Q56 86 62 97 M51 72 Q62 80 76 88 M50 74 L50 98" fill="none" stroke="#7A4E2A" stroke-width="3" stroke-linecap="round"/>';
+      s += '<path d="M44 72 L46.5 38 L53.5 38 L56 72 Z" fill="#8B5A2B" stroke="#5E3A18" stroke-width="1.2"/>';
+      s += line(48, 50, 58, 36, '#7A4E2A', 2.6);
+      [[50, 19, 16], [35, 28, 13], [65, 28, 13], [43, 36, 11], [58, 37, 11], [50, 8, 9]].forEach(function (c) { s += '<circle cx="' + c[0] + '" cy="' + c[1] + '" r="' + c[2] + '" fill="#5DA845"/>'; });
+      [[44, 16, 5], [60, 24, 4], [38, 30, 3.5]].forEach(function (c) { s += '<circle cx="' + c[0] + '" cy="' + c[1] + '" r="' + c[2] + '" fill="#7CC35A"/>'; });
+      s += line(47, 52, 12, 42, '#7A4E2A', 3) + line(22, 45, 16, 36, '#7A4E2A', 1.8);
+      s += '<circle cx="12" cy="41" r="4" fill="#5DA845"/><circle cx="16" cy="35" r="3" fill="#5DA845"/>';
+      var Y = 'fill="none" stroke="#FF8F00" stroke-width="2.6" stroke-dasharray="4 3"';
+      var H = {
+        krone: '<ellipse cx="50" cy="22" rx="31" ry="22" ' + Y + '/>',
+        stamm: '<rect x="41" y="37" width="18" height="36" rx="3" ' + Y + '/>',
+        wurzel: '<ellipse cx="51" cy="86" rx="29" ry="13" ' + Y + '/>',
+        ast: '<ellipse cx="28" cy="46" rx="21" ry="6" transform="rotate(16 28 46)" ' + Y + '/>'
+      };
+      var M = { krone: [88, 10], stamm: [74, 56], wurzel: [90, 84], ast: [10, 60] };
+      if (hl && H[hl]) {
+        s += H[hl] + '<circle cx="' + M[hl][0] + '" cy="' + M[hl][1] + '" r="7" fill="#FFC233" stroke="#B26A00" stroke-width="1.5"/><text x="' + M[hl][0] + '" y="' + (M[hl][1] + 3.6) + '" font-size="10" text-anchor="middle" font-family="sans-serif" font-weight="800" fill="#3A2A00">?</text>';
+      }
+      if (labels) {
+        [['Krone', 74, 8], ['Ast', 4, 60], ['Stamm', 64, 56], ['Wurzel', 70, 82]].forEach(function (l) {
+          var w = l[0].length * 4.3 + 6;
+          s += '<rect x="' + (l[1] - 2) + '" y="' + (l[2] - 6) + '" width="' + w + '" height="9" rx="3" fill="#fff" fill-opacity="0.9" stroke="#2E6B22" stroke-width="0.8"/><text x="' + (l[1] + 1) + '" y="' + (l[2] + 0.8) + '" font-size="6.6" font-family="sans-serif" font-weight="800" fill="#1E3A14">' + l[0] + '</text>';
+        });
+      }
+      return wrap(s, 'Teile eines Baumes');
+    }
+
+    var LAYERS = { baum: [2, 38], strauch: [38, 60], kraut: [60, 72], moos: [72, 78], wurzel: [78, 99] };
+    var LAYER_NAMES = { baum: 'Baumschicht', strauch: 'Strauchschicht', kraut: 'Krautschicht', moos: 'Moosschicht', wurzel: 'Wurzelschicht' };
+    function forest(hl, labels) {
+      var s = '<rect width="100" height="78" fill="#EAF6FF"/><rect y="78" width="100" height="22" fill="#B98A5E"/>', i;
+      s += '<path d="M14 80 Q12 88 6 94 M14 80 Q18 90 22 96 M58 80 Q54 90 50 97 M58 80 Q64 88 70 94 M86 80 Q88 90 94 95" fill="none" stroke="#6B4423" stroke-width="2" stroke-linecap="round"/>';
+      s += '<path d="M30 92 q4 -4 8 0 q4 4 8 0" fill="none" stroke="#E58A9A" stroke-width="2" stroke-linecap="round"/>';
+      [[14, 4], [58, 4.5], [86, 3.5]].forEach(function (t) { s += '<rect x="' + (t[0] - t[1] / 2) + '" y="22" width="' + t[1] + '" height="57" fill="#7A4E2A"/>'; });
+      [[14, 16, 13], [6, 24, 8], [24, 22, 9], [58, 14, 15], [48, 22, 9], [70, 22, 10], [86, 18, 12], [95, 26, 7]].forEach(function (c) { s += '<circle cx="' + c[0] + '" cy="' + c[1] + '" r="' + c[2] + '" fill="#3F8A3A"/>'; });
+      [[34, 52, 9], [42, 50, 8], [38, 44, 7], [74, 54, 7], [80, 50, 8]].forEach(function (c) { s += '<circle cx="' + c[0] + '" cy="' + c[1] + '" r="' + c[2] + '" fill="#6FA94A"/>'; });
+      for (i = 0; i < 9; i++) {
+        var x = 6 + i * 11;
+        s += '<path d="M' + x + ' 73 L' + (x - 3) + ' 63 M' + x + ' 73 L' + x + ' 61 M' + x + ' 73 L' + (x + 3) + ' 64" stroke="#7CB342" stroke-width="1.4" fill="none" stroke-linecap="round"/>';
+        if (i % 2) s += '<circle cx="' + x + '" cy="61" r="2" fill="' + ['#F5D33F', '#E86A9A', '#FFFFFF', '#9B7FE0'][i % 4] + '"/>';
+      }
+      s += '<rect y="73" width="100" height="5.5" fill="#5E9A3A"/>';
+      for (i = 0; i < 20; i++) s += '<circle cx="' + (2.5 + i * 5) + '" cy="73.5" r="2.6" fill="#6FAE44"/>';
+      if (hl && LAYERS[hl]) {
+        var L = LAYERS[hl];
+        s += '<rect x="1" y="' + L[0] + '" width="98" height="' + (L[1] - L[0]) + '" rx="2.5" fill="#FFC233" fill-opacity="0.32" stroke="#FF8F00" stroke-width="1.8"/>';
+        var my = (L[0] + L[1]) / 2;
+        s += '<circle cx="92" cy="' + my + '" r="6" fill="#FFC233" stroke="#B26A00" stroke-width="1.4"/><text x="92" y="' + (my + 3.2) + '" font-size="9" text-anchor="middle" font-family="sans-serif" font-weight="800" fill="#3A2A00">?</text>';
+      }
+      if (labels) {
+        ['baum', 'strauch', 'kraut', 'moos', 'wurzel'].forEach(function (k) {
+          var L = LAYERS[k], my = k === 'moos' ? 75.5 : (L[0] + L[1]) / 2, t = LAYER_NAMES[k], w = t.length * 3.5 + 5;
+          s += line(0, L[1], 100, L[1], '#1E3A14', 0.5, 0.5);
+          s += '<rect x="' + (99 - w) + '" y="' + (my - 4) + '" width="' + w + '" height="7.5" rx="2.5" fill="#fff" fill-opacity="0.92" stroke="#2E6B22" stroke-width="0.6"/><text x="' + (99 - w + 2.5) + '" y="' + (my + 1.6) + '" font-size="5.4" font-family="sans-serif" font-weight="800" fill="#1E3A14">' + t + '</text>';
+        });
+      }
+      return wrap(s, 'Stockwerke des Waldes');
+    }
+
+    function rings(n) {
+      var s = '<circle cx="50" cy="50" r="46" fill="#6B4423"/><circle cx="50" cy="50" r="42" fill="#EBCB98"/>', i;
+      for (i = n; i >= 1; i--) {
+        var r = 42 * i / (n + 0.4);
+        s += '<circle cx="' + (50 + (n - i) * 0.25) + '" cy="50" r="' + f1(r) + '" fill="' + (i % 2 ? '#E2B97C' : '#EBCB98') + '" stroke="#8B5A2B" stroke-width="1.8"/>';
+      }
+      s += '<circle cx="' + (50 + n * 0.25) + '" cy="50" r="2" fill="#8B5A2B"/>';
+      return wrap(s, 'Baumscheibe mit Jahresringen');
+    }
+
+    return { leaf: leaf, fruit: fruit, cone: cone, needles: needles, parts: parts, forest: forest, rings: rings, LAYER_NAMES: LAYER_NAMES };
+  })();
+
+  /* ---------- Baum-Wissen ---------- */
+  var T = {
+    eiche:    { n: 'Eiche',    zu: 'zur Eiche',    gen: 'der Eiche',    typ: 'laub',  blatt: 'gelappt mit runden Buchten, kurzer Stiel', frucht: 'Eichel, sitzt in einem Hütchen (Becher)', rinde: 'dick und grau mit tiefen Rissen', merke: 'Kann über 1000 Jahre alt werden.' },
+    buche:    { n: 'Buche',    zu: 'zur Buche',    gen: 'der Buche',    typ: 'laub',  blatt: 'eiförmig, glatter, leicht welliger Rand, gerade Adern', frucht: 'Bucheckern: dreikantig, in einer stacheligen Hülle', rinde: 'glatt und silbergrau', merke: 'Häufigster Laubbaum in Deutschland.' },
+    ahorn:    { n: 'Ahorn',    zu: 'zum Ahorn',    gen: 'des Ahorns',   typ: 'laub',  blatt: 'handförmig mit 5 spitzen Lappen', frucht: 'Flügelfrüchte, fliegen wie ein Propeller („Nasenzwicker“)', rinde: 'grau, bei älteren Bäumen schuppig', merke: 'Ein Ahornblatt ist auf der Flagge von Kanada.' },
+    kastanie: { n: 'Kastanie', zu: 'zur Kastanie', gen: 'der Kastanie', typ: 'laub',  blatt: 'gefingert: 5 bis 7 Teilblätter an einem Stiel', frucht: 'glänzend braune Kastanie in einer grünen, stacheligen Hülle', rinde: 'graubraun, später schuppig', merke: 'Die Rosskastanie ist für Menschen nicht zum Essen.' },
+    birke:    { n: 'Birke',    zu: 'zur Birke',    gen: 'der Birke',    typ: 'laub',  blatt: 'dreieckig bis rautenförmig, gesägter Rand', frucht: 'winzige Samen mit Flügeln in „Kätzchen“', rinde: 'weiß mit schwarzen Stellen', merke: 'Man erkennt sie sofort an der weißen Rinde.' },
+    linde:    { n: 'Linde',    zu: 'zur Linde',    gen: 'der Linde',    typ: 'laub',  blatt: 'herzförmig, gesägter Rand', frucht: 'kleine Nüsschen an einem hellen Flügelblatt', rinde: 'graubraun mit feinen Längsrissen', merke: 'Aus den Lindenblüten macht man Tee.' },
+    fichte:   { n: 'Fichte',   zu: 'zur Fichte',   gen: 'der Fichte',   typ: 'nadel', blatt: 'spitze Nadeln, die stechen, rund um den Zweig', frucht: 'Zapfen hängen nach unten und fallen ganz herunter', rinde: 'rotbraun, schuppig', merke: 'Fichte sticht, Tanne nicht! Häufigster Baum in Deutschland.' },
+    tanne:    { n: 'Tanne',    zu: 'zur Tanne',    gen: 'der Tanne',    typ: 'nadel', blatt: 'weiche, stumpfe Nadeln mit zwei weißen Streifen unten, wie gekämmt in zwei Reihen', frucht: 'Zapfen stehen aufrecht und zerfallen am Baum', rinde: 'hellgrau, fast weiß', merke: 'Ganze Tannenzapfen findet man nicht am Boden.' },
+    kiefer:   { n: 'Kiefer',   zu: 'zur Kiefer',   gen: 'der Kiefer',   typ: 'nadel', blatt: 'lange Nadeln, immer zu zweit', frucht: 'kleine, eiförmige Zapfen', rinde: 'oben orange-rot, unten dick und grau', merke: 'Wächst auch auf trockenem, sandigem Boden.' },
+    laerche:  { n: 'Lärche',   zu: 'zur Lärche',   gen: 'der Lärche',   typ: 'nadel', blatt: 'weiche Nadeln in Büscheln', frucht: 'kleine, runde Zapfen', rinde: 'graubraun, rissig', merke: 'Einziger Nadelbaum, der im Herbst seine Nadeln verliert. Vorher werden sie gelb.' }
+  };
+  var LAUB = ['eiche', 'buche', 'ahorn', 'kastanie', 'birke', 'linde'];
+  var NADEL = ['fichte', 'tanne', 'kiefer', 'laerche'];
+  var FRUIT = ['eiche', 'buche', 'ahorn', 'kastanie', 'linde'];
+  var FRUIT_NAME = { eiche: 'Eichel', buche: 'Buchecker', ahorn: 'Flügelfrucht', kastanie: 'Kastanie' };
+  var CATS = [
+    { id: 'laub', name: 'Laubbäume' },
+    { id: 'frucht', name: 'Früchte' },
+    { id: 'nadel', name: 'Nadelbäume' },
+    { id: 'wald', name: 'Baum & Wald' }
+  ];
+  var PARTS = { krone: 'Krone', stamm: 'Stamm', wurzel: 'Wurzel', ast: 'Ast' };
+  var PART_TIP = { krone: 'Die Krone besteht aus Ästen, Zweigen und Blättern.', stamm: 'Der Stamm trägt die Krone und leitet das Wasser nach oben.', wurzel: 'Die Wurzeln halten den Baum fest und holen Wasser aus dem Boden.', ast: 'Aus dem Stamm wachsen Äste, aus den Ästen Zweige.' };
+  var LAYER_TIP = { baum: 'Ganz oben: die Kronen der großen Bäume.', strauch: 'Sträucher wie Haselnuss und Holunder, auch junge Bäume.', kraut: 'Farne, Gräser und Waldblumen.', moos: 'Moose, Pilze und Flechten direkt am Boden. Moos speichert Wasser wie ein Schwamm.', wurzel: 'Unter der Erde: Wurzeln, Würmer und Käfer.' };
+
+  /* Wissensfragen: erste Antwort ist richtig, wird beim Anzeigen gemischt */
+  var FACTS = [
+    ['n1', 'nadel', 'Fichte sticht, …', ['Tanne nicht', 'Kiefer nicht', 'Lärche auch', 'Buche auch'], 'Merksatz: Fichte sticht, Tanne nicht. Die Tannennadeln sind stumpf und weich.'],
+    ['n2', 'nadel', 'Bei welchem Baum stehen die Zapfen aufrecht auf dem Zweig?', ['Tanne', 'Fichte', 'Kiefer', 'Lärche'], 'Tannenzapfen stehen wie Kerzen nach oben. Fichtenzapfen hängen nach unten.'],
+    ['n3', 'nadel', 'Bei welchem Baum hängen die langen Zapfen nach unten?', ['Fichte', 'Tanne', 'Buche', 'Linde'], 'Fichtenzapfen hängen nach unten und fallen als Ganzes auf den Boden.'],
+    ['n4', 'nadel', 'Warum findet man am Boden keine ganzen Tannenzapfen?', ['Sie zerfallen schon oben am Baum', 'Die Tanne hat keine Zapfen', 'Sie bleiben für immer am Baum', 'Der Wind trägt sie weg'], 'Der Tannenzapfen zerfällt am Baum. Am Boden liegen fast immer Fichtenzapfen.'],
+    ['n5', 'nadel', 'Welcher Nadelbaum verliert im Herbst seine Nadeln?', ['Lärche', 'Fichte', 'Tanne', 'Kiefer'], 'Die Lärche wird im Herbst gelb und wirft ihre Nadeln ab.'],
+    ['n6', 'nadel', 'Bei welchem Baum wachsen immer zwei lange Nadeln zusammen?', ['Kiefer', 'Fichte', 'Tanne', 'Lärche'], 'Bei der Kiefer sitzen immer zwei lange Nadeln zusammen.'],
+    ['n7', 'nadel', 'Woran erkennst du die Tanne?', ['Zwei weiße Streifen unter den Nadeln', 'Weiße Rinde mit schwarzen Stellen', 'Nadeln stechen sehr', 'Zapfen hängen nach unten'], 'Dreh einen Tannenzweig um: Unter jeder Nadel sind zwei weiße Streifen.'],
+    ['n8', 'nadel', 'Die meisten Nadelbäume sind immergrün. Das heißt:', ['Sie behalten ihre Nadeln auch im Winter', 'Ihre Zapfen sind immer grün', 'Sie haben grüne Rinde', 'Sie wachsen nur im Sommer'], 'Immergrün: Die Nadeln bleiben im Winter am Baum (außer bei der Lärche).'],
+    ['n9', 'nadel', 'Welcher Baum wächst in Deutschland am häufigsten?', ['Fichte', 'Tanne', 'Linde', 'Birke'], 'Die Fichte ist der häufigste Baum in deutschen Wäldern.'],
+    ['l1', 'laub', 'Welcher Baum hat eine weiße Rinde mit schwarzen Stellen?', ['Birke', 'Buche', 'Eiche', 'Fichte'], 'Die Birke erkennt man sofort an der weißen Rinde.'],
+    ['l2', 'laub', 'Welcher Baum hat eine glatte, silbergraue Rinde?', ['Buche', 'Eiche', 'Birke', 'Kiefer'], 'Die Rinde der Buche ist glatt und silbergrau. Die Eiche hat tiefe Risse.'],
+    ['l3', 'laub', 'Welcher Baum hat herzförmige Blätter?', ['Linde', 'Ahorn', 'Eiche', 'Birke'], 'Das Lindenblatt sieht aus wie ein Herz.'],
+    ['l4', 'laub', 'Welcher Baum hat gefingerte Blätter mit 5 bis 7 Teilblättern?', ['Kastanie', 'Ahorn', 'Linde', 'Buche'], 'Das Kastanienblatt sieht aus wie eine Hand mit vielen Fingern.'],
+    ['l5', 'laub', 'Welcher Baum hat Blätter mit 5 spitzen Lappen?', ['Ahorn', 'Kastanie', 'Eiche', 'Birke'], 'Das Ahornblatt ist handförmig mit spitzen Lappen.'],
+    ['l6', 'laub', 'Laubbäume haben …', ['breite, flache Blätter', 'spitze Nadeln', 'keine Wurzeln', 'nur Zapfen'], 'Laubbäume haben breite Blätter, Nadelbäume haben Nadeln.'],
+    ['l7', 'laub', 'Was machen die meisten Laubbäume im Herbst?', ['Sie verlieren ihre Blätter', 'Sie bekommen Nadeln', 'Sie fangen an zu blühen', 'Sie werden immer grüner'], 'Im Herbst färben sich die Blätter bunt und fallen ab.'],
+    ['l8', 'laub', 'Warum werfen Laubbäume im Winter ihre Blätter ab?', ['Um Wasser zu sparen, wenn der Boden gefroren ist', 'Weil die Blätter zu schwer werden', 'Damit die Vögel Platz haben', 'Weil der Baum krank ist'], 'Über die Blätter verdunstet Wasser. Im Winter ist der Boden gefroren, der Baum bekommt kaum Wasser.'],
+    ['l9', 'laub', 'Welche Teile hat ein Blatt?', ['Blattstiel, Blattfläche und Blattadern', 'Stamm, Krone und Wurzel', 'Zapfen und Nadeln', 'Rinde und Borke'], 'Ein Blatt hat einen Blattstiel, die Blattfläche (Spreite) und Blattadern.'],
+    ['l10', 'laub', 'Wofür braucht der Baum seine Blätter?', ['Mit Sonnenlicht stellt er darin Nahrung her', 'Zum Festhalten im Boden', 'Damit er im Winter warm bleibt', 'Damit die Rinde dick wird'], 'In den grünen Blättern macht der Baum mit Sonnenlicht, Wasser und Luft seine Nahrung.'],
+    ['l11', 'laub', 'Welcher Laubbaum ist in Deutschland am häufigsten?', ['Buche', 'Eiche', 'Ahorn', 'Linde'], 'Die Buche ist unser häufigster Laubbaum.'],
+    ['f1', 'frucht', 'Welche Frucht fliegt wie ein kleiner Propeller?', ['Ahorn-Flügelfrucht', 'Eichel', 'Kastanie', 'Buchecker'], 'Die Flügelfrüchte vom Ahorn drehen sich beim Fallen wie ein Propeller.'],
+    ['f2', 'frucht', 'Welche Frucht sitzt in einem kleinen Hütchen (Becher)?', ['Eichel', 'Buchecker', 'Kastanie', 'Zapfen'], 'Die Eichel sitzt in einem Becher, der wie ein Hütchen aussieht.'],
+    ['f3', 'frucht', 'Welche Frucht ist dreikantig und steckt in einer stacheligen Hülle?', ['Buchecker', 'Eichel', 'Haselnuss', 'Ahorn-Flügelfrucht'], 'Bucheckern sind dreikantig. Meist liegen zwei in einer Hülle.'],
+    ['f4', 'frucht', 'Wer frisst gerne Eicheln und Bucheckern?', ['Eichhörnchen und Wildschweine', 'Fische und Frösche', 'Schmetterlinge', 'Regenwürmer'], 'Eichhörnchen, Wildschweine, Eichelhäher und Mäuse fressen die Waldfrüchte.'],
+    ['f5', 'frucht', 'Welche Frucht hängt an einem hellen Flügelblatt?', ['Lindenfrucht', 'Eichel', 'Kastanie', 'Buchecker'], 'Die kleinen Lindennüsschen hängen an einem hellen Flügelblatt.'],
+    ['w1', 'wald', 'Welche Aufgabe hat die Wurzel?', ['Sie hält den Baum fest und holt Wasser', 'Sie macht die Früchte', 'Sie schützt vor Regen', 'Sie trägt die Blätter'], 'Die Wurzeln halten den Baum fest und nehmen Wasser und Nährstoffe auf.'],
+    ['w2', 'wald', 'Was schützt den Stamm wie eine Haut?', ['Rinde (Borke)', 'Krone', 'Wurzel', 'Blatt'], 'Die Rinde schützt den Baum vor Hitze, Kälte und Tieren.'],
+    ['w3', 'wald', 'Was gehört alles zur Baumkrone?', ['Äste, Zweige und Blätter', 'Wurzeln und Erde', 'Nur der Stamm', 'Rinde und Wurzeln'], 'Zur Krone gehören die Äste, Zweige und Blätter.'],
+    ['w4', 'wald', 'Wie findest du das Alter eines gefällten Baumes heraus?', ['Jahresringe zählen', 'Blätter zählen', 'Äste messen', 'Zapfen zählen'], 'Jedes Jahr wächst ein neuer Jahresring.'],
+    ['w5', 'wald', 'Ein Wald mit Laub- und Nadelbäumen heißt …', ['Mischwald', 'Laubwald', 'Nadelwald', 'Urwald'], 'Gemischte Bäume: Mischwald.'],
+    ['w6', 'wald', 'Welches ist das höchste Stockwerk des Waldes?', ['Baumschicht', 'Strauchschicht', 'Krautschicht', 'Moosschicht'], 'Von unten nach oben: Wurzel-, Moos-, Kraut-, Strauch- und Baumschicht.'],
+    ['w7', 'wald', 'Wo wachsen Farne, Gräser und Waldblumen?', ['Krautschicht', 'Moosschicht', 'Baumschicht', 'Wurzelschicht'], 'Farne, Gräser und Blumen wachsen in der Krautschicht.'],
+    ['w8', 'wald', 'Haselnuss und Holunder wachsen in der …', ['Strauchschicht', 'Baumschicht', 'Moosschicht', 'Wurzelschicht'], 'Sträucher wachsen in der Strauchschicht.'],
+    ['w9', 'wald', 'Welches Stockwerk speichert Wasser wie ein Schwamm?', ['Moosschicht', 'Krautschicht', 'Strauchschicht', 'Baumschicht'], 'Moos saugt sich mit Wasser voll wie ein Schwamm.'],
+    ['w10', 'wald', 'Was ist der Unterschied zwischen Baum und Strauch?', ['Baum: ein Stamm. Strauch: viele dünne Stämmchen', 'Ein Strauch ist immer größer', 'Ein Baum hat keine Blätter', 'Es gibt keinen Unterschied'], 'Ein Baum hat einen dicken Stamm, ein Strauch viele dünne Triebe von unten.'],
+    ['w11', 'wald', 'Welches Stockwerk ist ganz unten in der Erde?', ['Wurzelschicht', 'Moosschicht', 'Krautschicht', 'Strauchschicht'], 'Ganz unten ist die Wurzelschicht, dort leben auch Würmer und Käfer.']
+  ];
+
+  function shuffle(a) { a = a.slice(); for (var i = a.length - 1; i > 0; i--) { var j = Math.floor(Math.random() * (i + 1)), t = a[i]; a[i] = a[j]; a[j] = t; } return a; }
+  function others(list, k, n) { return shuffle(list.filter(function (x) { return x !== k; })).slice(0, n); }
+  function treeOpts(k, list, img) {
+    return shuffle([k].concat(others(list, k, 3))).map(function (x) { return { t: T[x].n, img: img ? img(x) : null, ok: x === k }; });
+  }
+  function treeInfo(k, what) { return T[k].n + ': ' + T[k][what] + '.'; }
+
+  var BANK = [];
+  LAUB.forEach(function (k) {
+    BANK.push({ id: 'blatt:' + k, cat: 'laub', make: function () { return { text: 'Von welchem Baum ist dieses Blatt?', img: ART.leaf(k), opts: treeOpts(k, LAUB), ans: T[k].n, short: 'Blatt → ' + T[k].n, explain: treeInfo(k, 'blatt') }; } });
+    BANK.push({ id: 'blattwahl:' + k, cat: 'laub', make: function () { return { text: 'Welches Blatt gehört ' + T[k].zu + '?', opts: treeOpts(k, LAUB, ART.leaf), pics: true, ans: T[k].n, short: 'Blatt ' + T[k].gen, explain: treeInfo(k, 'blatt') }; } });
+  });
+  FRUIT.forEach(function (k) {
+    BANK.push({ id: 'frucht:' + k, cat: 'frucht', make: function () { return { text: 'Von welchem Baum ist diese Frucht?', img: ART.fruit(k), opts: treeOpts(k, FRUIT), ans: T[k].n, short: 'Frucht → ' + T[k].n, explain: treeInfo(k, 'frucht') }; } });
+    BANK.push({ id: 'fruchtwahl:' + k, cat: 'frucht', make: function () { return { text: 'Welche Frucht gehört ' + T[k].zu + '?', opts: treeOpts(k, FRUIT, ART.fruit), pics: true, ans: T[k].n, short: 'Frucht ' + T[k].gen, explain: treeInfo(k, 'frucht') }; } });
+    if (FRUIT_NAME[k]) BANK.push({ id: 'fruchtname:' + k, cat: 'frucht', make: function () {
+      var names = ['Eichel', 'Buchecker', 'Flügelfrucht', 'Kastanie', 'Haselnuss', 'Zapfen'], right = FRUIT_NAME[k];
+      var o = shuffle([right].concat(shuffle(names.filter(function (x) { return x !== right; })).slice(0, 3))).map(function (x) { return { t: x, ok: x === right }; });
+      return { text: 'Wie heißt die Frucht ' + T[k].gen + '?', opts: o, ans: right, short: 'Frucht ' + T[k].gen + ': ' + right, explain: treeInfo(k, 'frucht') };
+    } });
+  });
+  NADEL.forEach(function (k) {
+    BANK.push({ id: 'nadel:' + k, cat: 'nadel', make: function () { return { text: 'Welcher Nadelbaum ist das?', img: ART.needles(k), opts: treeOpts(k, NADEL), ans: T[k].n, short: 'Nadeln → ' + T[k].n, explain: treeInfo(k, 'blatt') }; } });
+  });
+  ['fichte', 'tanne', 'kiefer'].forEach(function (k) {
+    BANK.push({ id: 'zapfen:' + k, cat: 'nadel', make: function () { return { text: 'Von welchem Baum ist dieser Zapfen?', img: ART.cone(k), opts: treeOpts(k, NADEL), ans: T[k].n, short: 'Zapfen → ' + T[k].n, explain: treeInfo(k, 'frucht') }; } });
+  });
+  LAUB.concat(NADEL).forEach(function (k) {
+    var laub = T[k].typ === 'laub';
+    BANK.push({ id: 'typ:' + k, cat: laub ? 'laub' : 'nadel', make: function () {
+      return { text: (k === 'ahorn' ? 'Ist der ' : 'Ist die ') + T[k].n + ' ein Laubbaum oder ein Nadelbaum?', opts: [{ t: 'Laubbaum', ok: laub }, { t: 'Nadelbaum', ok: !laub }], ans: laub ? 'Laubbaum' : 'Nadelbaum', short: T[k].n + ': ' + (laub ? 'Laubbaum' : 'Nadelbaum'), explain: T[k].n + ' ist ein ' + (laub ? 'Laubbaum' : 'Nadelbaum') + (k === 'laerche' ? ', auch wenn sie im Herbst ihre Nadeln verliert.' : '.') };
+    } });
+  });
+  Object.keys(PARTS).forEach(function (p) {
+    BANK.push({ id: 'teil:' + p, cat: 'wald', make: function () {
+      return { text: 'Wie heißt der markierte Teil des Baumes?', img: ART.parts(p), opts: shuffle(Object.keys(PARTS)).map(function (x) { return { t: PARTS[x], ok: x === p }; }), ans: PARTS[p], short: 'Baumteil: ' + PARTS[p], explain: PART_TIP[p] };
+    } });
+  });
+  Object.keys(ART.LAYER_NAMES).forEach(function (l) {
+    BANK.push({ id: 'schicht:' + l, cat: 'wald', make: function () {
+      var keys = [l].concat(others(Object.keys(ART.LAYER_NAMES), l, 3));
+      return { text: 'Wie heißt dieses Stockwerk des Waldes?', img: ART.forest(l), opts: shuffle(keys).map(function (x) { return { t: ART.LAYER_NAMES[x], ok: x === l }; }), ans: ART.LAYER_NAMES[l], short: 'Stockwerk: ' + ART.LAYER_NAMES[l], explain: ART.LAYER_NAMES[l] + ': ' + LAYER_TIP[l] };
+    } });
+  });
+  BANK.push({ id: 'ringe', cat: 'wald', make: function () {
+    var n = 4 + Math.floor(Math.random() * 5), set = [n, n - 2, n + 2, n + 4].filter(function (x) { return x > 1; });
+    if (set.length < 4) set.push(n + 1);
+    return { text: 'Zähle die Jahresringe. Wie alt war der Baum?', img: ART.rings(n), opts: shuffle(set).map(function (x) { return { t: x + ' Jahre', ok: x === n }; }), ans: n + ' Jahre', short: 'Jahresringe zählen', explain: 'Jeder Ring ist ein Jahr. Hier sind es ' + n + ' Ringe, also ' + n + ' Jahre.' };
+  } });
+  FACTS.forEach(function (f) {
+    BANK.push({ id: 'w:' + f[0], cat: f[1], make: function () {
+      return { text: f[2], opts: shuffle(f[3].map(function (t, i) { return { t: t, ok: i === 0 }; })), ans: f[3][0], short: f[2].replace(/[?:…]+$/, '').replace(/ …$/, '') + ' → ' + f[3][0], explain: f[4] };
+    } });
+  });
+  var BY_ID = {};
+  BANK.forEach(function (b) { BY_ID[b.id] = b; });
+
+  /* ---------- Spielstand ---------- */
+  var KEY = 'hsu-baeume-v1';
+  var WEIGHT = [6, 4, 2, 1];
+  var ALLCATS = CATS.map(function (c) { return c.id; });
+
+  function mk(n, look) { return { name: n, facts: {}, stars: 0, best: 0, won: [], look: look || 'heft' }; }
+  function fresh() { return { cur: 0, sound: true, cats: ALLCATS.slice(), players: [mk('Lina', 'kiwi'), mk('Ella', 'bear')] }; }
+  function load() {
+    try {
+      var r = localStorage.getItem(KEY);
+      if (r) {
+        var d = JSON.parse(r);
+        if (d && Array.isArray(d.players) && d.players.length === 2) {
+          if (!Array.isArray(d.cats)) d.cats = ALLCATS.slice();
+          d.cats = d.cats.filter(function (c) { return ALLCATS.indexOf(c) >= 0; });
+          if (d.cur !== 0 && d.cur !== 1) d.cur = 0;
+          if (typeof d.sound !== 'boolean') d.sound = true;
+          d.players.forEach(function (p, i) {
+            if (!Array.isArray(p.won)) p.won = [];
+            if (!p.facts) p.facts = {};
+            if (!p.look) p.look = ['kiwi', 'bear'][i];
+          });
+          return d;
+        }
+      }
+    } catch (e) {}
+    return fresh();
+  }
+  function save() { try { localStorage.setItem(KEY, JSON.stringify(D)); } catch (e) {} }
+  var D = load();
+  function P() { return D.players[D.cur]; }
+
+  var views = { home: $('#v-home'), play: $('#v-play'), result: $('#v-result'), cards: $('#v-cards') };
+  var S = null;
+  var view = 'home';
+  function show(n) {
+    for (var k in views) views[k].hidden = (k !== n);
+    view = n;
+    try { window.scrollTo(0, 0); } catch (e) {}
+  }
+
+  /* ---------- Looks, Maskottchen, Ton (aus der Vorlage) ---------- */
+  var LOOKS = {
+    heft:     { name: 'Heft',      mascot: 'Edda',  bg: '#F2F5FB', ink: '#17213B', c: ['#8FB1FF', '#E9F0FF', '#FFC233'], wave: 'triangle', ey: 52, ex: [42, 78], my: 0 },
+    space:    { name: 'Weltraum',  mascot: 'Zorbo', bg: '#0B1030', ink: '#F1F3FF', c: ['#5BE3A0', '#2FB87A', '#FFC94A'], wave: 'square',   ey: 60, ex: [42, 78], my: 90 },
+    sloth:    { name: 'Costa Rica', mascot: 'Paco',  bg: '#DAF1D6', ink: '#14361F', c: ['#9C8467', '#E9DCC3', '#5B4630'], wave: 'sine',     ey: 60, ex: [42, 78], my: 88 },
+    football: { name: 'Fußball',   mascot: 'Bruno', bg: '#D9F0DE', ink: '#0F2A1B', c: ['#FFFFFF', '#1B1B2F', '#E53935'], wave: 'triangle', ey: 62, ex: [44, 76], my: 86 },
+    kiwi:     { name: 'Kiwi',      mascot: 'Kiki',  bg: '#EAF5C9', ink: '#26340F', c: ['#8B5E34', '#B98D58', '#F2D9A0'], wave: 'sine',     ey: 54, ex: [44, 76], my: 0 },
+    bear:     { name: 'Bär',       mascot: 'Bobo',  bg: '#F6E7C1', ink: '#3B2416', c: ['#B5773E', '#F3D9B1', '#3B2416'], wave: 'triangle', ey: 58, ex: [44, 76], my: 90 },
+    unicorn:  { name: 'Einhorn',       mascot: 'Luna',   bg: '#FCEAF4', ink: '#3B1F4A', c: ['#FF8FC0', '#FFFFFF', '#FFD25A'], wave: 'sine',     ey: 58, ex: [44, 76], my: 86 },
+    mermaid:  { name: 'Meerjungfrau',  mascot: 'Marina', bg: '#DFF6F5', ink: '#0F3B45', c: ['#2FB5A8', '#FFD9BF', '#FF8FB1'], wave: 'sine',     ey: 64, ex: [46, 74], my: 86 },
+    butterfly:{ name: 'Schmetterling', mascot: 'Flora',  bg: '#EEE7FB', ink: '#2D1B55', c: ['#B58CFF', '#FF9CCB', '#FFE0C2'], wave: 'triangle', ey: 64, ex: [46, 74], my: 86 },
+    cat:      { name: 'Katze',         mascot: 'Mimi',   bg: '#FFF0B3', ink: '#4A3000', c: ['#F5A25D', '#FFF1DC', '#FF8FA3'], wave: 'triangle', ey: 60, ex: [42, 78], my: 92 }
+  };
+  var LOOK_ORDER = ['kiwi', 'bear', 'sloth', 'unicorn', 'mermaid', 'butterfly', 'cat', 'heft', 'space', 'football'];
+  var RM = false;
+  try { RM = window.matchMedia('(prefers-reduced-motion: reduce)').matches; } catch (e) {}
+
+  function pickOne(a) { return a[Math.floor(Math.random() * a.length)]; }
+  function curLook() { var k = P().look; return LOOKS[k] ? k : 'heft'; }
+  function applyLook() {
+    var k = curLook();
+    P().look = k;
+    document.documentElement.setAttribute('data-look', k);
+  }
+
+  function face(L, mood) {
+    var ey = L.ey, a = L.ex[0], b = L.ex[1], s = '', K = '#1B1B2F';
+    [a, b].forEach(function (x) {
+      if (mood === 'happy') {
+        s += '<path d="M' + (x - 11) + ' ' + (ey + 3) + ' Q' + x + ' ' + (ey - 12) + ' ' + (x + 11) + ' ' + (ey + 3) + '" fill="none" stroke="' + K + '" stroke-width="4" stroke-linecap="round"/>';
+      } else {
+        s += '<circle cx="' + x + '" cy="' + ey + '" r="11" fill="#fff" stroke="' + K + '" stroke-width="2"/>';
+        s += '<circle cx="' + x + '" cy="' + (ey + (mood === 'sad' ? 3 : 0)) + '" r="5" fill="' + K + '"/>';
+      }
+    });
+    if (mood === 'sad') {
+      s += '<path d="M' + (a - 12) + ' ' + (ey - 17) + ' L' + (a + 8) + ' ' + (ey - 13) + ' M' + (b + 12) + ' ' + (ey - 17) + ' L' + (b - 8) + ' ' + (ey - 13) + '" fill="none" stroke="' + K + '" stroke-width="3.5" stroke-linecap="round"/>';
+    }
+    if (L.my) {
+      var my = L.my;
+      if (mood === 'happy') s += '<path d="M46 ' + my + ' Q60 ' + (my + 20) + ' 74 ' + my + ' Z" fill="#7A1F2B" stroke="' + K + '" stroke-width="2.5" stroke-linejoin="round"/>';
+      else if (mood === 'sad') s += '<path d="M50 ' + (my + 6) + ' Q60 ' + (my - 4) + ' 70 ' + (my + 6) + '" fill="none" stroke="' + K + '" stroke-width="3.5" stroke-linecap="round"/>';
+      else s += '<path d="M50 ' + my + ' Q60 ' + (my + 8) + ' 70 ' + my + '" fill="none" stroke="' + K + '" stroke-width="3.5" stroke-linecap="round"/>';
+    }
+    return s;
+  }
+
+  function mascotSVG(look, mood) {
+    var L = LOOKS[look] || LOOKS.heft, c = L.c;
+    var m1 = 'fill:' + c[0], m2 = 'fill:' + c[1], m3 = 'fill:' + c[2], body = '';
+    if (look === 'space') {
+      body = '<line x1="60" y1="16" x2="60" y2="30" style="stroke:' + c[1] + ';stroke-width:4;stroke-linecap:round"/>' +
+        '<circle cx="60" cy="12" r="7" style="' + m3 + '"/>' +
+        '<ellipse cx="22" cy="74" rx="7" ry="11" style="' + m2 + '"/><ellipse cx="98" cy="74" rx="7" ry="11" style="' + m2 + '"/>' +
+        '<ellipse cx="60" cy="68" rx="42" ry="40" style="' + m1 + '"/>';
+    } else if (look === 'sloth') {
+      body = '<rect x="2" y="12" width="116" height="9" rx="4.5" fill="#7A5230"/>' +
+        '<ellipse cx="22" cy="10" rx="12" ry="5" transform="rotate(-25 22 10)" fill="#3DB35A"/><ellipse cx="100" cy="9" rx="12" ry="5" transform="rotate(20 100 9)" fill="#2E9B4C"/>' +
+        '<ellipse cx="60" cy="66" rx="46" ry="42" style="' + m1 + '"/>' +
+        '<ellipse cx="60" cy="68" rx="36" ry="31" style="' + m2 + '"/>' +
+        '<ellipse cx="42" cy="60" rx="16" ry="13" transform="rotate(-22 42 60)" style="' + m3 + '"/><ellipse cx="78" cy="60" rx="16" ry="13" transform="rotate(22 78 60)" style="' + m3 + '"/>' +
+        '<ellipse cx="60" cy="75" rx="7" ry="5" style="' + m3 + '"/>';
+    } else if (look === 'kiwi') {
+      body = '<ellipse cx="46" cy="108" rx="10" ry="6" fill="#F2994A"/><ellipse cx="74" cy="108" rx="10" ry="6" fill="#F2994A"/>' +
+        '<ellipse cx="60" cy="62" rx="46" ry="44" style="' + m1 + '"/>' +
+        '<ellipse cx="60" cy="70" rx="34" ry="28" style="' + m2 + '"/>' +
+        '<path d="M44 26 L48 35 M56 21 L58 32 M66 21 L64 32 M77 26 L72 35" fill="none" stroke="#6B4423" stroke-width="3" stroke-linecap="round"/>';
+      body += '<path d="M54 68 L66 68 Q69 94 60 115 Q58 92 54 68 Z" style="' + m3 + ';stroke:#B8935A;stroke-width:1.5;stroke-linejoin:round"/>';
+    } else if (look === 'bear') {
+      body = '<circle cx="24" cy="30" r="17" style="' + m1 + '"/><circle cx="24" cy="30" r="8" style="' + m2 + '"/>' +
+        '<circle cx="96" cy="30" r="17" style="' + m1 + '"/><circle cx="96" cy="30" r="8" style="' + m2 + '"/>' +
+        '<circle cx="60" cy="66" r="44" style="' + m1 + '"/>' +
+        '<ellipse cx="60" cy="84" rx="21" ry="15" style="' + m2 + '"/>' +
+        '<ellipse cx="60" cy="76" rx="7" ry="5" style="' + m3 + '"/>';
+    } else if (look === 'unicorn') {
+      var rim = ';stroke:#E7B6D4;stroke-width:2.5;stroke-linejoin:round';
+      body = '<ellipse cx="22" cy="72" rx="15" ry="30" style="' + m1 + '"/><ellipse cx="98" cy="72" rx="15" ry="30" style="' + m1 + '"/>' +
+        '<path d="M36 36 L30 12 L52 28 Z" style="' + m2 + rim + '"/><path d="M84 36 L90 12 L68 28 Z" style="' + m2 + rim + '"/>' +
+        '<path d="M60 2 L51 34 L69 34 Z" style="' + m3 + ';stroke:#E5A800;stroke-width:2.5;stroke-linejoin:round"/>' +
+        '<ellipse cx="60" cy="68" rx="42" ry="40" style="' + m2 + ';stroke:#E7B6D4;stroke-width:3"/>' +
+        '<path d="M27 52 Q60 12 93 52 Q77 38 60 46 Q43 38 27 52 Z" style="' + m1 + '"/>' +
+        '<circle cx="31" cy="78" r="7" fill="#FFB3D1" fill-opacity="0.8"/><circle cx="89" cy="78" r="7" fill="#FFB3D1" fill-opacity="0.8"/>';
+    } else if (look === 'mermaid') {
+      body = '<ellipse cx="60" cy="68" rx="50" ry="48" style="' + m1 + '"/>' +
+        '<circle cx="60" cy="68" r="37" style="' + m2 + '"/>' +
+        '<path d="M23 62 Q26 26 60 26 Q94 26 97 62 Q80 42 60 48 Q40 42 23 62 Z" style="' + m1 + '"/>' +
+        '<circle cx="88" cy="34" r="9" style="' + m3 + '"/><circle cx="88" cy="34" r="4" fill="#FFFFFF" fill-opacity="0.7"/>' +
+        '<circle cx="36" cy="82" r="6" fill="#FF9DB5" fill-opacity="0.7"/><circle cx="84" cy="82" r="6" fill="#FF9DB5" fill-opacity="0.7"/>';
+    } else if (look === 'butterfly') {
+      body = '<ellipse cx="26" cy="42" rx="24" ry="30" style="' + m1 + '"/><ellipse cx="94" cy="42" rx="24" ry="30" style="' + m1 + '"/>' +
+        '<ellipse cx="32" cy="88" rx="19" ry="21" style="' + m2 + '"/><ellipse cx="88" cy="88" rx="19" ry="21" style="' + m2 + '"/>' +
+        '<circle cx="24" cy="40" r="8" fill="#FFFFFF" fill-opacity="0.6"/><circle cx="96" cy="40" r="8" fill="#FFFFFF" fill-opacity="0.6"/>' +
+        '<circle cx="32" cy="88" r="6" fill="#FFFFFF" fill-opacity="0.6"/><circle cx="88" cy="88" r="6" fill="#FFFFFF" fill-opacity="0.6"/>' +
+        '<path d="M52 40 Q46 22 40 14 M68 40 Q74 22 80 14" fill="none" stroke="#2D1B55" stroke-width="3" stroke-linecap="round"/>' +
+        '<circle cx="40" cy="14" r="4" fill="#2D1B55"/><circle cx="80" cy="14" r="4" fill="#2D1B55"/>' +
+        '<circle cx="60" cy="68" r="30" style="' + m3 + '"/>';
+    } else if (look === 'cat') {
+      body = '<path d="M20 52 L18 14 L50 34 Z" style="' + m1 + '"/><path d="M26 44 L25 24 L42 36 Z" style="' + m3 + '"/>' +
+        '<path d="M100 52 L102 14 L70 34 Z" style="' + m1 + '"/><path d="M94 44 L95 24 L78 36 Z" style="' + m3 + '"/>' +
+        '<ellipse cx="60" cy="68" rx="46" ry="40" style="' + m1 + '"/>' +
+        '<path d="M52 34 L52 44 M60 32 L60 44 M68 34 L68 44" fill="none" stroke="#8A5A2B" stroke-width="3.5" stroke-linecap="round"/>' +
+        '<ellipse cx="60" cy="86" rx="22" ry="15" style="' + m2 + '"/>' +
+        '<path d="M54 76 L66 76 L60 83 Z" style="' + m3 + '"/>' +
+        '<path d="M38 90 L14 86 M38 96 L16 100 M82 90 L106 86 M82 96 L104 100" fill="none" stroke="#1B1B2F" stroke-opacity="0.5" stroke-width="2.5" stroke-linecap="round"/>';
+    } else if (look === 'football') {
+      body = '<circle cx="60" cy="62" r="46" style="' + m1 + ';stroke:' + c[1] + ';stroke-width:4"/>' +
+        '<path d="M60 20 L74 30 L69 46 L51 46 L46 30 Z" style="' + m2 + '"/>' +
+        '<path d="M17 52 L31 56 L33 72 L21 78 Z" style="' + m2 + '"/><path d="M103 52 L89 56 L87 72 L99 78 Z" style="' + m2 + '"/>' +
+        '<path d="M44 106 L60 99 L76 106 L72 108 L48 108 Z" style="' + m2 + '"/>';
+    } else {
+      body = '<path d="M28 40 L22 14 L48 28 Z" style="' + m3 + '"/><path d="M92 40 L98 14 L72 28 Z" style="' + m3 + '"/>' +
+        '<ellipse cx="60" cy="68" rx="40" ry="42" style="' + m1 + '"/>' +
+        '<ellipse cx="60" cy="88" rx="24" ry="20" style="' + m2 + '"/>' +
+        '<path d="M53 62 L67 62 L60 74 Z" style="' + m3 + '"/>';
+    }
+    return '<svg viewBox="0 0 120 120" role="img" aria-label="' + L.mascot + '">' + body + face(L, mood) + '</svg>';
+  }
+
+  function coach(id, mood, text) {
+    var el = $('#' + id);
+    if (!el) return;
+    var m = el.querySelector('.mascot');
+    m.innerHTML = mascotSVG(curLook(), mood === 'cheer' ? 'happy' : mood);
+    m.classList.remove('cheer', 'oops');
+    void m.offsetWidth;
+    if (mood === 'cheer') m.classList.add('cheer');
+    if (mood === 'sad') m.classList.add('oops');
+    if (text != null) el.querySelector('.bubble').textContent = text;
+  }
+
+  var lookOpen = false;
+  function renderLooks() {
+    var box = $('#looks');
+    box.innerHTML = '';
+    LOOK_ORDER.forEach(function (k) {
+      var L = LOOKS[k], b = document.createElement('button');
+      b.type = 'button'; b.className = 'look-tile';
+      b.style.background = L.bg; b.style.color = L.ink;
+      b.setAttribute('aria-pressed', curLook() === k ? 'true' : 'false');
+      var m = document.createElement('div'); m.className = 'mascot'; m.innerHTML = mascotSVG(k, 'happy');
+      var n = document.createElement('b'); n.textContent = L.name;
+      var s = document.createElement('small'); s.textContent = L.mascot;
+      b.appendChild(m); b.appendChild(n); b.appendChild(s);
+      b.addEventListener('click', function () {
+        P().look = k; lookOpen = false; save(); renderHome(); SND.ok();
+        coach('coach-home', 'cheer', "Ich bin " + L.mascot + "! Los geht's!");
+      });
+      box.appendChild(b);
+    });
+    var sn = $('#snd');
+    sn.textContent = D.sound ? 'Ton an' : 'Ton aus';
+    sn.setAttribute('aria-pressed', D.sound ? 'true' : 'false');
+    var cl = LOOKS[curLook()];
+    $('#look-cur').innerHTML = mascotSVG(curLook(), 'happy');
+    $('#look-name').textContent = cl.name + ' mit ' + cl.mascot;
+    $('#look-toggle').setAttribute('aria-expanded', lookOpen ? 'true' : 'false');
+    $('#look-body').hidden = !lookOpen;
+  }
+
+  var AC = null;
+  function ac() {
+    if (!D.sound) return null;
+    try {
+      if (!AC) { var C = window.AudioContext || window.webkitAudioContext; if (!C) return null; AC = new C(); }
+      if (AC.state === 'suspended') AC.resume();
+      return AC;
+    } catch (e) { return null; }
+  }
+  function tone(freq, t0, dur, vol, slideTo) {
+    var c = ac();
+    if (!c) return;
+    try {
+      var wave = LOOKS[curLook()].wave, v = wave === 'square' ? vol * 0.5 : vol;
+      var o = c.createOscillator(), g = c.createGain(), t = c.currentTime + t0;
+      o.type = wave;
+      o.frequency.setValueAtTime(freq, t);
+      if (slideTo) { o.type = 'sawtooth'; o.frequency.exponentialRampToValueAtTime(slideTo, t + dur); v = vol * 0.6; }
+      g.gain.setValueAtTime(0.0001, t);
+      g.gain.exponentialRampToValueAtTime(v, t + 0.01);
+      g.gain.exponentialRampToValueAtTime(0.0001, t + dur);
+      o.connect(g); g.connect(c.destination);
+      o.start(t); o.stop(t + dur + 0.03);
+    } catch (e) {}
+  }
+  var SND = {
+    tap: function () { tone(520, 0, 0.05, 0.06); },
+    ok: function () { tone(523, 0, 0.12, 0.12); tone(659, 0.11, 0.18, 0.12); },
+    no: function () { tone(230, 0, 0.24, 0.1, 150); },
+    star: function (i) { tone(660 + i * 150, 0, 0.2, 0.12); },
+    win: function () { [523, 659, 784, 1047].forEach(function (f, i) { tone(f, i * 0.12, 0.22, 0.12); }); }
+  };
+
+  function burst(x, y, n, wide) {
+    if (RM) return;
+    var fx = $('#fx'), glyphs = ['★', '●', '◆'], cols = ['var(--sun)', 'var(--blue)', 'var(--good)', 'var(--bad)'];
+    for (var i = 0; i < n; i++) {
+      var s = document.createElement('span');
+      s.textContent = glyphs[i % 3];
+      s.style.left = x + 'px'; s.style.top = y + 'px';
+      s.style.color = cols[i % 4];
+      var ang = Math.random() * Math.PI * 2, d = (wide ? 110 : 50) + Math.random() * (wide ? 220 : 80);
+      s.style.setProperty('--dx', (Math.cos(ang) * d) + 'px');
+      s.style.setProperty('--dy', (Math.sin(ang) * d - (wide ? 90 : 20)) + 'px');
+      s.style.setProperty('--r', (Math.random() * 720 - 360) + 'deg');
+      s.style.fontSize = (12 + Math.random() * (wide ? 18 : 8)) + 'px';
+      fx.appendChild(s);
+      (function (el) { setTimeout(function () { if (el.parentNode) el.parentNode.removeChild(el); }, 1300); })(s);
+    }
+  }
+  function burstAt(el, n, wide) {
+    if (!el) return;
+    var r = el.getBoundingClientRect();
+    burst(r.left + r.width / 2, r.top + r.height / 2, n, wide);
+  }
+
+  function react(ok, mastered) {
+    if (!S) return;
+    if (ok) {
+      S.streak++;
+      SND.ok();
+      var msg = pickOne(['Super!', 'Genau!', 'Stark!', 'Richtig!', 'Weiter so!']), wide = false;
+      if (mastered) { msg = 'Das sitzt jetzt!'; wide = true; }
+      else if (S.streak >= 3 && S.streak % 3 === 0) { msg = S.streak + ' richtig in Folge!'; wide = true; }
+      coach('coach-play', 'cheer', msg);
+      burstAt($('#card'), wide ? 30 : 10, wide);
+    } else {
+      S.streak = 0;
+      SND.no();
+      coach('coach-play', 'sad', pickOne(['Nicht schlimm!', 'Merk dir das!', 'Fast!', 'Das kriegst du!']));
+    }
+  }
+
+  function celebrate(stars) {
+    coach('coach-res', stars > 0 ? 'cheer' : 'idle', ['Probier es gleich nochmal!', 'Gut gemacht!', 'Richtig stark!', 'Wow, perfekt!'][stars]);
+    if (stars > 0) {
+      for (var i = 0; i < stars; i++) { (function (k) { setTimeout(function () { SND.star(k); }, 300 + k * 300); })(i); }
+      if (stars === 3) setTimeout(SND.win, 1250);
+      setTimeout(function () { burst(window.innerWidth / 2, window.innerHeight * 0.35, stars === 3 ? 60 : 34, true); }, 150);
+    }
+  }
+
+  var rwQueue = [];
+  var HAT = '<svg class="hat" viewBox="0 0 40 48" aria-hidden="true"><path d="M20 4 L36 44 L4 44 Z" fill="#ff5ea8" stroke="#fff" stroke-width="2.5" stroke-linejoin="round"/><path d="M12 28 L28 28 M9 36 L31 36" stroke="#fff" stroke-width="3" stroke-linecap="round"/><circle cx="20" cy="5" r="5" fill="#ffd23f"/></svg>';
+  var SLICE = '<path d="M20 38 L4 6 Q20 -2 36 6 Z" fill="#ffc14d" stroke="#d98a1f" stroke-width="2" stroke-linejoin="round"/><circle cx="15" cy="14" r="3.5" fill="#e0453a"/><circle cx="24" cy="20" r="3.5" fill="#e0453a"/><circle cx="19" cy="27" r="2.5" fill="#e0453a"/>';
+
+  function nextReward() {
+    var s = P().stars;
+    for (var i = 0; i < REWARDS.length; i++) { if (REWARDS[i].at > s) return REWARDS[i]; }
+    return null;
+  }
+
+  function renderRewards() {
+    var p = P(), nx = nextReward(), won = p.won || [], prev = 0;
+    REWARDS.forEach(function (r) { if (r.at <= p.stars) prev = r.at; });
+    $('#rw-next').textContent = nx ? 'Noch ' + (nx.at - p.stars) + ' Sterne bis zur nächsten Belohnung.' : 'Du hast alle Belohnungen gewonnen!';
+    var frac = nx ? Math.max(0, Math.min(1, (p.stars - prev) / (nx.at - prev))) : 1;
+    $('#rw-bar').style.transform = 'scaleX(' + frac + ')';
+    var box = $('#rw-tiles');
+    box.innerHTML = '';
+    REWARDS.forEach(function (r) {
+      var got = won.indexOf(r.at) >= 0, b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'rw-tile' + (got ? ' on' : '');
+      b.disabled = !got;
+      var t = document.createElement('b'); t.textContent = got ? r.name : '???';
+      var s = document.createElement('small'); s.textContent = got ? 'Ansehen' : 'ab ' + r.at + ' Sterne';
+      b.appendChild(t); b.appendChild(s);
+      if (got) b.addEventListener('click', function () { showReward(r, false); });
+      box.appendChild(b);
+    });
+  }
+
+  function sceneHTML(id) {
+    var m = '<div class="mimg">' + mascotSVG(curLook(), 'happy') + '</div>', i, s = '';
+    if (id === 'dance') {
+      return '<div class="sc sc-dance"><i class="lt lt1"></i><i class="lt lt2"></i><i class="lt lt3"></i><i class="disco"></i><div class="actor">' + HAT + m + '</div></div>';
+    }
+    if (id === 'rocket') {
+      var sx = [8, 22, 36, 52, 66, 80, 90, 15], sd = [0, -0.3, -0.7, -0.15, -0.5, -0.9, -0.2, -0.6];
+      for (i = 0; i < sx.length; i++) s += '<i class="sk" style="left:' + sx[i] + '%;animation-delay:' + sd[i] + 's"></i>';
+      return '<div class="sc sc-rocket">' + s + '<div class="rk">' +
+        '<svg class="fl" viewBox="0 0 40 50" aria-hidden="true"><path d="M20 0 C34 14 36 34 20 50 C4 34 6 14 20 0 Z" fill="#ff9f1c"/><path d="M20 8 C28 18 28 30 20 40 C12 30 12 18 20 8 Z" fill="#ffe066"/></svg>' +
+        '<svg class="body" viewBox="0 0 100 200" aria-hidden="true"><path d="M18 112 L-4 164 L18 150 Z M82 112 L104 164 L82 150 Z" fill="#e5484d"/><path d="M50 4 C74 30 82 62 82 100 L82 150 L18 150 L18 100 C18 62 26 30 50 4 Z" fill="#f4f6ff" stroke="#c9d0f0" stroke-width="2"/><path d="M50 4 C60 14 68 26 72 38 L28 38 C32 26 40 14 50 4 Z" fill="#e5484d"/><rect x="34" y="150" width="32" height="10" rx="3" fill="#8b93b8"/></svg>' +
+        '<div class="win">' + m + '</div></div></div>';
+    }
+    if (id === 'juggle') {
+      var fr = [ART.fruit('kastanie'), ART.fruit('eiche'), ART.leaf('ahorn')], dl = ['0s', '-0.8s', '-1.6s'];
+      for (i = 0; i < 3; i++) s += '<div class="jx" style="animation-delay:' + dl[i] + '"><div class="jy" style="animation-delay:' + dl[i] + '"><b class="ball">' + fr[i] + '</b></div></div>';
+      return '<div class="sc sc-juggle">' + s + '<div class="actor">' + m + '</div></div>';
+    }
+    if (id === 'hero') {
+      return '<div class="sc sc-hero"><i class="cl cl1"></i><i class="cl cl2"></i><i class="cl cl3"></i><div class="fly">' +
+        '<svg class="cape" viewBox="0 0 60 40" aria-hidden="true"><path d="M60 4 L4 0 Q20 20 6 40 L60 36 Z" fill="#2E7D32"/></svg>' + m + '</div><b class="pow">ZACK!</b></div>';
+    }
+    var px = [6, 22, 38, 54, 70, 84], pd = [0, -0.6, -1.3, -0.3, -1, -1.6];
+    for (i = 0; i < px.length; i++) s += '<svg class="pz" style="left:' + px[i] + '%;animation-delay:' + pd[i] + 's" viewBox="0 0 40 40" aria-hidden="true">' + SLICE + '</svg>';
+    return '<div class="sc sc-pizza">' + s + '<div class="actor"><div class="chew">' + m + '</div></div></div>';
+  }
+
+  function showReward(r, fresh) {
+    $('#rw-kicker').textContent = fresh ? 'Belohnung gewonnen!' : 'Deine Belohnung';
+    $('#rw-title').textContent = r.name;
+    $('#rw-stage').innerHTML = sceneHTML(r.id);
+    $('#rw-cap').textContent = r.cap(P().name);
+    $('#reward').hidden = false;
+    if (fresh) { SND.win(); burst(window.innerWidth / 2, window.innerHeight * 0.3, 50, true); }
+    $('#rw-close').focus();
+  }
+  function closeReward() {
+    $('#reward').hidden = true;
+    $('#rw-stage').innerHTML = '';
+    if (rwQueue.length) {
+      var r = rwQueue.shift();
+      setTimeout(function () { showReward(r, true); }, 300);
+    }
+  }
+
+  function afterRound() {
+    var p = P(), fresh;
+    p.won = p.won || [];
+    fresh = REWARDS.filter(function (r) { return p.stars >= r.at && p.won.indexOf(r.at) < 0; });
+    fresh.forEach(function (r) { p.won.push(r.at); });
+    if (fresh.length) save();
+    var nx = nextReward();
+    $('#r-next').textContent = nx ? 'Noch ' + (nx.at - p.stars) + ' Sterne bis zur nächsten Belohnung.' : 'Du hast alle Belohnungen gewonnen!';
+    if (fresh.length) {
+      rwQueue = fresh.slice(1);
+      setTimeout(function () { showReward(fresh[0], true); }, 2300);
+    }
+  }
+
+  /* ---------- Startseite ---------- */
+  function renderHome() {
+    var box = $('#players');
+    box.innerHTML = '';
+    D.players.forEach(function (p, i) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'player';
+      b.setAttribute('aria-pressed', i === D.cur ? 'true' : 'false');
+      var n = document.createElement('b'); n.textContent = p.name;
+      var s = document.createElement('small');
+      var st = document.createElement('i'); st.textContent = '★';
+      s.appendChild(st); s.appendChild(document.createTextNode(' ' + p.stars + ' Sterne'));
+      b.appendChild(n); b.appendChild(s);
+      b.addEventListener('click', function () { D.cur = i; save(); renderHome(); });
+      box.appendChild(b);
+    });
+    var inp = $('#name-input');
+    if (document.activeElement !== inp) inp.value = P().name;
+
+    var chips = $('#chips');
+    chips.innerHTML = '';
+    CATS.forEach(function (c) {
+      var b = document.createElement('button');
+      b.type = 'button'; b.className = 'chip wide'; b.textContent = c.name;
+      b.setAttribute('aria-pressed', D.cats.indexOf(c.id) >= 0 ? 'true' : 'false');
+      b.addEventListener('click', function () {
+        var i = D.cats.indexOf(c.id);
+        if (i >= 0) D.cats.splice(i, 1); else D.cats.push(c.id);
+        save(); renderHome();
+      });
+      chips.appendChild(b);
+    });
+    var all = document.createElement('button');
+    all.type = 'button'; all.className = 'chip wide';
+    var allOn = D.cats.length === ALLCATS.length;
+    all.textContent = allOn ? 'Keine' : 'Alle';
+    all.addEventListener('click', function () { D.cats = allOn ? [] : ALLCATS.slice(); save(); renderHome(); });
+    chips.appendChild(all);
+    $('#hint').textContent = D.cats.length ? '' : 'Wähle mindestens ein Thema aus.';
+    var p = P(), sure = 0;
+    BANK.forEach(function (b) { var f = p.facts[b.id]; if (f && f.box === 3) sure++; });
+    $('#progress').textContent = sure + ' von ' + BANK.length + ' Fragen sitzen sicher.';
+    $('#prog-bar').style.transform = 'scaleX(' + (sure / BANK.length) + ')';
+    renderRewards();
+    applyLook();
+    renderLooks();
+    coach('coach-home', 'idle', 'Hallo ' + P().name + '! Was üben wir heute?');
+  }
+
+  $('#name-input').addEventListener('input', function (e) {
+    var v = e.target.value.trim().slice(0, 14);
+    P().name = v || ['Lina', 'Ella'][D.cur];
+    save();
+    var names = document.querySelectorAll('.player b');
+    if (names[D.cur]) names[D.cur].textContent = P().name;
+  });
+  $('#name-input').addEventListener('blur', function () { renderHome(); });
+
+  /* ---------- Spiel ---------- */
+  var TEST_PLAN = ['laub', 'laub', 'laub', 'laub', 'frucht', 'frucht', 'frucht', 'nadel', 'nadel', 'nadel', 'nadel', 'wald', 'wald', 'wald', 'wald'];
+  function total() { return S.mode === 'test' ? 15 : 10; }
+
+  function start(mode) {
+    var cats = mode === 'test' ? ALLCATS.slice() : D.cats.slice();
+    if (!cats.length) { $('#hint').textContent = 'Wähle mindestens ein Thema aus.'; return; }
+    stopTimers();
+    S = { mode: mode, cats: cats, plan: mode === 'test' ? shuffle(TEST_PLAN) : null, asked: 0, right: 0, wrong: [], log: [], retry: [], used: {}, streak: 0, warned: false, last: '', cur: null, locked: false, end: 0, tick: null, to: null };
+    $('#who').textContent = P().name + (mode === 'test' ? ' · Probetest' : '');
+    $('#dots').hidden = mode === 'blitz';
+    $('#timerbox').hidden = mode !== 'blitz';
+    if (mode === 'blitz') {
+      S.end = Date.now() + 60000;
+      $('#blitzscore').textContent = '0';
+      updateTimer();
+      S.tick = setInterval(updateTimer, 200);
+    }
+    show('play');
+    coach('coach-play', 'idle', mode === 'test' ? 'Wie in der Probe: 15 Fragen, ' + P().name + '!' : mode === 'blitz' ? 'Gib Gas, ' + P().name + '!' : "Los geht's, " + P().name + '!');
+    next();
+  }
+
+  function stopTimers() {
+    if (S) { if (S.tick) clearInterval(S.tick); if (S.to) clearTimeout(S.to); S.tick = null; S.to = null; }
+  }
+
+  function updateTimer() {
+    if (!S || S.mode !== 'blitz') return;
+    var left = Math.max(0, S.end - Date.now());
+    $('#secs').textContent = String(Math.ceil(left / 1000));
+    if (left <= 10000 && left > 0 && !S.warned) { S.warned = true; coach('coach-play', 'idle', 'Noch 10 Sekunden!'); }
+    $('#barfill').style.transform = 'scaleX(' + (left / 60000) + ')';
+    if (left <= 0) finish();
+  }
+
+  function renderDots() {
+    var d = $('#dots'), n = total();
+    d.innerHTML = '';
+    for (var i = 0; i < n; i++) {
+      var e = document.createElement('i');
+      if (i < S.log.length) e.className = S.log[i] ? 'ok' : 'no';
+      else if (i === S.log.length) e.className = 'now';
+      d.appendChild(e);
+    }
+  }
+
+  function pick() {
+    var p = P();
+    if (S.mode === 'practice' && S.retry.length && S.retry[0].due <= S.asked && S.retry[0].id !== S.last) return S.retry.shift().id;
+    var cats = S.plan ? [S.plan[S.asked % S.plan.length]] : S.cats;
+    var inCat = BANK.filter(function (b) { return cats.indexOf(b.cat) >= 0 && b.id !== S.last; });
+    var pool = inCat.filter(function (b) { return !S.used[b.id]; });
+    if (!pool.length) pool = inCat;
+    var tot = 0, ws = pool.map(function (b) { var f = p.facts[b.id], w = f ? WEIGHT[f.box] : WEIGHT[0]; tot += w; return w; });
+    var r = Math.random() * tot;
+    for (var i = 0; i < pool.length; i++) { r -= ws[i]; if (r <= 0) return pool[i].id; }
+    return pool[pool.length - 1].id;
+  }
+
+  function next() {
+    if (!S) return;
+    if (S.to) { clearTimeout(S.to); S.to = null; }
+    if (S.mode !== 'blitz' && S.asked >= total()) { finish(); return; }
+    var id = pick(), q = BY_ID[id].make();
+    S.used[id] = true;
+    S.cur = { id: id, q: q };
+    S.last = id;
+    S.asked++;
+    S.locked = false;
+    $('#qtext').textContent = q.text;
+    var qi = $('#qimg');
+    qi.hidden = !q.img;
+    qi.innerHTML = q.img || '';
+    var box = $('#opts'), long = q.opts.some(function (o) { return o.t.length > 18; });
+    box.className = 'opts' + (q.pics ? ' pics' : long ? ' one' : '');
+    box.setAttribute('data-locked', 'false');
+    box.innerHTML = '';
+    q.opts.forEach(function (o, i) {
+      var b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'opt' + (q.pics ? ' pic' : '');
+      if (q.pics) { b.innerHTML = o.img; b.setAttribute('aria-label', 'Bild ' + (i + 1)); }
+      else b.textContent = o.t;
+      b.addEventListener('click', function () { choose(i); });
+      box.appendChild(b);
+    });
+    $('#card').className = 'card';
+    $('#fb').textContent = ''; $('#fb').className = 'fb';
+    $('#explain').hidden = true;
+    $('#next').hidden = true;
+    if (S.mode !== 'blitz') renderDots();
+  }
+
+  function choose(i) {
+    if (!S || S.locked || !S.cur || !S.cur.q.opts[i]) return;
+    var q = S.cur.q, id = S.cur.id, p = P(), ok = !!q.opts[i].ok;
+    var f = p.facts[id] || { box: 0, seen: 0, right: 0 }, was = f.box;
+    f.seen++;
+    if (ok) { f.right++; f.box = Math.min(3, f.box + 1); } else f.box = 0;
+    p.facts[id] = f;
+    var mastered = ok && was < 3 && f.box === 3;
+    S.log.push(ok);
+    if (ok) S.right++;
+    else { S.wrong.push(id); if (S.mode === 'practice') S.retry.push({ id: id, due: S.asked + 3 }); }
+    save();
+    S.locked = true;
+    $('#opts').setAttribute('data-locked', 'true');
+    var btns = $('#opts').children;
+    q.opts.forEach(function (o, j) {
+      if (o.ok) btns[j].classList.add('right');
+      else if (j === i) btns[j].classList.add('wrongpick');
+      else btns[j].classList.add('dim');
+    });
+    react(ok, mastered);
+    var fb = $('#fb');
+    if (S.mode === 'blitz') {
+      if (ok) { $('#blitzscore').textContent = String(S.right); fb.className = 'fb good'; fb.textContent = 'Richtig!'; }
+      else { fb.className = 'fb bad'; fb.textContent = 'Richtig ist: ' + q.ans; }
+      $('#card').className = 'card ' + (ok ? 'flash-ok' : 'flash-no');
+      S.to = setTimeout(function () { if (S && S.mode === 'blitz') next(); }, ok ? 450 : 1400);
+      return;
+    }
+    renderDots();
+    $('#explain').textContent = q.explain;
+    $('#explain').hidden = false;
+    $('#next').hidden = false;
+    if (ok) {
+      $('#card').className = 'card flash-ok';
+      fb.className = 'fb good'; fb.textContent = 'Richtig!';
+      S.to = setTimeout(next, 2200);
+    } else {
+      $('#card').className = 'card flash-no';
+      fb.className = 'fb bad'; fb.textContent = 'Richtig ist: ' + q.ans;
+    }
+  }
+
+  function finish() {
+    if (!S) return;
+    stopTimers();
+    var p = P(), stars, title, score, sub, n = S.right;
+    var uniq = S.wrong.filter(function (k, i) { return S.wrong.indexOf(k) === i; });
+    if (S.mode === 'practice') {
+      stars = n >= 9 ? 3 : n >= 7 ? 2 : n >= 5 ? 1 : 0;
+      title = n >= 9 ? 'Super gemacht!' : n >= 7 ? 'Richtig gut!' : n >= 5 ? 'Guter Anfang!' : 'Weiter üben lohnt sich!';
+      score = n + ' von 10 richtig';
+      sub = stars ? 'Du bekommst ' + stars + (stars === 1 ? ' Stern.' : ' Sterne.') : 'Diesmal gibt es keinen Stern. Versuch es nochmal.';
+    } else if (S.mode === 'test') {
+      stars = n >= 14 ? 3 : n >= 12 ? 2 : n >= 9 ? 1 : 0;
+      title = n >= 14 ? 'Du bist bereit für die Probe!' : n >= 11 ? 'Fast schon Baum-Profi!' : 'Noch ein bisschen üben!';
+      score = n + ' von 15 richtig';
+      sub = (stars ? stars + (stars === 1 ? ' Stern. ' : ' Sterne. ') : '') + (uniq.length ? 'Schau dir unten an, was noch nicht klappt.' : 'Alles richtig!');
+    } else {
+      stars = n >= 15 ? 3 : n >= 10 ? 2 : n >= 6 ? 1 : 0;
+      var newBest = n > p.best;
+      if (newBest) p.best = n;
+      title = newBest && n > 0 ? 'Neuer Rekord!' : 'Zeit ist um!';
+      score = n + ' richtig in 60 Sekunden';
+      sub = (stars ? stars + (stars === 1 ? ' Stern. ' : ' Sterne. ') : '') + 'Dein Rekord: ' + p.best;
+    }
+    p.stars += stars;
+    save();
+    $('#r-title').textContent = title.replace(/!$/, ', ' + p.name + '!');
+    var st = $('#r-stars');
+    st.innerHTML = '';
+    for (var i = 0; i < 3; i++) { var e = document.createElement('i'); e.textContent = '★'; if (i < stars) { e.className = 'on'; e.style.setProperty('--i', i); } st.appendChild(e); }
+    st.setAttribute('aria-label', stars + ' von 3 Sternen');
+    $('#r-score').textContent = score;
+    $('#r-sub').textContent = sub;
+    var ul = $('#r-redo');
+    ul.innerHTML = '';
+    uniq.slice(0, 12).forEach(function (id) {
+      var li = document.createElement('li'), b = BY_ID[id], q = b.make();
+      li.textContent = q.short;
+      ul.appendChild(li);
+    });
+    $('#r-redo-box').hidden = uniq.length === 0;
+    var mode = S.mode;
+    $('#again').onclick = function () { start(mode); };
+    S.cur = null;
+    show('result');
+    celebrate(stars);
+    afterRound();
+  }
+
+  /* ---------- Steckbriefe ---------- */
+  var cardTab = 'laub';
+  function el(tag, cls, txt) { var e = document.createElement(tag); if (cls) e.className = cls; if (txt != null) e.textContent = txt; return e; }
+  function treeSure(k) {
+    var p = P(), all = 0, sure = 0;
+    BANK.forEach(function (b) { if (b.id.split(':')[1] === k) { all++; var f = p.facts[b.id]; if (f && f.box === 3) sure++; } });
+    return [sure, all];
+  }
+  function renderCards() {
+    var tabs = $('#c-tabs');
+    tabs.innerHTML = '';
+    [['laub', 'Laubbäume'], ['nadel', 'Nadelbäume'], ['wald', 'Baum & Wald']].forEach(function (t) {
+      var b = el('button', 'chip wide', t[1]);
+      b.type = 'button';
+      b.setAttribute('aria-pressed', cardTab === t[0] ? 'true' : 'false');
+      b.addEventListener('click', function () { cardTab = t[0]; renderCards(); });
+      tabs.appendChild(b);
+    });
+    var box = $('#c-list');
+    box.innerHTML = '';
+    $('#c-who').textContent = P().name;
+    if (cardTab === 'wald') {
+      var c1 = el('div', 'panel sb');
+      c1.appendChild(el('h3', null, 'Teile des Baumes'));
+      var a1 = el('div', 'art big'); a1.innerHTML = ART.parts(null, true); c1.appendChild(a1);
+      var u1 = el('ul', 'facts');
+      Object.keys(PARTS).forEach(function (k) { var li = el('li'); li.appendChild(el('b', null, PARTS[k] + ': ')); li.appendChild(document.createTextNode(PART_TIP[k])); u1.appendChild(li); });
+      var li0 = el('li'); li0.appendChild(el('b', null, 'Rinde: ')); li0.appendChild(document.createTextNode('schützt den Stamm wie eine Haut.')); u1.appendChild(li0);
+      c1.appendChild(u1); box.appendChild(c1);
+      var c2 = el('div', 'panel sb');
+      c2.appendChild(el('h3', null, 'Stockwerke des Waldes'));
+      var a2 = el('div', 'art big'); a2.innerHTML = ART.forest(null, true); c2.appendChild(a2);
+      var u2 = el('ul', 'facts');
+      ['baum', 'strauch', 'kraut', 'moos', 'wurzel'].forEach(function (k) { var li = el('li'); li.appendChild(el('b', null, ART.LAYER_NAMES[k] + ': ')); li.appendChild(document.createTextNode(LAYER_TIP[k])); u2.appendChild(li); });
+      c2.appendChild(u2); box.appendChild(c2);
+      var c3 = el('div', 'panel sb');
+      c3.appendChild(el('h3', null, 'Gut zu wissen'));
+      var row = el('div', 'arts'), a3 = el('div', 'art'); a3.innerHTML = ART.rings(5); row.appendChild(a3); c3.appendChild(row);
+      var u3 = el('ul', 'facts');
+      [['Jahresringe', 'Jedes Jahr wächst ein Ring. Ringe zählen = Alter des Baumes. Diese Scheibe: 5 Jahre.'],
+       ['Laubbaum', 'breite, flache Blätter. Im Herbst fallen sie ab.'],
+       ['Nadelbaum', 'Nadeln, meist immergrün. Ausnahme: die Lärche.'],
+       ['Mischwald', 'Laubbäume und Nadelbäume zusammen.'],
+       ['Baum oder Strauch?', 'Baum: ein dicker Stamm. Strauch: viele dünne Stämmchen von unten.']].forEach(function (x) { var li = el('li'); li.appendChild(el('b', null, x[0] + ': ')); li.appendChild(document.createTextNode(x[1])); u3.appendChild(li); });
+      c3.appendChild(u3); box.appendChild(c3);
+      return;
+    }
+    (cardTab === 'laub' ? LAUB : NADEL).forEach(function (k) {
+      var t = T[k], c = el('div', 'panel sb'), head = el('div', 'sb-head'), ss = treeSure(k);
+      head.appendChild(el('h3', null, t.n));
+      head.appendChild(el('span', 'pill', ss[0] + ' von ' + ss[1] + ' sicher'));
+      c.appendChild(head);
+      var row = el('div', 'arts'), a = el('div', 'art');
+      a.innerHTML = t.typ === 'laub' ? ART.leaf(k) : ART.needles(k);
+      row.appendChild(a);
+      if (FRUIT.indexOf(k) >= 0 || ['fichte', 'tanne', 'kiefer'].indexOf(k) >= 0) {
+        var b2 = el('div', 'art'); b2.innerHTML = t.typ === 'laub' ? ART.fruit(k) : ART.cone(k); row.appendChild(b2);
+      }
+      c.appendChild(row);
+      var u = el('ul', 'facts');
+      [[t.typ === 'laub' ? 'Blatt' : 'Nadeln', t.blatt], [t.typ === 'laub' ? 'Frucht' : 'Zapfen', t.frucht], ['Rinde', t.rinde], ['Merke', t.merke]].forEach(function (x) {
+        var li = el('li'); li.appendChild(el('b', null, x[0] + ': ')); li.appendChild(document.createTextNode(x[1])); u.appendChild(li);
+      });
+      c.appendChild(u);
+      box.appendChild(c);
+    });
+  }
+
+  /* ---------- Belohnungen ---------- */
+  var REWARDS = [
+    { at: 50,  id: 'dance',  name: 'Tanzparty',          cap: function (n) { return n + ' schmeißt eine Tanzparty, weil das Lernen so gut klappt!'; } },
+    { at: 100, id: 'rocket', name: 'Raketenstart',       cap: function (n) { return 'Start frei! ' + n + ' fliegt mit 100 Sternen zum Mond.'; } },
+    { at: 150, id: 'juggle', name: 'Kastanien-Jongleur', cap: function (n) { return n + ' jongliert mit Waldfrüchten. Pass auf, dass keine runterfällt!'; } },
+    { at: 200, id: 'hero',   name: 'Super-Förster',      cap: function (n) { return 'Hier kommt ' + n + ', der Super-Förster!'; } },
+    { at: 300, id: 'pizza',  name: 'Pizza-Regen',        cap: function (n) { return 'Es regnet Pizza! ' + n + ' hat sich 300 Sterne verdient.'; } }
+  ];
+
+  /* ---------- Verdrahtung ---------- */
+  function home() { stopTimers(); S = null; renderHome(); show('home'); }
+  $('#go-practice').addEventListener('click', function () { start('practice'); });
+  $('#go-blitz').addEventListener('click', function () { start('blitz'); });
+  $('#go-test').addEventListener('click', function () { start('test'); });
+  $('#go-cards').addEventListener('click', function () { renderCards(); show('cards'); });
+  $('#c-back').addEventListener('click', home);
+  $('#c-back2').addEventListener('click', home);
+  $('#r-home').addEventListener('click', home);
+  $('#quit').addEventListener('click', home);
+  $('#next').addEventListener('click', next);
+  $('#rw-close').addEventListener('click', closeReward);
+  $('#look-toggle').addEventListener('click', function () { lookOpen = !lookOpen; renderLooks(); });
+  $('#snd').addEventListener('click', function () { D.sound = !D.sound; save(); renderLooks(); SND.ok(); });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === 'Escape' && !$('#reward').hidden) { closeReward(); return; }
+    if (view !== 'play' || !S) return;
+    if (e.key >= '1' && e.key <= '4') { choose(+e.key - 1); e.preventDefault(); }
+    else if (e.key === 'Enter' && S.locked && !$('#next').hidden) { next(); e.preventDefault(); }
+  });
+
+  renderHome();
+  show('home');
+})();
+</script>
+</body>
+</html>
