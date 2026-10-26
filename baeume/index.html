@@ -625,6 +625,15 @@ h3 { font-size: 1.35rem; font-weight: 600; }
           '<path d="M44 66 C34 58 22 46 16 34 M56 66 C66 58 78 46 84 34" fill="none" stroke="#9C8640" stroke-width="1" stroke-opacity="0.7"/>' +
           '<ellipse cx="43" cy="71" rx="8" ry="6.5" fill="#A8924A" stroke="#7A6A30" stroke-width="1.5"/>' +
           '<ellipse cx="57" cy="71" rx="8" ry="6.5" fill="#A8924A" stroke="#7A6A30" stroke-width="1.5"/>';
+      } else if (k === 'birke') {
+        s = '<path d="M8 14 Q50 4 94 12" fill="none" stroke="#5A3A28" stroke-width="3" stroke-linecap="round"/>';
+        [[26, 12, 50, -14], [50, 9, 60, 0], [72, 11, 46, 14]].forEach(function (c) {
+          var x = c[0], y = c[1], L = c[2], r = c[3];
+          s += '<g transform="rotate(' + r + ' ' + x + ' ' + y + ')">' + line(x, y, x, y + 6, '#5A3A28', 2) + '<rect x="' + (x - 6) + '" y="' + (y + 5) + '" width="12" height="' + L + '" rx="6" fill="#A08A4E" stroke="#6E5A2A" stroke-width="1.4"/>';
+          for (var q = 0; q < (L - 8) / 6; q++) s += '<path d="M' + (x - 5) + ' ' + (y + 10 + q * 6) + ' Q' + x + ' ' + (y + 14 + q * 6) + ' ' + (x + 5) + ' ' + (y + 10 + q * 6) + '" fill="none" stroke="#6E5A2A" stroke-width="1" stroke-opacity="0.7"/>';
+          s += '</g>';
+        });
+        s += '<g transform="translate(84 80)"><circle r="13" fill="#fff" stroke="#6E5A2A" stroke-width="1.6"/><path d="M-9 0 Q-4 -6 0 0 Q4 -6 9 0 Q4 4 0 1 Q-4 4 -9 0 Z" fill="#D7C27A" stroke="#9C8640" stroke-width="1"/><circle r="2" fill="#7A6A30"/></g>';
       } else if (k === 'linde') {
         s = '<path d="M24 10 C38 6 60 30 70 62 C62 64 40 40 24 10 Z" fill="#D8E59A" stroke="#9AAE4A" stroke-width="1.5"/>' +
           line(30, 16, 66, 58, '#9AAE4A', 1, 0.8) +
@@ -793,7 +802,7 @@ h3 { font-size: 1.35rem; font-weight: 600; }
     buche:    { n: 'Buche',    zu: 'zur Buche',    gen: 'der Buche',    typ: 'laub',  blatt: 'eiförmig, glatter, leicht welliger Rand, gerade Adern', frucht: 'Bucheckern: dreikantig, in einer stacheligen Hülle', rinde: 'glatt und silbergrau', merke: 'Häufigster Laubbaum in Deutschland.' },
     ahorn:    { n: 'Ahorn',    zu: 'zum Ahorn',    gen: 'des Ahorns',   typ: 'laub',  blatt: 'handförmig mit 5 spitzen Lappen', frucht: 'Flügelfrüchte, fliegen wie ein Propeller („Nasenzwicker“)', rinde: 'grau, bei älteren Bäumen schuppig', merke: 'Ein Ahornblatt ist auf der Flagge von Kanada.' },
     kastanie: { n: 'Kastanie', zu: 'zur Kastanie', gen: 'der Kastanie', typ: 'laub',  blatt: 'gefingert: 5 bis 7 Teilblätter an einem Stiel', frucht: 'glänzend braune Kastanie in einer grünen, stacheligen Hülle', rinde: 'graubraun, später schuppig', merke: 'Die Rosskastanie ist für Menschen nicht zum Essen.' },
-    birke:    { n: 'Birke',    zu: 'zur Birke',    gen: 'der Birke',    typ: 'laub',  blatt: 'dreieckig bis rautenförmig, gesägter Rand', frucht: 'winzige Samen mit Flügeln in „Kätzchen“', rinde: 'weiß mit schwarzen Stellen', merke: 'Man erkennt sie sofort an der weißen Rinde.' },
+    birke:    { n: 'Birke',    zu: 'zur Birke',    gen: 'der Birke',    typ: 'laub',  blatt: 'dreieckig bis rautenförmig, gesägter Rand', frucht: 'Kätzchen: hängende Würstchen mit winzigen Samen, die kleine Flügel haben und mit dem Wind fliegen', rinde: 'weiß mit schwarzen Stellen, löst sich in dünnen Schichten wie Papier ab', merke: 'Dünne Zweige hängen nach unten. Sie wächst schnell und als einer der ersten Bäume auf freien Flächen (Pionierbaum).' },
     linde:    { n: 'Linde',    zu: 'zur Linde',    gen: 'der Linde',    typ: 'laub',  blatt: 'herzförmig, gesägter Rand', frucht: 'kleine Nüsschen an einem hellen Flügelblatt', rinde: 'graubraun mit feinen Längsrissen', merke: 'Aus den Lindenblüten macht man Tee.' },
     fichte:   { n: 'Fichte',   zu: 'zur Fichte',   gen: 'der Fichte',   typ: 'nadel', blatt: 'spitze Nadeln, die stechen, rund um den Zweig', frucht: 'Zapfen hängen nach unten und fallen ganz herunter', rinde: 'rotbraun, schuppig', merke: 'Fichte sticht, Tanne nicht! Häufigster Baum in Deutschland.' },
     tanne:    { n: 'Tanne',    zu: 'zur Tanne',    gen: 'der Tanne',    typ: 'nadel', blatt: 'weiche, stumpfe Nadeln mit zwei weißen Streifen unten, wie gekämmt in zwei Reihen', frucht: 'Zapfen stehen aufrecht und zerfallen am Baum', rinde: 'hellgrau, fast weiß', merke: 'Ganze Tannenzapfen findet man nicht am Boden.' },
@@ -802,7 +811,7 @@ h3 { font-size: 1.35rem; font-weight: 600; }
   };
   var LAUB = ['eiche', 'buche', 'ahorn', 'kastanie', 'birke', 'linde'];
   var NADEL = ['fichte', 'tanne', 'kiefer', 'laerche'];
-  var FRUIT = ['eiche', 'buche', 'ahorn', 'kastanie', 'linde'];
+  var FRUIT = ['eiche', 'buche', 'ahorn', 'kastanie', 'birke', 'linde'];
   var FRUIT_NAME = { eiche: 'Eichel', buche: 'Buchecker', ahorn: 'Flügelfrucht', kastanie: 'Kastanie' };
   var CATS = [
     { id: 'laub', name: 'Laubbäume' },
@@ -816,6 +825,11 @@ h3 { font-size: 1.35rem; font-weight: 600; }
 
   /* Wissensfragen: erste Antwort ist richtig, wird beim Anzeigen gemischt */
   var FACTS = [
+    ['b1', 'laub', 'Was passiert mit der weißen Rinde der Birke?', ['Sie löst sich in dünnen Schichten wie Papier ab', 'Sie wird im Herbst rot', 'Sie bekommt tiefe Risse wie die Eiche', 'Sie wird grün'], 'Die Birkenrinde löst sich in dünnen, papierartigen Streifen ab.'],
+    ['b2', 'frucht', 'Wie kommen die Samen der Birke weit weg?', ['Sie haben kleine Flügel und fliegen mit dem Wind', 'Eichhörnchen vergraben sie', 'Sie rollen den Berg hinunter', 'Sie schwimmen im Bach'], 'Birkensamen sind winzig und haben kleine Flügel. Der Wind trägt sie weit.'],
+    ['b3', 'laub', 'Wie wachsen die Zweige der Birke?', ['Dünn, sie hängen nach unten', 'Dick, sie stehen steil nach oben', 'Sie hat gar keine Zweige', 'Sie haben Stacheln'], 'Die dünnen Zweige der Birke hängen nach unten (Hängebirke).'],
+    ['b4', 'laub', 'Warum nennt man die Birke einen Pionierbaum?', ['Sie wächst als einer der ersten Bäume auf freien Flächen', 'Sie ist der höchste Baum im Wald', 'Sie wächst nur in den Bergen', 'Sie hat Nadeln und Blätter'], 'Die Birke wächst schnell und braucht wenig. Sie erobert freie Flächen als Erste.'],
+    ['b5', 'frucht', 'Wie heißen die hängenden „Würstchen“ an der Birke?', ['Kätzchen', 'Zapfen', 'Eicheln', 'Nüsschen'], 'An der Birke hängen Kätzchen. Darin sind die winzigen Flügelsamen.'],
     ['n1', 'nadel', 'Fichte sticht, …', ['Tanne nicht', 'Kiefer nicht', 'Lärche auch', 'Buche auch'], 'Merksatz: Fichte sticht, Tanne nicht. Die Tannennadeln sind stumpf und weich.'],
     ['n2', 'nadel', 'Bei welchem Baum stehen die Zapfen aufrecht auf dem Zweig?', ['Tanne', 'Fichte', 'Kiefer', 'Lärche'], 'Tannenzapfen stehen wie Kerzen nach oben. Fichtenzapfen hängen nach unten.'],
     ['n3', 'nadel', 'Bei welchem Baum hängen die langen Zapfen nach unten?', ['Fichte', 'Tanne', 'Buche', 'Linde'], 'Fichtenzapfen hängen nach unten und fallen als Ganzes auf den Boden.'],
@@ -869,11 +883,6 @@ h3 { font-size: 1.35rem; font-weight: 600; }
   FRUIT.forEach(function (k) {
     BANK.push({ id: 'frucht:' + k, cat: 'frucht', make: function () { return { text: 'Von welchem Baum ist diese Frucht?', img: ART.fruit(k), opts: treeOpts(k, FRUIT), ans: T[k].n, short: 'Frucht → ' + T[k].n, explain: treeInfo(k, 'frucht') }; } });
     BANK.push({ id: 'fruchtwahl:' + k, cat: 'frucht', make: function () { return { text: 'Welche Frucht gehört ' + T[k].zu + '?', opts: treeOpts(k, FRUIT, ART.fruit), pics: true, ans: T[k].n, short: 'Frucht ' + T[k].gen, explain: treeInfo(k, 'frucht') }; } });
-    if (FRUIT_NAME[k]) BANK.push({ id: 'fruchtname:' + k, cat: 'frucht', make: function () {
-      var names = ['Eichel', 'Buchecker', 'Flügelfrucht', 'Kastanie', 'Haselnuss', 'Zapfen'], right = FRUIT_NAME[k];
-      var o = shuffle([right].concat(shuffle(names.filter(function (x) { return x !== right; })).slice(0, 3))).map(function (x) { return { t: x, ok: x === right }; });
-      return { text: 'Wie heißt die Frucht ' + T[k].gen + '?', opts: o, ans: right, short: 'Frucht ' + T[k].gen + ': ' + right, explain: treeInfo(k, 'frucht') };
-    } });
   });
   NADEL.forEach(function (k) {
     BANK.push({ id: 'nadel:' + k, cat: 'nadel', make: function () { return { text: 'Welcher Nadelbaum ist das?', img: ART.needles(k), opts: treeOpts(k, NADEL), ans: T[k].n, short: 'Nadeln → ' + T[k].n, explain: treeInfo(k, 'blatt') }; } });
@@ -903,6 +912,52 @@ h3 { font-size: 1.35rem; font-weight: 600; }
     if (set.length < 4) set.push(n + 1);
     return { text: 'Zähle die Jahresringe. Wie alt war der Baum?', img: ART.rings(n), opts: shuffle(set).map(function (x) { return { t: x + ' Jahre', ok: x === n }; }), ans: n + ' Jahre', short: 'Jahresringe zählen', explain: 'Jeder Ring ist ein Jahr. Hier sind es ' + n + ' Ringe, also ' + n + ' Jahre.' };
   } });
+
+  /* Steckbrief-Fragen fuer jeden Baum: Frucht, Blattform, Rinde, Besonderheit */
+  var KURZ = {
+    eiche:    { fr: 'Eichel', frWer: 'Eicheln', bl: 'Gelappt mit runden Buchten', ri: 'Dick und grau mit tiefen Rissen', bs: 'Kann über 1000 Jahre alt werden' },
+    buche:    { fr: 'Buchecker', frWer: 'Bucheckern', bl: 'Eiförmig mit glattem, welligem Rand', ri: 'Glatt und silbergrau', bs: 'Häufigster Laubbaum in Deutschland' },
+    ahorn:    { fr: 'Flügelfrucht (Propeller)', frWer: 'Flügelfrüchte, die wie ein Propeller fliegen', bl: 'Handförmig mit 5 spitzen Lappen', ri: null, bs: 'Sein Blatt ist auf der Flagge von Kanada' },
+    kastanie: { fr: 'Kastanie in stacheliger Hülle', frWer: 'Kastanien in einer stacheligen grünen Hülle', bl: 'Gefingert mit 5 bis 7 Teilblättern', ri: null, bs: 'Ihre Früchte sind für Menschen nicht zum Essen' },
+    birke:    { fr: 'Kätzchen mit Flügelsamen', frWer: 'Kätzchen mit winzigen Flügelsamen', bl: 'Dreieckig wie eine Raute, gesägter Rand', ri: 'Weiß mit schwarzen Stellen, blättert wie Papier ab', bs: 'Weiße Rinde, die sich wie Papier ablöst' },
+    linde:    { fr: 'Nüsschen am Flügelblatt', frWer: 'kleine Nüsschen an einem hellen Flügelblatt', bl: 'Herzförmig mit gesägtem Rand', ri: null, bs: 'Aus ihren Blüten macht man Tee' },
+    fichte:   { fr: 'Langer, hängender Zapfen', bl: 'Spitz und stechend, rund um den Zweig', ri: 'Rotbraun und schuppig', bs: 'Häufigster Baum in Deutschland' },
+    tanne:    { fr: 'Aufrecht stehender Zapfen', bl: 'Weich, mit zwei weißen Streifen unten', ri: 'Hellgrau, fast weiß und glatt', bs: 'Ihre Zapfen zerfallen schon am Baum' },
+    kiefer:   { fr: 'Kleiner, eiförmiger Zapfen', bl: 'Lang, immer zwei zusammen', ri: 'Oben orange-rot', bs: 'Wächst auch auf trockenem Sandboden' },
+    laerche:  { fr: 'Kleiner, runder Zapfen', bl: 'Weich, in Büscheln, im Herbst gelb', ri: null, bs: 'Verliert im Herbst ihre Nadeln' }
+  };
+  var ALLT = LAUB.concat(NADEL);
+  function kurzOpts(k, field, pool) {
+    var right = KURZ[k][field], o = others(pool.filter(function (x) { return KURZ[x][field] && !(field === 'bs' && right.indexOf('Häufigster') === 0 && KURZ[x].bs.indexOf('Häufigster') === 0); }), k, 3);
+    return shuffle([k].concat(o)).map(function (x) { return { t: KURZ[x][field], ok: x === k }; });
+  }
+  function der(k) { return k === 'ahorn' ? 'der Ahorn' : 'die ' + T[k].n; }
+  ALLT.forEach(function (k) {
+    var laub = T[k].typ === 'laub', cat = laub ? 'laub' : 'nadel', K = KURZ[k];
+    BANK.push({ id: 'fn:' + k, cat: 'frucht', make: function () {
+      return { text: laub ? 'Wie heißt die Frucht ' + T[k].gen + '?' : 'Wie sehen die Zapfen ' + T[k].gen + ' aus?', opts: kurzOpts(k, 'fr', laub ? LAUB : NADEL), ans: K.fr, short: 'Frucht ' + T[k].gen + ': ' + K.fr, explain: treeInfo(k, 'frucht') };
+    } });
+    BANK.push({ id: 'bf:' + k, cat: cat, make: function () {
+      return { text: laub ? 'Wie ist das Blatt ' + T[k].gen + ' geformt?' : 'Wie sehen die Nadeln ' + T[k].gen + ' aus?', opts: kurzOpts(k, 'bl', laub ? LAUB : NADEL), ans: K.bl, short: (laub ? 'Blatt ' : 'Nadeln ') + T[k].gen + ': ' + K.bl, explain: treeInfo(k, 'blatt') };
+    } });
+    BANK.push({ id: 'bs:' + k, cat: cat, make: function () {
+      return { text: 'Was ist das Besondere an ' + (k === 'ahorn' ? 'dem Ahorn' : 'der ' + T[k].n) + '?', opts: kurzOpts(k, 'bs', ALLT), ans: K.bs, short: T[k].n + ': ' + K.bs, explain: T[k].n + ': ' + T[k].merke };
+    } });
+    BANK.push({ id: 'wer:' + k, cat: cat, make: function () {
+      return { text: 'Welcher Baum ist das? ' + K.bs + '.', opts: treeOpts(k, ALLT.filter(function (x) { return x === k || KURZ[x].bs.indexOf('Häufigster') < 0 || K.bs.indexOf('Häufigster') < 0; })), ans: T[k].n, short: K.bs + ' → ' + T[k].n, explain: T[k].n + ': ' + T[k].merke };
+    } });
+    if (K.ri) {
+      BANK.push({ id: 'ri:' + k, cat: cat, make: function () {
+        return { text: 'Wie sieht die Rinde ' + T[k].gen + ' aus?', opts: kurzOpts(k, 'ri', ALLT), ans: K.ri, short: 'Rinde ' + T[k].gen + ': ' + K.ri, explain: treeInfo(k, 'rinde') };
+      } });
+      BANK.push({ id: 'riw:' + k, cat: cat, make: function () {
+        return { text: 'Welcher Baum hat diese Rinde: ' + K.ri.charAt(0).toLowerCase() + K.ri.slice(1) + '?', opts: treeOpts(k, ALLT.filter(function (x) { return KURZ[x].ri; })), ans: T[k].n, short: 'Rinde → ' + T[k].n, explain: treeInfo(k, 'rinde') };
+      } });
+    }
+    if (K.frWer) BANK.push({ id: 'frw:' + k, cat: 'frucht', make: function () {
+      return { text: 'Welcher Baum hat ' + K.frWer + '?', opts: treeOpts(k, LAUB), ans: T[k].n, short: K.frWer + ' → ' + T[k].n, explain: treeInfo(k, 'frucht') };
+    } });
+  });
   FACTS.forEach(function (f) {
     BANK.push({ id: 'w:' + f[0], cat: f[1], make: function () {
       return { text: f[2], opts: shuffle(f[3].map(function (t, i) { return { t: t, ok: i === 0 }; })), ans: f[3][0], short: f[2].replace(/[?:…]+$/, '').replace(/ …$/, '') + ' → ' + f[3][0], explain: f[4] };
