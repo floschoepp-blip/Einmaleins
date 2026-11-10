@@ -538,6 +538,8 @@
       b.addEventListener('click', function () { D.cur = i; save(); SND.tap(); renderProf(); }); box.appendChild(b);
     });
     $('#f-add').hidden = D.players.length >= 4;
+    $('#f-del').hidden = false; $('#f-delbox').hidden = true;
+    $('#f-del').textContent = '„' + p.name + '“ löschen';
   }
   var ONB = { look: 'kiwi' };
   function openOnb(first) {
@@ -583,6 +585,21 @@
   $('#f-name').addEventListener('blur', function () { pushScore(P()); renderProf(); });
   $('#f-snd').addEventListener('click', function () { D.sound = !D.sound; save(); SND.ok(); renderProf(); });
   $('#f-add').addEventListener('click', function () { openOnb(false); });
+  $('#f-del').addEventListener('click', function () {
+    var p = P();
+    $('#f-delq').textContent = 'Wirklich „' + p.name + '“ mit allen ' + p.pts + ' Punkten, Sternen und GIFs löschen? Das kann man nicht rückgängig machen.' + (ON.ready && D.code ? ' Der Eintrag verschwindet auch aus der Bestenliste von ' + D.code + '.' : '');
+    $('#f-del').hidden = true; $('#f-delbox').hidden = false;
+    try { $('#f-delbox').scrollIntoView({ block: 'nearest', behavior: 'smooth' }); } catch (e) {}
+  });
+  $('#f-delno').addEventListener('click', renderProf);
+  $('#f-delyes').addEventListener('click', function () {
+    var p = P(), name = p.name;
+    removeScore(p, D.code).then(function () { ON.board = null; return fetchBoard(); });
+    if (ON.board) ON.board = ON.board.filter(function (x) { return !(x.mine && x.pid === p.pid); });
+    D.players.splice(D.cur, 1); D.cur = 0; save();
+    toast('„' + name + '“ wurde gelöscht.');
+    if (!D.players.length) openOnb(true); else { renderProf(); show('prof'); }
+  });
   [].forEach.call(document.querySelectorAll('#nav button'), function (b) {
     b.addEventListener('click', function () { var v = b.getAttribute('data-v'); SND.tap(); if (v === 'home') goHome(); else if (v === 'board') openBoard(); else if (v === 'album') { renderAlbum(); show('album'); } else { renderProf(); show('prof'); } });
   });

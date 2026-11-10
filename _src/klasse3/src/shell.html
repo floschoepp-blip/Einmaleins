@@ -61,6 +61,8 @@ p { margin: 0; }
 .btn.ghost { background: var(--card); color: var(--ink); box-shadow: 0 5px 0 rgba(0,0,0,.35), inset 0 0 0 2px var(--line); }
 .btn.acc { background: var(--acc); color: #14103F; }
 .btn:disabled { opacity: .45; }
+.btn.danger { color: var(--bad); }
+.btn.bad { background: var(--bad); color: #3A0808; }
 .row { display: flex; gap: 12px; }
 .row > * { flex: 1; min-width: 0; }
 .chip { border-radius: 999px; padding: 8px 14px; background: var(--card); box-shadow: inset 0 0 0 2px var(--line); font-weight: 900; font-size: .92rem; white-space: nowrap; }
@@ -373,6 +375,13 @@ p { margin: 0; }
       <p class="label">Wer spielt auf diesem Handy?</p>
       <div class="plist" id="f-players"></div>
       <button class="btn ghost" id="f-add" type="button">Weiteres Kind hinzufügen</button>
+    </div>
+    <div class="panel">
+      <button class="btn ghost danger" id="f-del" type="button">Spieler löschen</button>
+      <div id="f-delbox" hidden>
+        <p id="f-delq" style="margin-bottom:12px"></p>
+        <div class="row"><button class="btn ghost" id="f-delno" type="button">Abbrechen</button><button class="btn bad" id="f-delyes" type="button">Ja, löschen</button></div>
+      </div>
     </div>
     <p class="note">Tipp: Tippe in Safari auf „Teilen“ und dann „Zum Home-Bildschirm“. Dann startet die App wie eine echte App.</p>
   </section>
