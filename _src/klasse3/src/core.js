@@ -406,7 +406,7 @@
     }
     $('#p-fb').hidden = true;
     if (q.auto && q.say) setTimeout(function () { if (S && S.cur === c && !S.locked) say(q.say, $('#p-spk')); }, 250);
-    else if (q.auto && q.sayDe) setTimeout(function () { if (S && S.cur === c && !S.locked) speakDe(q.sayDe, $('#p-spk'), 0.8); }, 250);
+    else if (q.auto && q.sayDe) setTimeout(function () { if (S && S.cur === c && !S.locked) sayWord(q.sayDe, $('#p-spk')); }, 250);
     else if (D.read && S.mode !== 'blitz') setTimeout(function () { if (S && S.cur === c && !S.locked) readQ(); }, 300);
   }
   function answer(ok, idx) {
@@ -901,7 +901,7 @@
       return vs[0] || null;
     } catch (e) { return null; }
   }
-  function deVoiceOK() { try { return 'speechSynthesis' in window && (speechSynthesis.getVoices().length === 0 || !!findDe()); } catch (e) { return false; } }
+  function deVoiceOK() { if (Object.keys(DEA).length) return true; try { return 'speechSynthesis' in window && (speechSynthesis.getVoices().length === 0 || !!findDe()); } catch (e) { return false; } }
   function speakDe(text, btn, rate) {
     try {
       if (!('speechSynthesis' in window)) { toast('Dieses Gerät kann leider nicht vorlesen.'); return; }
@@ -914,15 +914,40 @@
       speechSynthesis.speak(u);
     } catch (e) {}
   }
+  /* Deutsche Aufnahmen (audio-de/<hash>.mp3); Geraetestimme nur als Ersatz */
+  var DEA = {};
+  '/*DEAUDIO*/'.split(',').forEach(function (x) { if (x.length === 8) DEA[x] = 1; });
+  function deHash(t) { var x = 5381, i; for (i = 0; i < t.length; i++) x = ((x << 5) + x + t.charCodeAt(i)) >>> 0; return ('0000000' + x.toString(16)).slice(-8); }
+  function hasDe(t) { return !!DEA[deHash(t)]; }
+  function htmlText(h) { var d = document.createElement('div'); d.innerHTML = String(h).replace(/<br>/g, '. '); return d.textContent; }
+  function playDe(keys, btn, fallback, rate) {
+    if (!AUD || !keys.length) { speakDe(fallback, btn, rate); return; }
+    stopSay();
+    var id = ++sayId, i = 0;
+    sayBtn = btn || null; if (btn) btn.classList.add('playing');
+    function end() { if (id === sayId && sayBtn) sayBtn.classList.remove('playing'); }
+    function fail() { if (id !== sayId) return; end(); speakDe(fallback, btn, rate); }
+    function nxt() {
+      if (id !== sayId) return;
+      if (i >= keys.length) { end(); return; }
+      try { AUD.src = 'audio-de/' + deHash(keys[i++]) + '.mp3'; var pr = AUD.play(); if (pr && pr.catch) pr.catch(function (e) { if (e && e.name === 'AbortError') return; fail(); }); } catch (e) { fail(); }
+    }
+    AUD.onended = nxt; AUD.onerror = fail;
+    nxt();
+  }
+  function sayWord(w, btn) { if (hasDe('§' + w)) playDe(['§' + w], btn, w, 0.8); else speakDe(w, btn, 0.8); }
+  function sayCard(t, btn) { if (hasDe(t)) playDe([t], btn, t); else speakDe(t, btn); }
   function readQ() {
     if (!S || !S.cur) return;
     var q = S.cur.q, parts = [];
     if (!$('#p-fb').hidden && $('#p-ex').textContent && S.cur.tp.s !== 'en') { speakDe($('#p-fbt').textContent + '. ' + $('#p-ex').textContent, $('#p-read')); return; }
+    var rec = [];
+    if (hasDe(q.text)) { rec.push(q.text); if (q.html && S.cur.tp.s !== 'en') { var hx = htmlText(q.html); if (hasDe(hx)) { if (q.textLeft) rec.unshift(hx); else rec.push(hx); } } }
     parts.push(q.text);
     if (q.html) parts.push($('#p-html').textContent);
     if (S.cur.tp.s !== 'en' && q.big != null && !q.listen && !q.write) parts.push(String(q.big));
     if (S.cur.tp.s !== 'en' && q.opts && !q.pics && q.opts.every(function (o) { return o.t.length > 3; })) parts.push(q.opts.map(function (o) { return o.t; }).join('. Oder: '));
-    speakDe(parts.join('. '), $('#p-read'));
+    if (rec.length) playDe(rec, $('#p-read'), parts.join('. ')); else speakDe(parts.join('. '), $('#p-read'));
   }
 
   /* ---------- Schreiben, Sortieren, Zuordnen ---------- */
@@ -983,11 +1008,11 @@
     st.forEach(function (_, j) { var i = document.createElement('i'); if (j === EX.i) i.className = 'on'; d.appendChild(i); });
     $('#ex-k').textContent = 'Erklärung · Karte ' + (EX.i + 1) + ' von ' + st.length;
     $('#ex-next').textContent = EX.i + 1 < st.length ? 'Weiter' : 'Verstanden!';
-    if (D.read) speakDe(st[EX.i], $('#ex-read'));
+    if (D.read) sayCard(st[EX.i], $('#ex-read'));
   }
   $('#ex-next').addEventListener('click', function () { stopSay(); if (EX.i + 1 < EXPL[EX.id].length) { EX.i++; drawEx(); } else $('#ex').hidden = true; });
   $('#ex-x').addEventListener('click', function () { stopSay(); $('#ex').hidden = true; });
-  $('#ex-read').addEventListener('click', function () { speakDe(EXPL[EX.id][EX.i], $('#ex-read')); });
+  $('#ex-read').addEventListener('click', function () { sayCard(EXPL[EX.id][EX.i], $('#ex-read')); });
 
   /* ---------- Verdrahtung ---------- */
   $('#o-go').addEventListener('click', function () {
@@ -1009,7 +1034,7 @@
   $('#d-blitz').addEventListener('click', function () { start('blitz', selIds(), SEL.s); });
   $('#p-quit').addEventListener('click', function () { var s = S && S.subj; stop(); S = null; if (s && s !== 'mix') { renderTopics(); show('subj'); } else goHome(); });
   $('#p-next').addEventListener('click', next);
-  $('#p-spk').addEventListener('click', function () { if (S && S.cur && S.cur.q.say) say(S.cur.q.say, $('#p-spk')); else if (S && S.cur && S.cur.q.sayDe) speakDe(S.cur.q.sayDe, $('#p-spk'), 0.8); });
+  $('#p-spk').addEventListener('click', function () { if (S && S.cur && S.cur.q.say) say(S.cur.q.say, $('#p-spk')); else if (S && S.cur && S.cur.q.sayDe) sayWord(S.cur.q.sayDe, $('#p-spk')); });
   $('#p-fbspk').addEventListener('click', function () { if (S && S.cur && S.cur.q.say) say(S.cur.q.say, $('#p-fbspk')); });
   $('#r-home').addEventListener('click', goHome);
   $('#ov-x').addEventListener('click', closeOv);
@@ -1059,4 +1084,4 @@
     if (ON.ready && !D.code && kk.length >= 4) joinCode(kk);
     else if (ON.ready && D.code) pushScore(P()).then(fetchBoard).then(function () { if (view === 'home') renderTeaser(); });
   }
-  window.__k3 = { cur: function () { return S && S.cur; }, snake: function () { return K; }, tet: function () { return T; }, inv: function () { return V; }, TOPICS: TOPICS, CLIPS: CLIPS, ask: function (id) { start('practice', [id], BY_ID[id].s); }, clip: function (i) { showClip(CLIPS[i], true, i + 1); } };
+  window.__k3 = { EXPL: EXPL, hasDe: hasDe, cur: function () { return S && S.cur; }, snake: function () { return K; }, tet: function () { return T; }, inv: function () { return V; }, TOPICS: TOPICS, CLIPS: CLIPS, ask: function (id) { start('practice', [id], BY_ID[id].s); }, clip: function (i) { showClip(CLIPS[i], true, i + 1); } };
