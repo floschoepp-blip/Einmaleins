@@ -244,14 +244,15 @@ p { margin: 0; }
 .games { display: flex; flex-direction: column; gap: 10px; width: 100%; }
 .games .gh { display: flex; align-items: center; justify-content: space-between; gap: 10px; text-align: left; }
 .games .gh span { font-size: .9rem; color: var(--muted); flex: 1; min-width: 0; }
-.games .gg { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
-.gm { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; border-radius: 22px; padding: 12px 14px 14px; color: #062B16; box-shadow: 0 6px 0 rgba(0,0,0,.35), inset 0 -8px 0 rgba(0,0,0,.12); min-width: 0; }
+.games .gg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+.gm { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; border-radius: 20px; padding: 10px 10px 13px; color: #062B16; box-shadow: 0 6px 0 rgba(0,0,0,.35), inset 0 -8px 0 rgba(0,0,0,.12); min-width: 0; }
 .gm.snk { background: linear-gradient(120deg, #1F8F52, #2FD67B); }
 .gm.tet { background: linear-gradient(120deg, #2C7BE0, #6FC3FF); color: #06203F; }
 .gm:disabled { filter: grayscale(.8); opacity: .7; }
-.gm .ic { font-size: 2.2rem; line-height: 1.1; }
-.gm b { font-family: var(--display); font-size: 1.3rem; font-weight: 800; line-height: 1.1; }
-.gm span { font-size: .82rem; font-weight: 800; }
+.gm .ic { font-size: 1.9rem; line-height: 1.1; }
+.gm.inv { background: linear-gradient(120deg, #8E5BE8, #D2A8FF); color: #24084F; }
+.gm b { font-family: var(--display); font-size: 1.05rem; font-weight: 800; line-height: 1.1; overflow-wrap: anywhere; }
+.gm span { font-size: .76rem; font-weight: 800; }
 .tet-wrap { position: relative; height: min(56vh, 540px); aspect-ratio: 10 / 16; max-width: 100%; margin-inline: auto; border-radius: 16px; overflow: hidden; box-shadow: 0 0 0 3px var(--line); background: #0F0B36; touch-action: none; }
 .tet-wrap canvas { width: 100%; height: 100%; display: block; touch-action: none; }
 .tpad { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; max-width: 420px; width: 100%; margin-inline: auto; }
@@ -259,6 +260,11 @@ p { margin: 0; }
 .tpad button:active { transform: translateY(2px); }
 .tpad .rot { background: var(--sun); color: var(--sun-ink); box-shadow: 0 4px 0 rgba(0,0,0,.4), inset 0 -4px 0 #E0A800; }
 #t-next { width: 56px; height: 30px; display: block; }
+.inv-wrap { position: relative; height: min(58vh, 560px); aspect-ratio: 5 / 7; max-width: 100%; margin-inline: auto; border-radius: 16px; overflow: hidden; box-shadow: 0 0 0 3px var(--line); background: #0B0830; touch-action: none; }
+.inv-wrap canvas { width: 100%; height: 100%; display: block; touch-action: none; }
+.ipad { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; max-width: 420px; width: 100%; margin-inline: auto; }
+.ipad button { height: 60px; border-radius: 16px; background: var(--paper); color: var(--paper-ink); font-size: 1.6rem; font-weight: 900; box-shadow: 0 4px 0 rgba(0,0,0,.4), inset 0 -4px 0 #DAD3FF; touch-action: none; }
+.ipad button:active { transform: translateY(2px); }
 
 /* Profil */
 .looks { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; justify-items: center; }
@@ -418,6 +424,25 @@ p { margin: 0; }
     <p class="note" style="text-align:center">Tippe aufs Feld zum Drehen, wische zur Seite zum Schieben und nach unten zum Fallenlassen.</p>
   </section>
 
+  <section id="v-inv" hidden>
+    <div class="snk-hud">
+      <button class="back" id="i-quit" type="button" aria-label="Zurück">✕</button>
+      <div class="stat"><b id="i-score">0</b><span>Punkte</span></div>
+      <div class="stat"><b id="i-best">0</b><span>Rekord</span></div>
+      <div class="stat"><b id="i-lives">♥♥♥</b><span>Leben</span></div>
+      <div class="stat"><b id="i-time">3:00</b><span>Zeit</span></div>
+    </div>
+    <div class="inv-wrap" id="i-wrap">
+      <canvas id="i-cv" width="500" height="700" aria-label="Sternenjäger-Spielfeld"></canvas>
+      <div class="snk-msg" id="i-msg"><b id="i-mt"></b><p class="muted" id="i-ms"></p><button class="btn" id="i-go" type="button"></button><button class="btn ghost" id="i-end" type="button">Zurück zum Lernen</button></div>
+    </div>
+    <div class="ipad" id="i-pad">
+      <button type="button" data-a="l" aria-label="Links">◀</button>
+      <button type="button" data-a="r" aria-label="Rechts">▶</button>
+    </div>
+    <p class="note" style="text-align:center">Zieh dein Raumschiff mit dem Finger hin und her. Es schießt von selbst.</p>
+  </section>
+
   <section id="v-board" hidden>
     <h2>Bestenliste</h2>
     <div class="panel" id="b-join" hidden>
@@ -467,7 +492,7 @@ p { margin: 0; }
       </div>
     </div>
     <p class="note">Tipp: Tippe in Safari auf „Teilen“ und dann „Zum Home-Bildschirm“. Dann startet die App wie eine echte App.</p>
-    <p class="note" id="f-ver">Version 8</p>
+    <p class="note" id="f-ver">Version 9</p>
   </section>
 </main>
 
