@@ -241,6 +241,25 @@ p { margin: 0; }
 .snk-hud { display: flex; align-items: center; gap: 10px; }
 .snk-hud .stat { flex: 1; }
 
+.games { display: flex; flex-direction: column; gap: 10px; width: 100%; }
+.games .gh { display: flex; align-items: center; justify-content: space-between; gap: 10px; text-align: left; }
+.games .gh span { font-size: .9rem; color: var(--muted); flex: 1; min-width: 0; }
+.games .gg { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.gm { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; text-align: left; border-radius: 22px; padding: 12px 14px 14px; color: #062B16; box-shadow: 0 6px 0 rgba(0,0,0,.35), inset 0 -8px 0 rgba(0,0,0,.12); min-width: 0; }
+.gm.snk { background: linear-gradient(120deg, #1F8F52, #2FD67B); }
+.gm.tet { background: linear-gradient(120deg, #2C7BE0, #6FC3FF); color: #06203F; }
+.gm:disabled { filter: grayscale(.8); opacity: .7; }
+.gm .ic { font-size: 2.2rem; line-height: 1.1; }
+.gm b { font-family: var(--display); font-size: 1.3rem; font-weight: 800; line-height: 1.1; }
+.gm span { font-size: .82rem; font-weight: 800; }
+.tet-wrap { position: relative; height: min(56vh, 540px); aspect-ratio: 10 / 16; max-width: 100%; margin-inline: auto; border-radius: 16px; overflow: hidden; box-shadow: 0 0 0 3px var(--line); background: #0F0B36; touch-action: none; }
+.tet-wrap canvas { width: 100%; height: 100%; display: block; touch-action: none; }
+.tpad { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; max-width: 420px; width: 100%; margin-inline: auto; }
+.tpad button { height: 60px; border-radius: 16px; background: var(--paper); color: var(--paper-ink); font-size: 1.6rem; font-weight: 900; box-shadow: 0 4px 0 rgba(0,0,0,.4), inset 0 -4px 0 #DAD3FF; touch-action: none; }
+.tpad button:active { transform: translateY(2px); }
+.tpad .rot { background: var(--sun); color: var(--sun-ink); box-shadow: 0 4px 0 rgba(0,0,0,.4), inset 0 -4px 0 #E0A800; }
+#t-next { width: 56px; height: 30px; display: block; }
+
 /* Profil */
 .looks { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; justify-items: center; }
 .looks button { border-radius: 50%; padding: 3px; }
@@ -354,7 +373,7 @@ p { margin: 0; }
     <div><div class="bignum" id="r-pts"></div><p class="muted" id="r-sub"></p></div>
     <div style="width:100%"><div class="xp"><i id="r-xp"></i></div><div class="xp-row"><span id="r-lv"></span><span id="r-next"></span></div></div>
     <div class="panel" id="r-redo-box" style="width:100%;text-align:left" hidden><p class="label">Das merken wir uns</p><ul class="redo" id="r-redo"></ul></div>
-    <button class="snk-card" id="r-snake" type="button" hidden><span class="ic">🐍</span><div><b>Snake spielen</b><span id="r-snk-sub"></span></div><span class="tix" id="r-tix"></span></button>
+    <div class="games" id="r-games" hidden></div>
     <div class="row" style="width:100%"><button class="btn ghost" id="r-home" type="button">Fertig</button><button class="btn" id="r-again" type="button">Nochmal</button></div>
   </section>
 
@@ -378,6 +397,27 @@ p { margin: 0; }
     <p class="note" style="text-align:center">Wische über das Feld oder nimm die Pfeile. Durch die Wände kommst du auf der anderen Seite wieder heraus.</p>
   </section>
 
+  <section id="v-tet" hidden>
+    <div class="snk-hud">
+      <button class="back" id="t-quit" type="button" aria-label="Zurück">✕</button>
+      <div class="stat"><b id="t-score">0</b><span>Punkte</span></div>
+      <div class="stat"><b id="t-best">0</b><span>Rekord</span></div>
+      <div class="stat"><b id="t-time">3:00</b><span>Zeit</span></div>
+      <div class="stat"><canvas id="t-next" width="112" height="60" aria-label="Nächster Stein"></canvas><span>Nächster</span></div>
+    </div>
+    <div class="tet-wrap" id="t-wrap">
+      <canvas id="t-cv" width="500" height="800" aria-label="Blockfall-Spielfeld"></canvas>
+      <div class="snk-msg" id="t-msg"><b id="t-mt"></b><p class="muted" id="t-ms"></p><button class="btn" id="t-go" type="button"></button><button class="btn ghost" id="t-end" type="button">Zurück zum Lernen</button></div>
+    </div>
+    <div class="tpad" id="t-pad">
+      <button type="button" data-a="l" aria-label="Links">◀</button>
+      <button type="button" data-a="d" aria-label="Runter">▼</button>
+      <button type="button" data-a="r" aria-label="Rechts">▶</button>
+      <button class="rot" type="button" data-a="rot" aria-label="Drehen">⟳</button>
+    </div>
+    <p class="note" style="text-align:center">Tippe aufs Feld zum Drehen, wische zur Seite zum Schieben und nach unten zum Fallenlassen.</p>
+  </section>
+
   <section id="v-board" hidden>
     <h2>Bestenliste</h2>
     <div class="panel" id="b-join" hidden>
@@ -399,7 +439,7 @@ p { margin: 0; }
 
   <section id="v-album" hidden>
     <h2>Belohnungen</h2>
-    <button class="snk-card" id="a-snake" type="button"><span class="ic">🐍</span><div><b>Snake spielen</b><span id="a-snk-sub"></span></div><span class="tix" id="a-tix"></span></button>
+    <div class="games" id="a-games"></div>
     <h3>Deine GIF-Sammlung</h3>
     <p class="muted" id="a-sub"></p>
     <div class="album" id="a-list"></div>
@@ -427,7 +467,7 @@ p { margin: 0; }
       </div>
     </div>
     <p class="note">Tipp: Tippe in Safari auf „Teilen“ und dann „Zum Home-Bildschirm“. Dann startet die App wie eine echte App.</p>
-    <p class="note" id="f-ver">Version 7</p>
+    <p class="note" id="f-ver">Version 8</p>
   </section>
 </main>
 

@@ -205,7 +205,7 @@
       .then(function (j) { var n = { uid: j.localId, tok: j.idToken, refresh: j.refreshToken, exp: Date.now() + (+j.expiresIn) * 1000 }; setAuth(n); return n; });
   }
   function myKey(a, p) { return a.uid + '_' + p.pid; }
-  function entry(p) { rollWeek(p); return { n: p.name.slice(0, 12), a: p.look, t: p.pts, s: p.sub, wk: p.wk, wt: p.wpts, ws: p.wsub, lv: level(p.pts), u: Date.now() }; }
+  function entry(p) { rollWeek(p); return { n: p.name.slice(0, 12), a: p.look, t: p.pts, s: p.sub, wk: p.wk, wt: p.wpts, ws: p.wsub, lv: level(p.pts), g: { s: p.snk || 0, t: p.tet || 0 }, u: Date.now() }; }
   function pushScore(p) {
     if (!ON.ready || !D.code || !p) return Promise.resolve();
     return token().then(function (a) {
@@ -222,27 +222,28 @@
       return jfetch(FB.db + '/classes/' + encodeURIComponent(D.code) + '/players.json?auth=' + a.tok).then(function (j) {
         var list = [], k;
         j = j || {};
-        for (k in j) if (j[k] && typeof j[k].n === 'string') list.push({ key: k, mine: k.indexOf(a.uid + '_') === 0, pid: k.slice(a.uid.length + 1), n: j[k].n.slice(0, 14), a: j[k].a, t: +j[k].t || 0, s: j[k].s || {}, wk: j[k].wk, wt: +j[k].wt || 0, ws: j[k].ws || {}, lv: +j[k].lv || 0 });
+        for (k in j) if (j[k] && typeof j[k].n === 'string') list.push({ key: k, mine: k.indexOf(a.uid + '_') === 0, pid: k.slice(a.uid.length + 1), n: j[k].n.slice(0, 14), a: j[k].a, t: +j[k].t || 0, s: j[k].s || {}, wk: j[k].wk, wt: +j[k].wt || 0, ws: j[k].ws || {}, lv: +j[k].lv || 0, g: j[k].g || {} });
         ON.board = list; ON.at = Date.now(); ON.err = '';
         return list;
       });
     }).catch(function (e) { ON.err = String(e.message || e); return null; });
   }
   function cleanCode(s) { return String(s || '').toUpperCase().replace(/[^A-Z0-9ÄÖÜ-]/g, '').slice(0, 12); }
-  function localBoard() { return D.players.map(function (p) { rollWeek(p); return { key: p.pid, mine: true, pid: p.pid, n: p.name, a: p.look, t: p.pts, s: p.sub, wk: p.wk, wt: p.wpts, ws: p.wsub, lv: level(p.pts) }; }); }
+  function localBoard() { return D.players.map(function (p) { rollWeek(p); return { key: p.pid, mine: true, pid: p.pid, n: p.name, a: p.look, t: p.pts, s: p.sub, wk: p.wk, wt: p.wpts, ws: p.wsub, lv: level(p.pts), g: { s: p.snk || 0, t: p.tet || 0 } }; }); }
   function ranked(tab, f) {
     var src = (ON.ready && D.code && ON.board) ? ON.board.slice() : localBoard(), wk = weekKey(), me = P();
     if (ON.ready && D.code && ON.board && me) { /* eigene Zahlen sofort zeigen, auch wenn der Server noch alt ist */
-      D.players.forEach(function (p) { var e = entry(p), hit = src.filter(function (x) { return x.mine && x.pid === p.pid; })[0]; if (hit) { hit.t = Math.max(hit.t, e.t); if (e.wk === wk) { hit.wk = wk; hit.wt = e.wt; hit.ws = e.ws; } hit.s = e.s; hit.n = e.n; hit.a = e.a; } });
+      D.players.forEach(function (p) { var e = entry(p), hit = src.filter(function (x) { return x.mine && x.pid === p.pid; })[0]; if (hit) { hit.t = Math.max(hit.t, e.t); if (e.wk === wk) { hit.wk = wk; hit.wt = e.wt; hit.ws = e.ws; } hit.s = e.s; hit.n = e.n; hit.a = e.a; hit.g = e.g; } });
     }
-    var rows = src.map(function (x) { var v = tab === 'w' ? (x.wk === wk ? (f ? +x.ws[f] || 0 : x.wt) : 0) : (f ? +x.s[f] || 0 : x.t); return { x: x, v: v, me: !!(me && x.mine && x.pid === me.pid) }; });
-    if (tab === 'w') rows = rows.filter(function (r) { return r.v > 0 || r.me; });
+    var game = f === 'snk' ? 's' : f === 'tet' ? 't' : '';
+    var rows = src.map(function (x) { var v = game ? +(x.g || {})[game] || 0 : tab === 'w' ? (x.wk === wk ? (f ? +x.ws[f] || 0 : x.wt) : 0) : (f ? +x.s[f] || 0 : x.t); return { x: x, v: v, me: !!(me && x.mine && x.pid === me.pid) }; });
+    if (tab === 'w' || game) rows = rows.filter(function (r) { return r.v > 0 || r.me; });
     rows.sort(function (a, b) { return b.v - a.v || a.x.n.localeCompare(b.x.n); });
     return rows;
   }
 
   /* ---------- Ansichten ---------- */
-  var VIEWS = ['onb', 'home', 'subj', 'play', 'res', 'board', 'album', 'prof', 'snake'], view = '';
+  var VIEWS = ['onb', 'home', 'subj', 'play', 'res', 'board', 'album', 'prof', 'snake', 'tet'], view = '';
   function show(v) {
     view = v;
     VIEWS.forEach(function (k) { $('#v-' + k).hidden = k !== v; });
@@ -252,6 +253,7 @@
     try { window.scrollTo(0, 0); } catch (e) {}
     stopSay();
     if (v !== 'snake') snakeStop();
+    if (v !== 'tet') tetStop();
   }
   function mastery(p, id) { var t = p.topics[id]; if (!t || !t.rec) return 0; return (t.rec.split('1').length - 1) / 12; }
   function pips(m) { return m >= 0.92 ? 3 : m >= 0.6 ? 2 : m >= 0.3 ? 1 : 0; }
@@ -452,8 +454,7 @@
     var ul = $('#r-redo'); ul.innerHTML = '';
     uniq(S.wrong).slice(0, 8).forEach(function (w) { var li = document.createElement('li'); li.textContent = w; ul.appendChild(li); });
     $('#r-redo-box').hidden = !S.wrong.length;
-    $('#r-snake').hidden = !(p.tix > 0); $('#r-tix').textContent = '🎟️ ' + (p.tix || 0);
-    $('#r-snk-sub').textContent = gotTix ? 'Du hast ein Spielticket gewonnen!' : stars >= 2 ? 'Mehr als 5 Tickets kannst du nicht sammeln.' : 'Du hast noch Tickets übrig.';
+    $('#r-games').hidden = !(p.tix > 0); renderGames('#r-games', gotTix ? 'Du hast ein Spielticket gewonnen!' : 'Du hast noch Tickets übrig.');
     var again = { mode: S.mode, ids: S.ids, subj: S.subj };
     $('#r-again').onclick = function () { start(again.mode, again.ids, again.subj); };
     S = null; show('res');
@@ -474,12 +475,12 @@
     $('#b-cur').textContent = D.code;
     [].forEach.call(document.querySelectorAll('#b-tabs button'), function (b) { b.setAttribute('aria-pressed', b.getAttribute('data-t') === BT.tab ? 'true' : 'false'); });
     var fb = $('#b-filter'); fb.innerHTML = '';
-    [['', 'Alle Fächer']].concat(SUBJ_ORDER.map(function (s) { return [s, SUBJ[s].n]; })).forEach(function (f) {
+    [['', 'Alle Fächer']].concat(SUBJ_ORDER.map(function (s) { return [s, SUBJ[s].n]; })).concat([['snk', '🐍 Snake'], ['tet', '🧱 Blockfall']]).forEach(function (f) {
       var b = document.createElement('button'); b.type = 'button'; b.className = 'chip'; b.textContent = f[1]; b.setAttribute('aria-pressed', BT.f === f[0] ? 'true' : 'false');
       b.addEventListener('click', function () { BT.f = f[0]; renderBoard(); }); fb.appendChild(b);
     });
     var rows = ranked(BT.tab, BT.f), list = $('#b-list'); list.innerHTML = '';
-    $('#b-note').textContent = !online ? 'Die Online-Bestenliste für die ganze Klasse wird gerade eingerichtet. Bis dahin siehst du hier alle, die auf diesem Handy spielen.' : !joined ? 'Ohne Klassen-Code siehst du nur die Spieler auf diesem Handy.' : ON.err ? 'Keine Verbindung. Du siehst den letzten Stand.' : !ON.board ? 'Lade Bestenliste …' : BT.tab === 'w' ? 'Jeden Montag startet die Wochenliste neu.' : 'Alle Punkte seit dem Start.';
+    $('#b-note').textContent = !online ? 'Die Online-Bestenliste für die ganze Klasse wird gerade eingerichtet. Bis dahin siehst du hier alle, die auf diesem Handy spielen.' : !joined ? 'Ohne Klassen-Code siehst du nur die Spieler auf diesem Handy.' : ON.err ? 'Keine Verbindung. Du siehst den letzten Stand.' : !ON.board ? 'Lade Bestenliste …' : (BT.f === 'snk' || BT.f === 'tet') ? 'Hier zählt der beste Rekord im Spiel. Die Tickets dafür gibt es nur fürs Lernen.' : BT.tab === 'w' ? 'Jeden Montag startet die Wochenliste neu.' : 'Alle Punkte seit dem Start.';
     rows.forEach(function (r, i) {
       var d = document.createElement('div'); d.className = 'rk' + (r.me ? ' me' : '') + (i < 3 && r.v > 0 ? ' r' + (i + 1) : '');
       d.innerHTML = '<span class="no">' + (i + 1) + '</span>' + av(LOOKS[r.x.a] ? r.x.a : 'kiwi', 'sm') + '<span class="nm"><b></b><span></span></span><span class="sc">' + r.v + '</span>';
@@ -510,8 +511,7 @@
   /* ---------- Sammlung ---------- */
   function renderAlbum() {
     var p = P(), l = level(p.pts), box = $('#a-list'); box.innerHTML = '';
-    $('#a-tix').textContent = '🎟️ ' + (p.tix || 0); $('#a-snake').disabled = !(p.tix > 0);
-    $('#a-snk-sub').textContent = p.tix > 0 ? 'Ein Spiel kostet 1 Ticket. Rekord: ' + (p.snk || 0) : 'Hol dir ein Ticket: Schaffe in einer Runde 2 oder 3 Sterne. Rekord: ' + (p.snk || 0);
+    renderGames('#a-games', p.tix > 0 ? 'Ein Spiel kostet 1 Ticket.' : 'Hol dir ein Ticket: Schaffe in einer Lernrunde 2 oder 3 Sterne.');
     $('#a-sub').textContent = Math.min(l, CLIPS.length) + ' von ' + CLIPS.length + ' GIFs gesammelt. Jedes neue Level schaltet ein GIF frei.';
     CLIPS.forEach(function (c, i) {
       var got = l > i, b = document.createElement('button'); b.type = 'button'; b.className = 'clip' + (got ? '' : ' locked'); b.disabled = !got;
@@ -608,7 +608,7 @@
   function snakeOver(time) {
     K.run = false; cancelAnimationFrame(K.raf); clearInterval(K.clock);
     var p = P(), rec = K.score > (p.snk || 0);
-    if (rec) { p.snk = K.score; save(); $('#k-best').textContent = p.snk; }
+    if (rec) { p.snk = K.score; save(); $('#k-best').textContent = p.snk; pushScore(p); }
     if (rec && K.score > 0) { SND.win(); burstAt($('#k-wrap'), 40, true); } else if (!time) SND.no(); else SND.ok();
     snakeDraw();
     snakeMsg(rec && K.score > 0 ? 'Neuer Rekord: ' + K.score + '!' : time ? 'Zeit um! ' + K.score + ' Sterne' : 'Autsch! ' + K.score + ' Sterne', p.tix > 0 ? 'Du hast noch ' + p.tix + (p.tix === 1 ? ' Ticket.' : ' Tickets.') : 'Keine Tickets mehr. Mit 2 oder 3 Sternen in einer Lernrunde bekommst du ein neues.', 'Nochmal (1 Ticket)', p.tix > 0);
@@ -646,10 +646,130 @@
       b.addEventListener('pointerdown', function (e) { e.preventDefault(); snakeTurn(b.getAttribute('data-d')); });
     });
     $('#k-go').addEventListener('click', snakeStart);
-    function leave() { var b = K ? K.back : 'album'; snakeStop(); if (b === 'res' && !$('#r-title').textContent) b = 'album'; if (b === 'res') { $('#r-snake').hidden = !(P().tix > 0); $('#r-tix').textContent = '🎟️ ' + (P().tix || 0); show('res'); } else { renderAlbum(); show('album'); } }
+    function leave() { var b = K ? K.back : 'album'; snakeStop(); gameLeave(b); }
     $('#k-end').addEventListener('click', leave); $('#k-quit').addEventListener('click', leave);
-    $('#a-snake').addEventListener('click', snakeOpen); $('#r-snake').addEventListener('click', snakeOpen);
     document.addEventListener('keydown', function (e) { if (view !== 'snake') return; var m = { ArrowUp: 'u', ArrowDown: 'd', ArrowLeft: 'l', ArrowRight: 'r' }[e.key]; if (m) { snakeTurn(m); e.preventDefault(); } });
+  })();
+
+  /* ---------- Spiele-Karten und Rueckweg ---------- */
+  function renderGames(sel, note) {
+    var p = P(), box = $(sel), has = p.tix > 0;
+    box.innerHTML = '<div class="gh"><span></span><b class="tix">🎟️ ' + (p.tix || 0) + '</b></div><div class="gg"><button class="gm snk" type="button"><span class="ic">🐍</span><b>Snake</b><span>Rekord: ' + (p.snk || 0) + '</span></button><button class="gm tet" type="button"><span class="ic">🧱</span><b>Blockfall</b><span>Rekord: ' + (p.tet || 0) + '</span></button></div>';
+    box.querySelector('.gh span').textContent = note;
+    var bs = box.querySelectorAll('.gm');
+    bs[0].disabled = bs[1].disabled = !has;
+    bs[0].addEventListener('click', snakeOpen); bs[1].addEventListener('click', tetOpen);
+  }
+  function gameLeave(b) {
+    if (b === 'res' && $('#r-title').textContent) { $('#r-games').hidden = !(P().tix > 0); renderGames('#r-games', 'Du hast noch Tickets übrig.'); show('res'); }
+    else { renderAlbum(); show('album'); }
+  }
+
+  /* ---------- Blockfall (fallende Steine, kostet 1 Spielticket) ---------- */
+  var T = null, TW = 10, TH = 16, TMAX = 180;
+  var TSHAPES = [[[1, 1, 1, 1]], [[1, 1], [1, 1]], [[0, 1, 0], [1, 1, 1]], [[1, 0, 0], [1, 1, 1]], [[0, 0, 1], [1, 1, 1]], [[0, 1, 1], [1, 1, 0]], [[1, 1, 0], [0, 1, 1]]];
+  var TCOL = ['#3DA5FF', '#FFD23F', '#B78CFF', '#FF9F1C', '#FF4FA3', '#2FD67B', '#FF6B6B'];
+  function tetStop() { if (T) { cancelAnimationFrame(T.raf); clearInterval(T.clock); clearInterval(T.rep); T.run = false; } if (view !== 'snake') document.body.classList.remove('noscroll'); }
+  function tetNew() { var k = R(0, 6); return { k: k, m: TSHAPES[k].map(function (r) { return r.slice(); }), x: 0, y: 0 }; }
+  function tetOpen() {
+    var p = P();
+    T = { run: false, raf: 0, clock: 0, rep: 0, g: [], cur: null, nx: tetNew(), score: 0, lines: 0, step: 700, acc: 0, last: 0, left: TMAX, back: view === 'res' ? 'res' : 'album' };
+    tetReset();
+    $('#t-score').textContent = '0'; $('#t-best').textContent = p.tet || 0; $('#t-time').textContent = '3:00';
+    show('tet'); document.body.classList.add('noscroll');
+    tetMsg('Blockfall', 'Stapel die Steine und fülle ganze Reihen. Volle Reihen verschwinden und geben Punkte. Ein Spiel dauert höchstens 3 Minuten.', 'Start (1 Ticket)', true);
+    tetDraw();
+  }
+  function tetMsg(t, sub, btn, canGo) { $('#t-msg').hidden = false; $('#t-mt').textContent = t; $('#t-ms').textContent = sub; $('#t-go').textContent = btn; $('#t-go').hidden = !canGo; }
+  function tetReset() { T.g = []; for (var y = 0; y < TH; y++) { T.g.push([]); for (var x = 0; x < TW; x++) T.g[y].push(-1); } T.score = 0; T.lines = 0; T.step = 700; T.acc = 0; T.left = TMAX; T.nx = tetNew(); tetSpawn(); }
+  function tetFits(m, px, py) { for (var y = 0; y < m.length; y++) for (var x = 0; x < m[y].length; x++) if (m[y][x]) { var gx = px + x, gy = py + y; if (gx < 0 || gx >= TW || gy >= TH || (gy >= 0 && T.g[gy][gx] >= 0)) return false; } return true; }
+  function tetSpawn() { T.cur = T.nx; T.nx = tetNew(); T.cur.x = Math.floor((TW - T.cur.m[0].length) / 2); T.cur.y = 0; return tetFits(T.cur.m, T.cur.x, T.cur.y); }
+  function tetStart() {
+    var p = P();
+    if (!(p.tix > 0)) return;
+    p.tix--; save(); tetReset();
+    $('#t-msg').hidden = true; $('#t-score').textContent = '0';
+    T.run = true; T.last = 0;
+    clearInterval(T.clock);
+    T.clock = setInterval(function () { if (!T.run || document.hidden) return; T.left--; $('#t-time').textContent = Math.floor(T.left / 60) + ':' + ('0' + T.left % 60).slice(-2); if (T.left <= 0) tetOver(true); }, 1000);
+    T.raf = requestAnimationFrame(tetLoop);
+  }
+  function tetLoop(t) {
+    if (!T || !T.run) return;
+    if (!T.last) T.last = t;
+    T.acc += Math.min(300, t - T.last); T.last = t;
+    while (T.acc >= T.step && T.run) { T.acc -= T.step; tetDown(false); }
+    tetDraw();
+    if (T.run) T.raf = requestAnimationFrame(tetLoop);
+  }
+  function tetMove(dx) { if (T && T.run && tetFits(T.cur.m, T.cur.x + dx, T.cur.y)) { T.cur.x += dx; SND.tap(); } }
+  function tetRot() {
+    if (!T || !T.run) return;
+    var m = T.cur.m, r = [], x, y, ks = [0, -1, 1, -2, 2], i;
+    for (x = 0; x < m[0].length; x++) { r.push([]); for (y = m.length - 1; y >= 0; y--) r[x].push(m[y][x]); }
+    for (i = 0; i < ks.length; i++) if (tetFits(r, T.cur.x + ks[i], T.cur.y)) { T.cur.m = r; T.cur.x += ks[i]; SND.tap(); return; }
+  }
+  function tetDown(soft) {
+    if (!T || !T.run) return false;
+    if (tetFits(T.cur.m, T.cur.x, T.cur.y + 1)) { T.cur.y++; if (soft) T.acc = 0; return true; }
+    var m = T.cur.m, x, y, full = 0;
+    for (y = 0; y < m.length; y++) for (x = 0; x < m[y].length; x++) if (m[y][x] && T.cur.y + y >= 0) T.g[T.cur.y + y][T.cur.x + x] = T.cur.k;
+    for (y = TH - 1; y >= 0; y--) if (T.g[y].every(function (c) { return c >= 0; })) { T.g.splice(y, 1); var row = []; for (x = 0; x < TW; x++) row.push(-1); T.g.unshift(row); full++; y++; }
+    T.score += 1 + [0, 10, 30, 50, 80][full]; T.lines += full;
+    if (full) { T.step = Math.max(180, 700 - T.lines * 28); [0, 1, 2].slice(0, Math.min(3, full)).forEach(function (i) { tone(520 + i * 180 + full * 40, i * 0.07, 0.14, 0.11); }); burstAt($('#t-wrap'), full * 8, full >= 3); }
+    $('#t-score').textContent = T.score;
+    if (!tetSpawn()) tetOver(false);
+    return false;
+  }
+  function tetDrop() { if (!T || !T.run) return; var n = 0; while (tetDown(true) && n++ < TH) {} }
+  function tetOver(time) {
+    T.run = false; cancelAnimationFrame(T.raf); clearInterval(T.clock); clearInterval(T.rep);
+    var p = P(), rec = T.score > (p.tet || 0);
+    if (rec) { p.tet = T.score; save(); $('#t-best').textContent = p.tet; pushScore(p); }
+    if (rec && T.score > 0) { SND.win(); burstAt($('#t-wrap'), 40, true); } else if (!time) SND.no(); else SND.ok();
+    tetDraw();
+    tetMsg(rec && T.score > 0 ? 'Neuer Rekord: ' + T.score + '!' : time ? 'Zeit um! ' + T.score + ' Punkte' : 'Voll! ' + T.score + ' Punkte', p.tix > 0 ? 'Du hast noch ' + p.tix + (p.tix === 1 ? ' Ticket.' : ' Tickets.') : 'Keine Tickets mehr. Mit 2 oder 3 Sternen in einer Lernrunde bekommst du ein neues.', 'Nochmal (1 Ticket)', p.tix > 0);
+  }
+  function tetCell(c, x, y, s, col, a) {
+    c.globalAlpha = a || 1; c.fillStyle = col; var r = s * 0.2, X = x * s + 1.5, Y = y * s + 1.5, w = s - 3;
+    c.beginPath(); c.moveTo(X + r, Y); c.arcTo(X + w, Y, X + w, Y + w, r); c.arcTo(X + w, Y + w, X, Y + w, r); c.arcTo(X, Y + w, X, Y, r); c.arcTo(X, Y, X + w, Y, r); c.closePath(); c.fill();
+    c.fillStyle = 'rgba(255,255,255,.28)'; c.fillRect(X + w * 0.16, Y + w * 0.14, w * 0.68, w * 0.16); c.globalAlpha = 1;
+  }
+  function tetDraw() {
+    var cv = $('#t-cv'), c = cv.getContext('2d'), s = cv.width / TW, x, y, m;
+    c.fillStyle = '#0F0B36'; c.fillRect(0, 0, cv.width, cv.height);
+    c.fillStyle = '#17124A'; for (x = 0; x < TW; x += 2) c.fillRect(x * s, 0, s, cv.height);
+    for (y = 0; y < TH; y++) for (x = 0; x < TW; x++) if (T.g[y][x] >= 0) tetCell(c, x, y, s, TCOL[T.g[y][x]]);
+    if (T.cur) {
+      m = T.cur.m; var gy = T.cur.y;
+      while (tetFits(m, T.cur.x, gy + 1)) gy++;
+      for (y = 0; y < m.length; y++) for (x = 0; x < m[y].length; x++) if (m[y][x]) { if (T.run) tetCell(c, T.cur.x + x, gy + y, s, TCOL[T.cur.k], 0.22); tetCell(c, T.cur.x + x, T.cur.y + y, s, TCOL[T.cur.k]); }
+    }
+    var nc = $('#t-next'), n = nc.getContext('2d'), ns = 26; n.clearRect(0, 0, nc.width, nc.height);
+    m = TSHAPES[T.nx.k]; var ox = (nc.width - m[0].length * ns) / 2 / ns, oy = (nc.height - m.length * ns) / 2 / ns;
+    for (y = 0; y < m.length; y++) for (x = 0; x < m[y].length; x++) if (m[y][x]) tetCell(n, ox + x, oy + y, ns, TCOL[T.nx.k]);
+  }
+  (function () {
+    var wrap = $('#t-wrap'), sx = 0, sy = 0, moved = false, t0 = 0, dropped = false;
+    wrap.addEventListener('touchstart', function (e) { var t = e.touches[0]; sx = t.clientX; sy = t.clientY; moved = false; dropped = false; t0 = Date.now(); }, { passive: true });
+    wrap.addEventListener('touchmove', function (e) {
+      if (T && T.run) e.preventDefault();
+      var t = e.touches[0], dx = t.clientX - sx, dy = t.clientY - sy;
+      if (Math.abs(dx) >= 24 && Math.abs(dx) > Math.abs(dy)) { tetMove(dx > 0 ? 1 : -1); sx = t.clientX; sy = t.clientY; moved = true; }
+      else if (dy >= 60 && !dropped) { tetDrop(); dropped = true; moved = true; }
+    }, { passive: false });
+    wrap.addEventListener('touchend', function (e) { if (!moved && Date.now() - t0 < 350 && T && T.run) { tetRot(); e.preventDefault(); } });
+    wrap.addEventListener('click', function (e) { if (T && T.run && e.detail && !('ontouchstart' in window)) tetRot(); });
+    function act(a) { if (a === 'l') tetMove(-1); else if (a === 'r') tetMove(1); else if (a === 'rot') tetRot(); else tetDown(true); }
+    [].forEach.call(document.querySelectorAll('#t-pad button'), function (b) {
+      var a = b.getAttribute('data-a');
+      b.addEventListener('pointerdown', function (e) { e.preventDefault(); act(a); clearInterval(T && T.rep); if (T && a !== 'rot') { var first = true; T.rep = setInterval(function () { if (first) { first = false; return; } act(a); }, a === 'd' ? 60 : 110); } });
+      ['pointerup', 'pointerleave', 'pointercancel'].forEach(function (ev) { b.addEventListener(ev, function () { if (T) clearInterval(T.rep); }); });
+    });
+    $('#t-go').addEventListener('click', tetStart);
+    function leave() { var b = T ? T.back : 'album'; tetStop(); document.body.classList.remove('noscroll'); gameLeave(b); }
+    $('#t-end').addEventListener('click', leave); $('#t-quit').addEventListener('click', leave);
+    document.addEventListener('keydown', function (e) { if (view !== 'tet') return; var m = { ArrowUp: 'rot', ArrowDown: 'd', ArrowLeft: 'l', ArrowRight: 'r' }[e.key]; if (m) { act(m); e.preventDefault(); } else if (e.key === ' ') { tetDrop(); e.preventDefault(); } });
   })();
 
   /* ---------- Verdrahtung ---------- */
@@ -719,4 +839,4 @@
     if (ON.ready && !D.code && kk.length >= 4) joinCode(kk);
     else if (ON.ready && D.code) pushScore(P()).then(fetchBoard).then(function () { if (view === 'home') renderTeaser(); });
   }
-  window.__k3 = { snake: function () { return K; }, TOPICS: TOPICS, CLIPS: CLIPS, ask: function (id) { start('practice', [id], BY_ID[id].s); }, clip: function (i) { showClip(CLIPS[i], true, i + 1); } };
+  window.__k3 = { snake: function () { return K; }, tet: function () { return T; }, TOPICS: TOPICS, CLIPS: CLIPS, ask: function (id) { start('practice', [id], BY_ID[id].s); }, clip: function (i) { showClip(CLIPS[i], true, i + 1); } };
