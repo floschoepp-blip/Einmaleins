@@ -17,10 +17,22 @@
       function others(v, f) { return shuf(V.filter(function (o) { return o !== v && o[f] !== v[f]; })).slice(0, 3).map(function (o) { return o[f]; }); }
       function pic(v) { return opt.color ? swatch(v.pic) : v.pic; }
       bank('en', id, n, e, V.map(function (v) {
-        return { id: id + ':' + v.en, make: function (L) {
+        return { id: id + ':' + v.en, make: function (L, rich) {
           var types = opt.phrase ? ['en2de', 'de2en', 'listen'] : L === 1 ? ['de2en', 'en2de', 'en2de', 'listen'] : L === 2 ? ['de2en', 'en2de', 'listen', 'listen'] : ['de2en', 'listen', 'spell', 'spell'], t = pick(types);
           var ex = v.en + ' = ' + v.de, base = { say: v.en, explain: ex, sayAfter: true };
           if (t === 'spell' && v.en.length < 4) t = 'de2en';
+          if (rich && Math.random() < 0.34) {
+            var r = Math.random();
+            if (opt.phrase) {
+              var ws = v.en.split(' ');
+              if (ws.length >= 3 && ws.length <= 7) return ORDER('Bringe die Wörter in die richtige Reihenfolge.', ws, Object.assign(base, { html: esc(v.de), short: ex }));
+            } else if (r < 0.5 && V.length >= 4) {
+              var four = [v].concat(shuf(V.filter(function (o) { return o !== v && o.de !== v.de && o.en !== v.en; })).slice(0, 3));
+              return MATCH('Was gehört zusammen?', shuf(four).map(function (o) { return [o.en, o.de]; }));
+            } else if (L >= 2 && v.en.length <= 10 && !/[^a-zA-Z ]/.test(v.en)) {
+              return WRITE('Hör zu und schreibe das englische Wort.', v.en, Object.assign(base, { ci: true, big: v.de, emoji: pic(v), speaker: true, auto: true }));
+            }
+          }
           if (t === 'en2de') return MC('Was heißt das auf Deutsch?', v.de, others(v, 'de'), Object.assign(base, { big: v.en, speaker: true, small: opt.phrase }));
           if (t === 'de2en') return MC('Wie heißt das auf Englisch?', v.en, others(v, 'en'), Object.assign(base, { big: v.de, emoji: pic(v), small: opt.phrase, enOpts: true }));
           if (t === 'listen') return MC('Hör genau zu. Was hörst du?', L === 1 || opt.phrase ? v.de : v.en, others(v, L === 1 || opt.phrase ? 'de' : 'en'), Object.assign(base, { listen: true, auto: true }));

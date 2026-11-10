@@ -221,4 +221,27 @@
       if (t === 2 && L > 1) return NUM('Wie viele Kinder haben insgesamt abgestimmt?', v[0] + v[1] + v[2] + v[3], { img: im, wide: true, explain: v.join(' + ') + ' = ' + (v[0] + v[1] + v[2] + v[3]) });
       return NUM('Wie viele Kinder mehr haben „' + (v[i] > v[j] ? set[i] : set[j]) + '“ gewählt als „' + (v[i] > v[j] ? set[j] : set[i]) + '“?', Math.abs(v[i] - v[j]), { img: im, wide: true, explain: Math.max(v[i], v[j]) + ' − ' + Math.min(v[i], v[j]) + ' = ' + Math.abs(v[i] - v[j]) });
     });
+
+    enrich('m_vergleich', function (L) {
+      var n = [], lo = L === 1 ? 10 : 100, hi = L === 1 ? 99 : 999;
+      while (n.length < 4) { var x = R(lo, hi); if (n.indexOf(x) < 0) n.push(x); }
+      var up = Math.random() < 0.6; n.sort(function (a, b) { return up ? a - b : b - a; });
+      return ORDER('Ordne die Zahlen. Beginne mit der ' + (up ? 'kleinsten' : 'größten') + '.', n, { sep: up ? ' < ' : ' > ', explain: n.join(up ? ' < ' : ' > ') });
+    }, 0.4);
+    enrich('m_1x1', function (L) {
+      var ps = [], seen = {};
+      while (ps.length < 4) { var a = R(2, L === 1 ? 5 : 9), b = R(2, 9); if (!seen[a * b]) { seen[a * b] = 1; ps.push([a + ' × ' + b, a * b]); } }
+      return MATCH('Welches Ergebnis gehört zu welcher Aufgabe?', ps);
+    }, 0.25);
+    enrich('m_div', function (L) {
+      var ps = [], seen = {};
+      while (ps.length < 4) { var d = R(2, 9), q = R(2, 9); if (!seen[q]) { seen[q] = 1; ps.push([d * q + ' : ' + d, q]); } }
+      return MATCH('Welches Ergebnis gehört zu welcher Aufgabe?', ps);
+    }, 0.25);
+    enrich('m_laenge', function () { return MATCH('Was ist gleich lang?', shuf([['1 m', '100 cm'], ['1 km', '1000 m'], ['1 cm', '10 mm'], ['½ m', '50 cm'], ['2 m', '200 cm'], ['½ km', '500 m']]).slice(0, 4)); }, 0.2);
+    enrich('m_zeit', function () { return MATCH('Was ist gleich lang?', shuf([['1 Stunde', '60 Minuten'], ['½ Stunde', '30 Minuten'], ['¼ Stunde', '15 Minuten'], ['1 Tag', '24 Stunden'], ['1 Woche', '7 Tage'], ['1 Jahr', '12 Monate'], ['1 Minute', '60 Sekunden']]).slice(0, 4)); }, 0.2);
+    enrich('m_folgen', function (L) {
+      var st = pick([2, 5, 10, 25, 50]), a = R(1, 9) * st, n = [a, a + st, a + 2 * st, a + 3 * st, a + 4 * st];
+      return ORDER('Bringe die Zahlenfolge in die richtige Reihenfolge. Beginne mit der kleinsten Zahl.', n, { sep: ', ', explain: 'Immer + ' + st + ': ' + n.join(', ') });
+    }, 0.3);
   })();

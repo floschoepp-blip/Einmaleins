@@ -25,7 +25,38 @@
     return q;
   }
 
+  /* Wort schreiben: answers = erlaubte Schreibweisen, o.ci = Gross/Klein egal */
+  function WRITE(text, answers, o) {
+    answers = [].concat(answers);
+    var q = { text: text, write: { ans: answers, ci: !!(o && o.ci) }, ans: answers[0] };
+    if (o) for (var k in o) if (k !== 'ci') q[k] = o[k];
+    return q;
+  }
+  /* In die richtige Reihenfolge tippen: items stehen in der richtigen Reihenfolge */
+  function ORDER(text, items, o) {
+    items = items.map(String);
+    var q = { text: text, order: { items: items, sep: (o && o.sep) != null ? o.sep : ' ', small: !!(o && o.tiny) }, ans: items.join((o && o.sep) != null ? o.sep : ' ') };
+    if (o) for (var k in o) if (k !== 'sep' && k !== 'tiny') q[k] = o[k];
+    return q;
+  }
+  /* Paare zuordnen: pairs = [[links, rechts], ...] */
+  function MATCH(text, pairs, o) {
+    var q = { text: text, match: { pairs: pairs.map(function (x) { return [String(x[0]), String(x[1])]; }) }, ans: pairs.map(function (x) { return x[0] + ' – ' + x[1]; }).join(', ') };
+    q.explain = q.ans;
+    if (o) for (var k in o) q[k] = o[k];
+    return q;
+  }
+
   var TOPICS = [];
+  var EXPL = {};
+  function topicById(id) { for (var i = 0; i < TOPICS.length; i++) if (TOPICS[i].id === id) return TOPICS[i]; return null; }
+  /* Bestehendes Thema um neue Aufgabenformen erweitern (nur wenn rich, also nicht im Blitz) */
+  function enrich(id, fn, share) {
+    var t = topicById(id); if (!t) return;
+    if (t.items) { var mk = t.items.map(function (it) { return it; }); mk.forEach(function (it) { var old = it.make; it.make = function (L, rich) { var q = rich && Math.random() < (share || 0.3) ? fn(L, it) : null; return q || old(L, rich); }; }); }
+    else { var og = t.gen; t.gen = function (L, rich) { var q = rich && Math.random() < (share || 0.3) ? fn(L) : null; return q || og(L, rich); }; }
+  }
+  function addItems(id, items) { var t = topicById(id); if (t && t.items) items.forEach(function (it) { t.items.push(it); }); }
   var SUBJ = {
     de:  { n: 'Deutsch',  e: '📖', c: 'var(--de)' },
     ma:  { n: 'Mathe',    e: '🔢', c: 'var(--ma)' },

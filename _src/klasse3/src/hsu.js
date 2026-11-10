@@ -213,4 +213,34 @@
       ['Warum gibt es Tag und Nacht?', 'Weil sich die Erde um sich selbst dreht', 'Weil die Sonne sich ausschaltet', 'Weil der Mond die Sonne verdeckt', 'Weil Wolken kommen', 'Die Erde dreht sich in 24 Stunden einmal um sich selbst.'],
       ['Wie lange braucht die Erde für eine Runde um die Sonne?', 'Ein Jahr', 'Einen Tag', 'Einen Monat', 'Eine Woche', 'Deshalb dauert ein Jahr etwa 365 Tage.']
     ]);
+
+    addItems('h_getreide', [
+      { id: 'h_getreide:o1', make: function () { return ORDER('Vom Korn zum Brot: Bringe die Schritte in die richtige Reihenfolge.', ['säen', 'wachsen', 'ernten', 'mahlen', 'backen'], { sep: ' → ', explain: 'säen → wachsen → ernten → mahlen → backen' }); } },
+      { id: 'h_getreide:m1', make: function () { return MATCH('Wer macht was?', [['Landwirt', 'sät und erntet'], ['Müller', 'mahlt das Mehl'], ['Bäcker', 'backt das Brot'], ['Mähdrescher', 'trennt Korn und Stroh']]); } }
+    ]);
+    addItems('h_wasser', [
+      { id: 'h_wasser:o1', make: function () { return ORDER('Der Wasserkreislauf: Beginne beim Verdunsten.', ['Wasser verdunstet', 'Wolken entstehen', 'Es regnet', 'Wasser fließt zum Meer'], { sep: ' → ', explain: 'Wasser verdunstet → Wolken entstehen → Es regnet → Wasser fließt zum Meer. Dann beginnt alles von vorn.' }); } },
+      { id: 'h_wasser:m1', make: function () { return MATCH('Was gehört zusammen?', [['Eis', 'fest'], ['Wasser', 'flüssig'], ['Wasserdampf', 'gasförmig']]); } },
+      { id: 'h_wasser:m2', make: function () { return MATCH('Was passiert?', [['Schmelzen', 'Eis wird zu Wasser'], ['Gefrieren', 'Wasser wird zu Eis'], ['Verdunsten', 'Wasser wird zu Dampf'], ['Kondensieren', 'Dampf wird zu Tröpfchen']]); } }
+    ]);
+    addItems('h_wald', [
+      { id: 'baum:m1', make: function () { return MATCH('Welche Frucht gehört zu welchem Baum?', shuf([['Eiche', 'Eichel'], ['Buche', 'Buchecker'], ['Ahorn', 'Flügelfrucht'], ['Birke', 'Kätzchen'], ['Fichte', 'hängender Zapfen'], ['Tanne', 'stehender Zapfen']]).slice(0, 4)); } },
+      { id: 'baum:m2', make: function () { return MATCH('Welches Blatt gehört zu welchem Baum?', shuf([['Eiche', 'gelappt, runde Buchten'], ['Linde', 'herzförmig'], ['Ahorn', '5 spitze Lappen'], ['Kastanie', 'gefingert'], ['Birke', 'dreieckig, gesägt']]).slice(0, 4)); } },
+      { id: 'baum:o1', make: function () { return ORDER('Die Stockwerke des Waldes: Beginne ganz unten.', ['Wurzelschicht', 'Moosschicht', 'Krautschicht', 'Strauchschicht', 'Baumschicht'], { sep: ' → ', explain: 'Von unten nach oben: Wurzelschicht, Moosschicht, Krautschicht, Strauchschicht, Baumschicht.' }); } }
+    ]);
+    addItems('h_koerper', [
+      { id: 'h_koerper:m1', make: function () { return MATCH('Welcher Sinn gehört zu welchem Körperteil?', [['Sehen', 'Auge'], ['Hören', 'Ohr'], ['Riechen', 'Nase'], ['Schmecken', 'Zunge']]); } },
+      { id: 'h_koerper:m2', make: function () { return MATCH('Welcher Zahn hat welche Aufgabe?', [['Schneidezahn', 'abbeißen'], ['Eckzahn', 'festhalten und reißen'], ['Backenzahn', 'zermahlen']]); } }
+    ]);
+    addItems('h_orient', [
+      { id: 'h_orient:m1', make: function () { return MATCH('Wo steht die Sonne?', [['am Morgen', 'im Osten'], ['am Mittag', 'im Süden'], ['am Abend', 'im Westen']]); } },
+      { id: 'h_orient:m2', make: function () { return MATCH('Was bedeuten die Farben auf der Landkarte?', [['Blau', 'Wasser'], ['Grün', 'Tiefland'], ['Braun', 'Gebirge']]); } },
+      { id: 'h_orient:o1', make: function () { return ORDER('Die Himmelsrichtungen im Uhrzeigersinn: Beginne mit Norden.', ['Norden', 'Osten', 'Süden', 'Westen'], { sep: ' → ', explain: 'Norden → Osten → Süden → Westen. Merksatz: Nie Ohne Seife Waschen.' }); } }
+    ]);
+    addItems('h_strom', [{ id: 'h_strom:m1', make: function () { return MATCH('Was macht welches Teil im Stromkreis?', [['Batterie', 'liefert den Strom'], ['Schalter', 'öffnet und schließt'], ['Kabel', 'leitet den Strom'], ['Lämpchen', 'leuchtet']]); } }]);
+    addItems('h_zeit', [
+      { id: 'h_zeit:o1', make: function () { return ORDER('Ordne von der kürzesten zur längsten Zeit.', ['Tag', 'Woche', 'Monat', 'Jahr', 'Jahrhundert'], { sep: ' < ', explain: 'Tag < Woche < Monat < Jahr < Jahrhundert' }); } },
+      { id: 'h_zeit:o2', make: function () { return ORDER('Die Jahreszeiten: Beginne mit dem Frühling.', ['Frühling', 'Sommer', 'Herbst', 'Winter'], { sep: ' → ', explain: 'Frühling → Sommer → Herbst → Winter' }); } }
+    ]);
+    addItems('h_feuer', [{ id: 'h_feuer:o1', make: function () { return ORDER('Notruf 112: In welcher Reihenfolge sagst du es?', ['Wo ist es passiert?', 'Was ist passiert?', 'Wie viele Verletzte?', 'Warten auf Rückfragen'], { sep: ' → ', explain: 'Wo? → Was? → Wie viele Verletzte? → Warten auf Rückfragen.' }); } }]);
   })();

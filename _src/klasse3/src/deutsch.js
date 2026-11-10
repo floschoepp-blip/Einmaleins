@@ -122,4 +122,53 @@
     bank('de', 'd_rede', 'Wörtliche Rede', '💬', items);
     var VS = [['Lisa hat sich im Wald ___laufen.', 'ver', ['vor', 'ab', 'an']], ['Wir müssen jetzt ___steigen, der Bus hält.', 'aus', ['ver', 'zer', 'be']], ['Das Glas ist ___brochen.', 'zer', ['ver', 'be', 'an']], ['Ich habe meine Jacke ___gessen.', 'ver', ['zer', 'ab', 'be']], ['Kannst du mir das ___klären?', 'er', ['zer', 'ab', 'aus']], ['Mama hat mir ein Buch ___gelesen.', 'vor', ['zer', 'ent', 'be']], ['Wir wollen Oma ___suchen.', 'be', ['zer', 'ab', 'vor']], ['Der Hund ist ___gelaufen.', 'weg', ['zer', 'be', 'er']], ['Ich muss mein Zimmer ___räumen.', 'auf', ['zer', 'be', 'er']], ['Opa hat eine Geschichte ___zählt.', 'er', ['zer', 'ab', 'auf']], ['Ich habe den Text von der Tafel ___geschrieben.', 'ab', ['zer', 'be', 'er']], ['Der Dieb ist ___kommen.', 'ent', ['zer', 'be', 'auf']]];
     bank('de', 'd_vorsilbe', 'Vorsilben', '🧩', VS.map(function (v) { return { id: 'vs:' + v[0], make: function () { return MC('Welche Vorsilbe passt?', v[1], v[2], { html: esc(v[0]).replace('___', '<mark>▢</mark>'), explain: v[0].replace('___', v[1]) }); } }; }));
+
+    /* --- Schreiben, Sortieren, Zuordnen --- */
+    enrich('d_mehrzahl', function (L, it) {
+      var s = it.id.slice(3), n = NOMEN.filter(function (x) { return x.s === s; })[0];
+      return WRITE('Schreibe die Mehrzahl.', n.p, { big: n.a + ' ' + n.s + ' → die …', explain: n.a + ' ' + n.s + ' – die ' + n.p + '. Nomen schreibt man groß.' });
+    }, 0.35);
+    enrich('d_zeit', function (L) {
+      var v = pick(VERBEN);
+      return WRITE('Schreibe das Verb in der 1. Vergangenheit.', v.pt, { ci: true, big: 'er ' + v.pr + ' → er …', explain: v.i + ': er ' + v.pr + ' – er ' + v.pt + ' – er ' + v.pf });
+    }, 0.3);
+    enrich('d_grundform', function () {
+      var vs = shuf(VERBEN).slice(0, 4);
+      return MATCH('Was gehört zusammen? Grundform und 1. Vergangenheit.', vs.map(function (v) { return [v.i, 'er ' + v.pt]; }));
+    }, 0.35);
+    enrich('d_steigern', function () {
+      var as = [], used = {};
+      shuf(ADJ).forEach(function (a) { if (as.length < 4 && a.g !== '-' && !used[a.p] && !used[a.g]) { used[a.p] = used[a.g] = 1; as.push([a.p, a.g]); } });
+      return MATCH('Finde die Gegenteile.', as);
+    }, 0.3);
+    enrich('d_abc', function (L) {
+      var ws = [];
+      shuf(NOMEN).forEach(function (n) { if (ws.length < 4 && !ws.some(function (y) { return y[0] === n.s[0]; })) ws.push(n.s); });
+      ws.sort(function (a, b) { return a.localeCompare(b, 'de'); });
+      return ORDER('Ordne die Wörter nach dem ABC.', ws, { sep: ', ', explain: 'Nach dem ABC: ' + ws.join(', ') });
+    }, 0.45);
+    enrich('d_artikel', function () {
+      var ns = shuf(NOMEN).slice(0, 12), ps = [], seen = {};
+      ns.forEach(function (n) { if (ps.length < 3 && !seen[n.a]) { seen[n.a] = 1; ps.push([n.s, n.a]); } });
+      return ps.length === 3 ? MATCH('Welcher Artikel gehört zu welchem Nomen?', ps) : null;
+    }, 0.2);
+    enrich('d_silben', function (L, it) {
+      var sp = SIL.filter(function (x) { return 'sil:' + x.replace(/-/g, '') === it.id; })[0];
+      if (!sp || sp.split('-').length < 3) return null;
+      return ORDER('Setze die Silben zum Wort zusammen.', sp.split('-'), { sep: '', explain: sp + ' → ' + sp.replace(/-/g, '') });
+    }, 0.35);
+    topic('de', 'd_satzbau', 'Sätze bauen', '🧩', function (L) {
+      var ws = pick(SAETZE).replace(' .', '').split(' ').map(function (x) { return x.split('/')[0]; });
+      return ORDER('Baue aus den Wörtern einen Satz. Das großgeschriebene Wort am Satzanfang hilft dir.', ws, { explain: ws.join(' ') + '. Am Satzanfang schreibt man groß, am Ende steht ein Punkt.', short: ws.join(' ') + '.' });
+    });
+    var LERN = ['Ball', 'Mutter', 'Sonne', 'Katze', 'Jacke', 'Himmel', 'Wasser', 'Bett', 'Brille', 'Zucker', 'Blitz', 'Brot', 'Schaf', 'Glocke', 'Platz', 'Löffel', 'Teller', 'Schiff', 'Biene', 'Tiger', 'Wiese', 'Spiel', 'Brief', 'Ziege', 'Tier', 'Fliege', 'Fisch', 'Wind', 'Papier', 'Fuß', 'Straße', 'Fluss', 'Tasse', 'Rose', 'Schloss', 'Nuss', 'Messer', 'Spaß', 'Glas', 'Schlüssel', 'Hund', 'Wald', 'Geld', 'Kind', 'Pferd', 'Heft', 'Zelt', 'Mond', 'Hand', 'Berg', 'Zwerg', 'Tag', 'Zug', 'Bank', 'Korb', 'Bäume', 'Häuser', 'Leute', 'Freund', 'Mäuse', 'Feuer', 'Hände', 'Wälder', 'Stern', 'Mensch', 'Zahn', 'Stuhl', 'Blume', 'Fahrrad', 'Sohn', 'Lehrer', 'Tür', 'Name', 'Huhn', 'Jahr', 'Bohne', 'Schule', 'Uhr', 'Vogel', 'Vater', 'Fenster', 'Ferien', 'Familie', 'Garten', 'Apfel', 'Wolke', 'Lampe', 'Tasche', 'Brücke', 'Kuchen'];
+    bank('de', 'd_schreiben', 'Lernwörter schreiben', '✍️', LERN.map(function (w) {
+      return { id: 'lw:' + w, make: function (L, rich) {
+        var canHear = rich && deVoiceOK();
+        if (canHear && Math.random() < 0.6) return WRITE('Hör gut zu und schreibe das Wort.', w, { sayDe: w, listen: true, auto: true, explain: 'Richtig geschrieben: ' + w, short: 'Lernwort: ' + w });
+        var ls = w.split('');
+        if (ls.length > 7 || !rich) { var wr = []; var i = R(1, w.length - 2); wr.push(w.slice(0, i) + w[i + 1] + w[i] + w.slice(i + 2)); wr.push(w.slice(0, i) + w.slice(i + 1)); wr.push(w.slice(0, i) + w[i] + w[i] + w.slice(i + 1)); wr.push(w.charAt(0).toLowerCase() + w.slice(1)); return MC('Welches Wort ist richtig geschrieben?', w, wr.filter(function (x) { return x.indexOf('undefined') < 0; }), { explain: 'Richtig geschrieben: ' + w, short: 'Lernwort: ' + w }); }
+        return ORDER('Buchstabensalat! Tippe die Buchstaben in der richtigen Reihenfolge an.', ls, { sep: '', tiny: true, explain: 'Das Wort heißt: ' + w, short: 'Lernwort: ' + w });
+      } };
+    }));
   })();

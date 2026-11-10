@@ -143,6 +143,7 @@ p { margin: 0; }
 @keyframes shake { 25% { transform: translateX(-6px); } 75% { transform: translateX(6px); } }
 .q-text { font-family: var(--display); font-weight: 700; font-size: 1.3rem; line-height: 1.2; text-wrap: balance; }
 .q-html { background: var(--paper); color: var(--paper-ink); border-radius: 14px; padding: 10px 14px; font-size: 1.2rem; font-weight: 800; line-height: 1.4; width: 100%; }
+.q-html.left { text-align: left; font-size: 1.05rem; font-weight: 700; }
 .q-html mark { background: var(--sun); color: var(--sun-ink); border-radius: 6px; padding: 0 6px; font-weight: 900; }
 .q-big { font-family: var(--display); font-weight: 800; font-size: clamp(2rem, 11vw, 3.2rem); line-height: 1.05; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
 .q-big.long { font-size: clamp(1.4rem, 7vw, 2.1rem); }
@@ -184,6 +185,38 @@ p { margin: 0; }
 .fb-h b { font-family: var(--display); font-size: 1.3rem; font-weight: 800; flex: 1; min-width: 0; overflow-wrap: anywhere; }
 .fb p { font-weight: 800; font-size: 1rem; }
 .gain { font-family: var(--display); font-weight: 800; color: var(--sun); font-size: 1.3rem; white-space: nowrap; }
+
+/* Schreiben, Sortieren, Zuordnen */
+.px { display: flex; flex-direction: column; gap: 10px; }
+.wr-row { display: flex; gap: 8px; }
+.wr-row .field { flex: 1; min-width: 0; font-size: 1.35rem; text-align: center; background: var(--paper); color: var(--paper-ink); border-color: var(--acc); }
+.wr-row .btn { width: auto; padding-inline: 20px; }
+.ord-ans { min-height: 62px; border-radius: 16px; background: var(--bg2); box-shadow: inset 0 0 0 3px var(--acc); padding: 8px; display: flex; flex-wrap: wrap; gap: 6px; align-items: center; justify-content: center; }
+.ord-ans:empty::before { content: "Tippe unten in der richtigen Reihenfolge"; color: #8C85D6; font-size: .9rem; font-weight: 800; }
+.ord-pool { display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; min-height: 48px; }
+.oc { border-radius: 14px; background: var(--paper); color: var(--paper-ink); font-weight: 900; font-size: 1.1rem; padding: 10px 14px; box-shadow: 0 4px 0 rgba(0,0,0,.4), inset 0 -3px 0 #DAD3FF; min-width: 44px; }
+.oc.tiny { font-family: var(--display); font-size: 1.4rem; padding: 8px 0; width: 46px; }
+.ord-ans .oc { box-shadow: 0 2px 0 rgba(0,0,0,.4); background: var(--sun); color: var(--sun-ink); }
+.ord-ans.joined { gap: 2px; }
+.mt { display: grid; grid-template-columns: 1fr 1fr; gap: 10px 12px; }
+.mc { min-height: 54px; border-radius: 16px; background: var(--paper); color: var(--paper-ink); font-weight: 900; font-size: 1rem; line-height: 1.15; padding: 8px 10px; box-shadow: 0 4px 0 rgba(0,0,0,.4), inset 0 -3px 0 #DAD3FF; overflow-wrap: anywhere; }
+.mc.sel { background: var(--sun); color: var(--sun-ink); box-shadow: 0 4px 0 rgba(0,0,0,.4), 0 0 0 3px #fff; }
+.mc.done { background: var(--good); color: #063A1E; box-shadow: none; opacity: .75; pointer-events: none; }
+.mc.miss { background: var(--bad); animation: shake .3s; }
+.px[data-locked="true"] { pointer-events: none; }
+.q { position: relative; }
+.rd { position: absolute; right: 8px; top: 8px; width: 40px; height: 40px; border-radius: 50%; background: var(--bg2); box-shadow: inset 0 0 0 2px var(--line); font-size: 1.1rem; }
+.rd.playing { box-shadow: inset 0 0 0 3px var(--sun); }
+.q-text { padding-inline: 34px; }
+.tpw { position: relative; display: flex; min-width: 0; }
+.tpw .tp { flex: 1; }
+.tp-i { position: absolute; right: 8px; bottom: 8px; width: 34px; height: 34px; border-radius: 50%; background: var(--bg2); box-shadow: inset 0 0 0 2px var(--line); font-family: var(--display); font-weight: 800; font-size: 1.1rem; color: var(--sun); }
+#ex { position: fixed; inset: 0; z-index: 65; background: rgba(8,6,36,.9); display: grid; place-items: center; padding: 16px; overflow-y: auto; }
+.ex-step { background: var(--paper); color: var(--paper-ink); border-radius: 18px; padding: 16px; font-size: 1.15rem; font-weight: 800; line-height: 1.4; text-align: left; min-height: 150px; white-space: pre-line; }
+.ex-dots { display: flex; gap: 6px; justify-content: center; }
+.ex-dots i { width: 10px; height: 10px; border-radius: 50%; background: var(--line); }
+.ex-dots i.on { background: var(--sun); }
+.linkbtn { color: var(--sun); font-weight: 900; text-decoration: underline; text-underline-offset: 3px; align-self: flex-start; padding: 4px 0; }
 
 /* Ergebnis */
 .res { align-items: center; text-align: center; }
@@ -447,7 +480,7 @@ p { margin: 0; }
 
   <section id="v-subj" hidden>
     <div class="top"><button class="back" id="s-back" type="button" aria-label="Zurück">‹</button><h2 id="s-title"></h2></div>
-    <p class="muted" id="s-hint">Tippe an, was du üben möchtest. Ohne Auswahl kommt alles gemischt.</p>
+    <p class="muted" id="s-hint">Tippe an, was du üben möchtest. Ohne Auswahl kommt alles gemischt. Das „?“ erklärt dir ein Thema.</p>
     <div class="topics" id="s-topics"></div>
     <div style="height:120px"></div>
   </section>
@@ -461,6 +494,7 @@ p { margin: 0; }
     </div>
     <span class="tag" id="p-tag"></span>
     <div class="q" id="p-q">
+      <button class="rd" id="p-read" type="button" aria-label="Frage vorlesen">🔈</button>
       <div class="q-text" id="p-text"></div>
       <div class="q-html" id="p-html" hidden></div>
       <div class="bigrow" id="p-bigrow">
@@ -473,9 +507,11 @@ p { margin: 0; }
     </div>
     <div class="opts" id="p-opts"></div>
     <div class="keys" id="p-keys" hidden></div>
+    <div class="px" id="p-x" hidden></div>
     <div class="fb" id="p-fb" hidden>
       <div class="fb-h"><b id="p-fbt"></b><button class="spk sm" id="p-fbspk" type="button" aria-label="Anhören" hidden>🔊</button><span class="gain" id="p-gain"></span></div>
       <p id="p-ex"></p>
+      <button class="linkbtn" id="p-why" type="button" hidden>Erklär mir das nochmal</button>
       <button class="btn" id="p-next" type="button">Weiter</button>
     </div>
   </section>
@@ -585,7 +621,7 @@ p { margin: 0; }
       <input class="field" id="f-name" maxlength="12" autocomplete="off" autocapitalize="words" spellcheck="false">
       <p class="label">Dein Tier</p>
       <div class="looks" id="f-looks"></div>
-      <div class="chips"><button class="chip" id="f-snd" type="button"></button></div>
+      <div class="chips"><button class="chip" id="f-snd" type="button"></button><button class="chip" id="f-read" type="button"></button></div>
     </div>
     <div class="panel">
       <p class="label">Wer spielt auf diesem Handy?</p>
@@ -600,7 +636,7 @@ p { margin: 0; }
       </div>
     </div>
     <p class="note">Tipp: Tippe in Safari auf „Teilen“ und dann „Zum Home-Bildschirm“. Dann startet die App wie eine echte App.</p>
-    <p class="note" id="f-ver">Version 9</p>
+    <p class="note" id="f-ver">Version 10</p>
   </section>
 </main>
 
@@ -621,6 +657,14 @@ p { margin: 0; }
   <div class="stage" id="ov-stage"></div>
   <p class="muted" id="ov-c"></p>
   <button class="btn" id="ov-x" type="button">Weiter</button>
+</div></div>
+<div id="ex" hidden role="dialog" aria-modal="true"><div class="ov-card">
+  <p class="label" id="ex-k">Erklärung</p>
+  <h2 id="ex-t"></h2>
+  <div class="ex-step" id="ex-s"></div>
+  <div class="ex-dots" id="ex-d"></div>
+  <div class="row"><button class="btn ghost" id="ex-read" type="button">🔈 Vorlesen</button><button class="btn" id="ex-next" type="button">Weiter</button></div>
+  <button class="btn ghost" id="ex-x" type="button">Schließen</button>
 </div></div>
 <div id="fx" aria-hidden="true"></div>
 <div id="toast" hidden></div>
@@ -654,7 +698,38 @@ p { margin: 0; }
     return q;
   }
 
+  /* Wort schreiben: answers = erlaubte Schreibweisen, o.ci = Gross/Klein egal */
+  function WRITE(text, answers, o) {
+    answers = [].concat(answers);
+    var q = { text: text, write: { ans: answers, ci: !!(o && o.ci) }, ans: answers[0] };
+    if (o) for (var k in o) if (k !== 'ci') q[k] = o[k];
+    return q;
+  }
+  /* In die richtige Reihenfolge tippen: items stehen in der richtigen Reihenfolge */
+  function ORDER(text, items, o) {
+    items = items.map(String);
+    var q = { text: text, order: { items: items, sep: (o && o.sep) != null ? o.sep : ' ', small: !!(o && o.tiny) }, ans: items.join((o && o.sep) != null ? o.sep : ' ') };
+    if (o) for (var k in o) if (k !== 'sep' && k !== 'tiny') q[k] = o[k];
+    return q;
+  }
+  /* Paare zuordnen: pairs = [[links, rechts], ...] */
+  function MATCH(text, pairs, o) {
+    var q = { text: text, match: { pairs: pairs.map(function (x) { return [String(x[0]), String(x[1])]; }) }, ans: pairs.map(function (x) { return x[0] + ' – ' + x[1]; }).join(', ') };
+    q.explain = q.ans;
+    if (o) for (var k in o) q[k] = o[k];
+    return q;
+  }
+
   var TOPICS = [];
+  var EXPL = {};
+  function topicById(id) { for (var i = 0; i < TOPICS.length; i++) if (TOPICS[i].id === id) return TOPICS[i]; return null; }
+  /* Bestehendes Thema um neue Aufgabenformen erweitern (nur wenn rich, also nicht im Blitz) */
+  function enrich(id, fn, share) {
+    var t = topicById(id); if (!t) return;
+    if (t.items) { var mk = t.items.map(function (it) { return it; }); mk.forEach(function (it) { var old = it.make; it.make = function (L, rich) { var q = rich && Math.random() < (share || 0.3) ? fn(L, it) : null; return q || old(L, rich); }; }); }
+    else { var og = t.gen; t.gen = function (L, rich) { var q = rich && Math.random() < (share || 0.3) ? fn(L) : null; return q || og(L, rich); }; }
+  }
+  function addItems(id, items) { var t = topicById(id); if (t && t.items) items.forEach(function (it) { t.items.push(it); }); }
   var SUBJ = {
     de:  { n: 'Deutsch',  e: '📖', c: 'var(--de)' },
     ma:  { n: 'Mathe',    e: '🔢', c: 'var(--ma)' },
@@ -1482,6 +1557,29 @@ p { margin: 0; }
       if (t === 2 && L > 1) return NUM('Wie viele Kinder haben insgesamt abgestimmt?', v[0] + v[1] + v[2] + v[3], { img: im, wide: true, explain: v.join(' + ') + ' = ' + (v[0] + v[1] + v[2] + v[3]) });
       return NUM('Wie viele Kinder mehr haben „' + (v[i] > v[j] ? set[i] : set[j]) + '“ gewählt als „' + (v[i] > v[j] ? set[j] : set[i]) + '“?', Math.abs(v[i] - v[j]), { img: im, wide: true, explain: Math.max(v[i], v[j]) + ' − ' + Math.min(v[i], v[j]) + ' = ' + Math.abs(v[i] - v[j]) });
     });
+
+    enrich('m_vergleich', function (L) {
+      var n = [], lo = L === 1 ? 10 : 100, hi = L === 1 ? 99 : 999;
+      while (n.length < 4) { var x = R(lo, hi); if (n.indexOf(x) < 0) n.push(x); }
+      var up = Math.random() < 0.6; n.sort(function (a, b) { return up ? a - b : b - a; });
+      return ORDER('Ordne die Zahlen. Beginne mit der ' + (up ? 'kleinsten' : 'größten') + '.', n, { sep: up ? ' < ' : ' > ', explain: n.join(up ? ' < ' : ' > ') });
+    }, 0.4);
+    enrich('m_1x1', function (L) {
+      var ps = [], seen = {};
+      while (ps.length < 4) { var a = R(2, L === 1 ? 5 : 9), b = R(2, 9); if (!seen[a * b]) { seen[a * b] = 1; ps.push([a + ' × ' + b, a * b]); } }
+      return MATCH('Welches Ergebnis gehört zu welcher Aufgabe?', ps);
+    }, 0.25);
+    enrich('m_div', function (L) {
+      var ps = [], seen = {};
+      while (ps.length < 4) { var d = R(2, 9), q = R(2, 9); if (!seen[q]) { seen[q] = 1; ps.push([d * q + ' : ' + d, q]); } }
+      return MATCH('Welches Ergebnis gehört zu welcher Aufgabe?', ps);
+    }, 0.25);
+    enrich('m_laenge', function () { return MATCH('Was ist gleich lang?', shuf([['1 m', '100 cm'], ['1 km', '1000 m'], ['1 cm', '10 mm'], ['½ m', '50 cm'], ['2 m', '200 cm'], ['½ km', '500 m']]).slice(0, 4)); }, 0.2);
+    enrich('m_zeit', function () { return MATCH('Was ist gleich lang?', shuf([['1 Stunde', '60 Minuten'], ['½ Stunde', '30 Minuten'], ['¼ Stunde', '15 Minuten'], ['1 Tag', '24 Stunden'], ['1 Woche', '7 Tage'], ['1 Jahr', '12 Monate'], ['1 Minute', '60 Sekunden']]).slice(0, 4)); }, 0.2);
+    enrich('m_folgen', function (L) {
+      var st = pick([2, 5, 10, 25, 50]), a = R(1, 9) * st, n = [a, a + st, a + 2 * st, a + 3 * st, a + 4 * st];
+      return ORDER('Bringe die Zahlenfolge in die richtige Reihenfolge. Beginne mit der kleinsten Zahl.', n, { sep: ', ', explain: 'Immer + ' + st + ': ' + n.join(', ') });
+    }, 0.3);
   })();
 
   /* ================= DEUTSCH ================= */
@@ -1608,6 +1706,55 @@ p { margin: 0; }
     bank('de', 'd_rede', 'Wörtliche Rede', '💬', items);
     var VS = [['Lisa hat sich im Wald ___laufen.', 'ver', ['vor', 'ab', 'an']], ['Wir müssen jetzt ___steigen, der Bus hält.', 'aus', ['ver', 'zer', 'be']], ['Das Glas ist ___brochen.', 'zer', ['ver', 'be', 'an']], ['Ich habe meine Jacke ___gessen.', 'ver', ['zer', 'ab', 'be']], ['Kannst du mir das ___klären?', 'er', ['zer', 'ab', 'aus']], ['Mama hat mir ein Buch ___gelesen.', 'vor', ['zer', 'ent', 'be']], ['Wir wollen Oma ___suchen.', 'be', ['zer', 'ab', 'vor']], ['Der Hund ist ___gelaufen.', 'weg', ['zer', 'be', 'er']], ['Ich muss mein Zimmer ___räumen.', 'auf', ['zer', 'be', 'er']], ['Opa hat eine Geschichte ___zählt.', 'er', ['zer', 'ab', 'auf']], ['Ich habe den Text von der Tafel ___geschrieben.', 'ab', ['zer', 'be', 'er']], ['Der Dieb ist ___kommen.', 'ent', ['zer', 'be', 'auf']]];
     bank('de', 'd_vorsilbe', 'Vorsilben', '🧩', VS.map(function (v) { return { id: 'vs:' + v[0], make: function () { return MC('Welche Vorsilbe passt?', v[1], v[2], { html: esc(v[0]).replace('___', '<mark>▢</mark>'), explain: v[0].replace('___', v[1]) }); } }; }));
+
+    /* --- Schreiben, Sortieren, Zuordnen --- */
+    enrich('d_mehrzahl', function (L, it) {
+      var s = it.id.slice(3), n = NOMEN.filter(function (x) { return x.s === s; })[0];
+      return WRITE('Schreibe die Mehrzahl.', n.p, { big: n.a + ' ' + n.s + ' → die …', explain: n.a + ' ' + n.s + ' – die ' + n.p + '. Nomen schreibt man groß.' });
+    }, 0.35);
+    enrich('d_zeit', function (L) {
+      var v = pick(VERBEN);
+      return WRITE('Schreibe das Verb in der 1. Vergangenheit.', v.pt, { ci: true, big: 'er ' + v.pr + ' → er …', explain: v.i + ': er ' + v.pr + ' – er ' + v.pt + ' – er ' + v.pf });
+    }, 0.3);
+    enrich('d_grundform', function () {
+      var vs = shuf(VERBEN).slice(0, 4);
+      return MATCH('Was gehört zusammen? Grundform und 1. Vergangenheit.', vs.map(function (v) { return [v.i, 'er ' + v.pt]; }));
+    }, 0.35);
+    enrich('d_steigern', function () {
+      var as = [], used = {};
+      shuf(ADJ).forEach(function (a) { if (as.length < 4 && a.g !== '-' && !used[a.p] && !used[a.g]) { used[a.p] = used[a.g] = 1; as.push([a.p, a.g]); } });
+      return MATCH('Finde die Gegenteile.', as);
+    }, 0.3);
+    enrich('d_abc', function (L) {
+      var ws = [];
+      shuf(NOMEN).forEach(function (n) { if (ws.length < 4 && !ws.some(function (y) { return y[0] === n.s[0]; })) ws.push(n.s); });
+      ws.sort(function (a, b) { return a.localeCompare(b, 'de'); });
+      return ORDER('Ordne die Wörter nach dem ABC.', ws, { sep: ', ', explain: 'Nach dem ABC: ' + ws.join(', ') });
+    }, 0.45);
+    enrich('d_artikel', function () {
+      var ns = shuf(NOMEN).slice(0, 12), ps = [], seen = {};
+      ns.forEach(function (n) { if (ps.length < 3 && !seen[n.a]) { seen[n.a] = 1; ps.push([n.s, n.a]); } });
+      return ps.length === 3 ? MATCH('Welcher Artikel gehört zu welchem Nomen?', ps) : null;
+    }, 0.2);
+    enrich('d_silben', function (L, it) {
+      var sp = SIL.filter(function (x) { return 'sil:' + x.replace(/-/g, '') === it.id; })[0];
+      if (!sp || sp.split('-').length < 3) return null;
+      return ORDER('Setze die Silben zum Wort zusammen.', sp.split('-'), { sep: '', explain: sp + ' → ' + sp.replace(/-/g, '') });
+    }, 0.35);
+    topic('de', 'd_satzbau', 'Sätze bauen', '🧩', function (L) {
+      var ws = pick(SAETZE).replace(' .', '').split(' ').map(function (x) { return x.split('/')[0]; });
+      return ORDER('Baue aus den Wörtern einen Satz. Das großgeschriebene Wort am Satzanfang hilft dir.', ws, { explain: ws.join(' ') + '. Am Satzanfang schreibt man groß, am Ende steht ein Punkt.', short: ws.join(' ') + '.' });
+    });
+    var LERN = ['Ball', 'Mutter', 'Sonne', 'Katze', 'Jacke', 'Himmel', 'Wasser', 'Bett', 'Brille', 'Zucker', 'Blitz', 'Brot', 'Schaf', 'Glocke', 'Platz', 'Löffel', 'Teller', 'Schiff', 'Biene', 'Tiger', 'Wiese', 'Spiel', 'Brief', 'Ziege', 'Tier', 'Fliege', 'Fisch', 'Wind', 'Papier', 'Fuß', 'Straße', 'Fluss', 'Tasse', 'Rose', 'Schloss', 'Nuss', 'Messer', 'Spaß', 'Glas', 'Schlüssel', 'Hund', 'Wald', 'Geld', 'Kind', 'Pferd', 'Heft', 'Zelt', 'Mond', 'Hand', 'Berg', 'Zwerg', 'Tag', 'Zug', 'Bank', 'Korb', 'Bäume', 'Häuser', 'Leute', 'Freund', 'Mäuse', 'Feuer', 'Hände', 'Wälder', 'Stern', 'Mensch', 'Zahn', 'Stuhl', 'Blume', 'Fahrrad', 'Sohn', 'Lehrer', 'Tür', 'Name', 'Huhn', 'Jahr', 'Bohne', 'Schule', 'Uhr', 'Vogel', 'Vater', 'Fenster', 'Ferien', 'Familie', 'Garten', 'Apfel', 'Wolke', 'Lampe', 'Tasche', 'Brücke', 'Kuchen'];
+    bank('de', 'd_schreiben', 'Lernwörter schreiben', '✍️', LERN.map(function (w) {
+      return { id: 'lw:' + w, make: function (L, rich) {
+        var canHear = rich && deVoiceOK();
+        if (canHear && Math.random() < 0.6) return WRITE('Hör gut zu und schreibe das Wort.', w, { sayDe: w, listen: true, auto: true, explain: 'Richtig geschrieben: ' + w, short: 'Lernwort: ' + w });
+        var ls = w.split('');
+        if (ls.length > 7 || !rich) { var wr = []; var i = R(1, w.length - 2); wr.push(w.slice(0, i) + w[i + 1] + w[i] + w.slice(i + 2)); wr.push(w.slice(0, i) + w.slice(i + 1)); wr.push(w.slice(0, i) + w[i] + w[i] + w.slice(i + 1)); wr.push(w.charAt(0).toLowerCase() + w.slice(1)); return MC('Welches Wort ist richtig geschrieben?', w, wr.filter(function (x) { return x.indexOf('undefined') < 0; }), { explain: 'Richtig geschrieben: ' + w, short: 'Lernwort: ' + w }); }
+        return ORDER('Buchstabensalat! Tippe die Buchstaben in der richtigen Reihenfolge an.', ls, { sep: '', tiny: true, explain: 'Das Wort heißt: ' + w, short: 'Lernwort: ' + w });
+      } };
+    }));
   })();
 
   /* ================= HSU ================= */
@@ -1825,6 +1972,36 @@ p { margin: 0; }
       ['Warum gibt es Tag und Nacht?', 'Weil sich die Erde um sich selbst dreht', 'Weil die Sonne sich ausschaltet', 'Weil der Mond die Sonne verdeckt', 'Weil Wolken kommen', 'Die Erde dreht sich in 24 Stunden einmal um sich selbst.'],
       ['Wie lange braucht die Erde für eine Runde um die Sonne?', 'Ein Jahr', 'Einen Tag', 'Einen Monat', 'Eine Woche', 'Deshalb dauert ein Jahr etwa 365 Tage.']
     ]);
+
+    addItems('h_getreide', [
+      { id: 'h_getreide:o1', make: function () { return ORDER('Vom Korn zum Brot: Bringe die Schritte in die richtige Reihenfolge.', ['säen', 'wachsen', 'ernten', 'mahlen', 'backen'], { sep: ' → ', explain: 'säen → wachsen → ernten → mahlen → backen' }); } },
+      { id: 'h_getreide:m1', make: function () { return MATCH('Wer macht was?', [['Landwirt', 'sät und erntet'], ['Müller', 'mahlt das Mehl'], ['Bäcker', 'backt das Brot'], ['Mähdrescher', 'trennt Korn und Stroh']]); } }
+    ]);
+    addItems('h_wasser', [
+      { id: 'h_wasser:o1', make: function () { return ORDER('Der Wasserkreislauf: Beginne beim Verdunsten.', ['Wasser verdunstet', 'Wolken entstehen', 'Es regnet', 'Wasser fließt zum Meer'], { sep: ' → ', explain: 'Wasser verdunstet → Wolken entstehen → Es regnet → Wasser fließt zum Meer. Dann beginnt alles von vorn.' }); } },
+      { id: 'h_wasser:m1', make: function () { return MATCH('Was gehört zusammen?', [['Eis', 'fest'], ['Wasser', 'flüssig'], ['Wasserdampf', 'gasförmig']]); } },
+      { id: 'h_wasser:m2', make: function () { return MATCH('Was passiert?', [['Schmelzen', 'Eis wird zu Wasser'], ['Gefrieren', 'Wasser wird zu Eis'], ['Verdunsten', 'Wasser wird zu Dampf'], ['Kondensieren', 'Dampf wird zu Tröpfchen']]); } }
+    ]);
+    addItems('h_wald', [
+      { id: 'baum:m1', make: function () { return MATCH('Welche Frucht gehört zu welchem Baum?', shuf([['Eiche', 'Eichel'], ['Buche', 'Buchecker'], ['Ahorn', 'Flügelfrucht'], ['Birke', 'Kätzchen'], ['Fichte', 'hängender Zapfen'], ['Tanne', 'stehender Zapfen']]).slice(0, 4)); } },
+      { id: 'baum:m2', make: function () { return MATCH('Welches Blatt gehört zu welchem Baum?', shuf([['Eiche', 'gelappt, runde Buchten'], ['Linde', 'herzförmig'], ['Ahorn', '5 spitze Lappen'], ['Kastanie', 'gefingert'], ['Birke', 'dreieckig, gesägt']]).slice(0, 4)); } },
+      { id: 'baum:o1', make: function () { return ORDER('Die Stockwerke des Waldes: Beginne ganz unten.', ['Wurzelschicht', 'Moosschicht', 'Krautschicht', 'Strauchschicht', 'Baumschicht'], { sep: ' → ', explain: 'Von unten nach oben: Wurzelschicht, Moosschicht, Krautschicht, Strauchschicht, Baumschicht.' }); } }
+    ]);
+    addItems('h_koerper', [
+      { id: 'h_koerper:m1', make: function () { return MATCH('Welcher Sinn gehört zu welchem Körperteil?', [['Sehen', 'Auge'], ['Hören', 'Ohr'], ['Riechen', 'Nase'], ['Schmecken', 'Zunge']]); } },
+      { id: 'h_koerper:m2', make: function () { return MATCH('Welcher Zahn hat welche Aufgabe?', [['Schneidezahn', 'abbeißen'], ['Eckzahn', 'festhalten und reißen'], ['Backenzahn', 'zermahlen']]); } }
+    ]);
+    addItems('h_orient', [
+      { id: 'h_orient:m1', make: function () { return MATCH('Wo steht die Sonne?', [['am Morgen', 'im Osten'], ['am Mittag', 'im Süden'], ['am Abend', 'im Westen']]); } },
+      { id: 'h_orient:m2', make: function () { return MATCH('Was bedeuten die Farben auf der Landkarte?', [['Blau', 'Wasser'], ['Grün', 'Tiefland'], ['Braun', 'Gebirge']]); } },
+      { id: 'h_orient:o1', make: function () { return ORDER('Die Himmelsrichtungen im Uhrzeigersinn: Beginne mit Norden.', ['Norden', 'Osten', 'Süden', 'Westen'], { sep: ' → ', explain: 'Norden → Osten → Süden → Westen. Merksatz: Nie Ohne Seife Waschen.' }); } }
+    ]);
+    addItems('h_strom', [{ id: 'h_strom:m1', make: function () { return MATCH('Was macht welches Teil im Stromkreis?', [['Batterie', 'liefert den Strom'], ['Schalter', 'öffnet und schließt'], ['Kabel', 'leitet den Strom'], ['Lämpchen', 'leuchtet']]); } }]);
+    addItems('h_zeit', [
+      { id: 'h_zeit:o1', make: function () { return ORDER('Ordne von der kürzesten zur längsten Zeit.', ['Tag', 'Woche', 'Monat', 'Jahr', 'Jahrhundert'], { sep: ' < ', explain: 'Tag < Woche < Monat < Jahr < Jahrhundert' }); } },
+      { id: 'h_zeit:o2', make: function () { return ORDER('Die Jahreszeiten: Beginne mit dem Frühling.', ['Frühling', 'Sommer', 'Herbst', 'Winter'], { sep: ' → ', explain: 'Frühling → Sommer → Herbst → Winter' }); } }
+    ]);
+    addItems('h_feuer', [{ id: 'h_feuer:o1', make: function () { return ORDER('Notruf 112: In welcher Reihenfolge sagst du es?', ['Wo ist es passiert?', 'Was ist passiert?', 'Wie viele Verletzte?', 'Warten auf Rückfragen'], { sep: ' → ', explain: 'Wo? → Was? → Wie viele Verletzte? → Warten auf Rückfragen.' }); } }]);
   })();
 
   /* ================= ENGLISCH ================= */
@@ -1846,10 +2023,22 @@ p { margin: 0; }
       function others(v, f) { return shuf(V.filter(function (o) { return o !== v && o[f] !== v[f]; })).slice(0, 3).map(function (o) { return o[f]; }); }
       function pic(v) { return opt.color ? swatch(v.pic) : v.pic; }
       bank('en', id, n, e, V.map(function (v) {
-        return { id: id + ':' + v.en, make: function (L) {
+        return { id: id + ':' + v.en, make: function (L, rich) {
           var types = opt.phrase ? ['en2de', 'de2en', 'listen'] : L === 1 ? ['de2en', 'en2de', 'en2de', 'listen'] : L === 2 ? ['de2en', 'en2de', 'listen', 'listen'] : ['de2en', 'listen', 'spell', 'spell'], t = pick(types);
           var ex = v.en + ' = ' + v.de, base = { say: v.en, explain: ex, sayAfter: true };
           if (t === 'spell' && v.en.length < 4) t = 'de2en';
+          if (rich && Math.random() < 0.34) {
+            var r = Math.random();
+            if (opt.phrase) {
+              var ws = v.en.split(' ');
+              if (ws.length >= 3 && ws.length <= 7) return ORDER('Bringe die Wörter in die richtige Reihenfolge.', ws, Object.assign(base, { html: esc(v.de), short: ex }));
+            } else if (r < 0.5 && V.length >= 4) {
+              var four = [v].concat(shuf(V.filter(function (o) { return o !== v && o.de !== v.de && o.en !== v.en; })).slice(0, 3));
+              return MATCH('Was gehört zusammen?', shuf(four).map(function (o) { return [o.en, o.de]; }));
+            } else if (L >= 2 && v.en.length <= 10 && !/[^a-zA-Z ]/.test(v.en)) {
+              return WRITE('Hör zu und schreibe das englische Wort.', v.en, Object.assign(base, { ci: true, big: v.de, emoji: pic(v), speaker: true, auto: true }));
+            }
+          }
           if (t === 'en2de') return MC('Was heißt das auf Deutsch?', v.de, others(v, 'de'), Object.assign(base, { big: v.en, speaker: true, small: opt.phrase }));
           if (t === 'de2en') return MC('Wie heißt das auf Englisch?', v.en, others(v, 'en'), Object.assign(base, { big: v.de, emoji: pic(v), small: opt.phrase, enOpts: true }));
           if (t === 'listen') return MC('Hör genau zu. Was hörst du?', L === 1 || opt.phrase ? v.de : v.en, others(v, L === 1 || opt.phrase ? 'de' : 'en'), Object.assign(base, { listen: true, auto: true }));
@@ -1873,6 +2062,92 @@ p { margin: 0; }
     vocab('e_feelings', 'Feelings & Opposites', '😀', ['happy|glücklich|😀', 'sad|traurig|😢', 'angry|wütend|😠', 'tired|müde|😴', 'hungry|hungrig|🤤', 'thirsty|durstig', 'scared|ängstlich|😱', 'ill|krank|🤒', 'big|groß', 'small|klein', 'good|gut|👍', 'bad|schlecht|👎', 'old|alt', 'new|neu', 'fast|schnell|⚡', 'slow|langsam|🐢', 'long|lang', 'short|kurz', 'funny|lustig|😂', 'nice|nett']);
     vocab('e_phrases', 'Say Hello!', '👋', ['Hello!|Hallo!', 'Good morning!|Guten Morgen!', 'Goodbye!|Auf Wiedersehen!', 'How are you?|Wie geht es dir?', "I'm fine, thank you.|Mir geht es gut, danke.", "What's your name?|Wie heißt du?", 'My name is Tom.|Ich heiße Tom.', 'How old are you?|Wie alt bist du?', "I'm nine years old.|Ich bin neun Jahre alt.", 'Thank you!|Danke!', 'Please.|Bitte.', "I'm sorry.|Es tut mir leid.", 'Happy birthday!|Alles Gute zum Geburtstag!', 'Merry Christmas!|Frohe Weihnachten!', 'I like pizza.|Ich mag Pizza.', "I don't like fish.|Ich mag keinen Fisch.", 'Can I have an apple, please?|Kann ich bitte einen Apfel haben?', 'Where are you from?|Woher kommst du?', "I'm from Germany.|Ich komme aus Deutschland.", 'What time is it?|Wie spät ist es?', 'See you tomorrow!|Bis morgen!', 'Good night!|Gute Nacht!', "You're welcome.|Gern geschehen.", "What's the weather like?|Wie ist das Wetter?", 'Have you got a pet?|Hast du ein Haustier?', "I've got a dog.|Ich habe einen Hund.", "What's this?|Was ist das?", 'Here you are.|Bitte schön. (beim Geben)', "What's your favourite colour?|Was ist deine Lieblingsfarbe?", 'My favourite colour is blue.|Meine Lieblingsfarbe ist Blau.'], { phrase: true });
     vocab('e_class', 'Classroom Phrases', '🧑‍🏫', ['Sit down, please.|Setz dich bitte.', 'Stand up.|Steh auf.', 'Listen.|Hör zu.', 'Look.|Schau.', 'Open your book.|Öffne dein Buch.', 'Close the door, please.|Schließe bitte die Tür.', 'Be quiet, please.|Sei bitte leise.', 'Come here.|Komm her.', 'Put up your hand.|Melde dich.', 'Write.|Schreibe.', 'Read.|Lies.', 'Draw a picture.|Male ein Bild.', "Let's sing a song.|Lasst uns ein Lied singen.", 'Tidy up.|Räum auf.', 'Well done!|Gut gemacht!', 'Can you help me, please?|Kannst du mir bitte helfen?', "I don't understand.|Ich verstehe das nicht.", 'Can I go to the toilet, please?|Darf ich bitte auf die Toilette gehen?', 'Say it again, please.|Sag es bitte noch einmal.', "Let's play a game.|Lasst uns ein Spiel spielen."], { phrase: true });
+  })();
+
+  /* ================= ERKLÄR-KARTEN und LESETEXTE ================= */
+  (function () {
+    function X(id, cards) { EXPL[id] = cards; }
+    /* ---- Mathe ---- */
+    X('m_1x1', ['Malnehmen ist schnelles Plusrechnen.\n\n3 × 4 heißt: dreimal die 4.\n4 + 4 + 4 = 12', 'Tauschaufgaben haben das gleiche Ergebnis.\n\n3 × 4 = 12\n4 × 3 = 12\n\nKennst du eine, kennst du beide!', 'Tricks:\n× 10: hänge eine 0 an. 7 × 10 = 70\n× 5: die Hälfte von × 10. 7 × 5 = 35\n× 9: rechne × 10 und ziehe einmal ab. 7 × 9 = 70 − 7 = 63']);
+    X('m_div', ['Teilen ist die Umkehrung vom Malnehmen.\n\n12 : 3 = 4, denn 4 × 3 = 12.\n\nFrage dich: Wie oft passt die 3 in die 12?', 'Manchmal bleibt ein Rest.\n\n14 : 3 = 4 Rest 2\ndenn 4 × 3 = 12, und bis 14 fehlen noch 2.\n\nDer Rest ist immer kleiner als die Zahl, durch die du teilst.']);
+    X('m_z1x1', ['Rechne zuerst die kleine Aufgabe und hänge dann die Null an.\n\n30 × 4 = ?\n3 × 4 = 12\nalso 30 × 4 = 120', 'Beim Teilen genauso:\n\n240 : 6 = ?\n24 : 6 = 4\nalso 240 : 6 = 40']);
+    X('m_plus', ['Rechne in Schritten: erst die Hunderter, dann die Zehner, dann die Einer.\n\n345 + 232\n345 + 200 = 545\n545 + 30 = 575\n575 + 2 = 577', 'Über den Zehner: Fülle erst bis zum nächsten Zehner auf.\n\n348 + 7\n348 + 2 = 350\n350 + 5 = 355', 'Schriftlich: Schreibe die Zahlen genau untereinander. Einer unter Einer, Zehner unter Zehner. Fange rechts bei den Einern an. Wird es mehr als 9, schreibe den Übertrag in die nächste Spalte.']);
+    X('m_minus', ['Rechne in Schritten: erst die Hunderter weg, dann die Zehner, dann die Einer.\n\n576 − 234\n576 − 200 = 376\n376 − 30 = 346\n346 − 4 = 342', 'Über den Zehner: Gehe erst zurück bis zum Zehner.\n\n352 − 7\n352 − 2 = 350\n350 − 5 = 345', 'Probe: Mit einer Plusaufgabe kannst du prüfen.\n\n352 − 7 = 345\nProbe: 345 + 7 = 352 ✓']);
+    X('m_stellen', ['Jede Ziffer hat ihren Platz.\n\nH = Hunderter, Z = Zehner, E = Einer\n\n437 = 4 H + 3 Z + 7 E\n= 400 + 30 + 7', '10 Einer sind 1 Zehner.\n10 Zehner sind 1 Hunderter.\n10 Hunderter sind 1 Tausender.\n\n2 H 14 Z 5 E = 200 + 140 + 5 = 345']);
+    X('m_nachbar', ['Vorgänger: die Zahl davor (1 weniger).\nNachfolger: die Zahl danach (1 mehr).\n\n399 – 400 – 401', 'Nachbarzehner: die Zehnerzahlen links und rechts.\n347 liegt zwischen 340 und 350.\n\nNachbarhunderter:\n347 liegt zwischen 300 und 400.', 'Am Zahlenstrahl: Schau zuerst, wie groß ein Schritt zwischen zwei Strichen ist. Zähle dann von einer beschrifteten Zahl aus weiter.']);
+    X('m_vergleich', ['< heißt „kleiner als“\n> heißt „größer als“\n= heißt „gleich“\n\nMerke: Das Krokodil frisst immer die größere Zahl. Das offene Maul zeigt zur größeren Zahl.', 'Vergleiche zuerst die Hunderter. Sind sie gleich, vergleiche die Zehner. Sind auch die gleich, vergleiche die Einer.\n\n465 > 456, weil 6 Zehner mehr sind als 5 Zehner.']);
+    X('m_runden', ['Beim Runden suchst du die nächste glatte Zahl.\n\nSchau auf die Ziffer rechts von der Stelle, auf die du rundest:\n0, 1, 2, 3, 4 → abrunden\n5, 6, 7, 8, 9 → aufrunden', 'Auf Zehner runden: schau auf die Einer.\n347 → 350 (7 Einer, aufrunden)\n342 → 340 (2 Einer, abrunden)\n\nAuf Hunderter runden: schau auf die Zehner.\n347 → 300 (4 Zehner, abrunden)']);
+    X('m_folgen', ['Finde die Regel: Was passiert von einer Zahl zur nächsten?\n\n120, 140, 160, …\nImmer + 20. Die nächste Zahl ist 180.', 'Es kann auch rückwärts gehen (minus) oder sich verdoppeln.\n\n3, 6, 12, 24, …\nImmer × 2. Die nächste Zahl ist 48.']);
+    X('m_doppelt', ['Verdoppeln: die Zahl zweimal nehmen.\n\nDas Doppelte von 36:\n30 + 30 = 60\n6 + 6 = 12\n60 + 12 = 72', 'Halbieren: in zwei gleiche Teile teilen.\n\nDie Hälfte von 72:\n70 : 2 = 35\n2 : 2 = 1\n35 + 1 = 36']);
+    X('m_geld', ['1 Euro = 100 Cent\n\n3 € 45 ct = 345 ct\n\nMit Komma schreibt man: 3,45 €\nVor dem Komma stehen die Euro, dahinter die Cent.', 'Rückgeld: Rechne vom Preis bis zum bezahlten Betrag hoch.\n\nPreis 6,40 €, bezahlt mit 10 €:\n6,40 € + 0,60 € = 7 €\n7 € + 3 € = 10 €\nRückgeld: 3,60 €']);
+    X('m_laenge', ['1 km = 1000 m\n1 m = 100 cm\n1 cm = 10 mm\n\nkm ist die größte Einheit, mm die kleinste.', 'Umrechnen:\n2 m 35 cm = 200 cm + 35 cm = 235 cm\n3 km 400 m = 3000 m + 400 m = 3400 m\n1,5 m = 150 cm', 'Zum Schätzen:\n1 mm: dicke Bleistiftmine\n1 cm: Breite deines Daumens\n1 m: ein großer Schritt\n1 km: etwa 15 Minuten zu Fuß']);
+    X('m_gewicht', ['1 t = 1000 kg\n1 kg = 1000 g\n\n½ kg = 500 g\n¼ kg = 250 g', 'Zum Schätzen:\n1 g: eine Büroklammer\n100 g: eine Tafel Schokolade\n1 kg: eine Packung Mehl oder 1 Liter Wasser\n1 t: ein kleines Auto']);
+    X('m_zeit', ['Der kurze Zeiger zeigt die Stunden.\nDer lange Zeiger zeigt die Minuten.\n\nZeigt der lange Zeiger auf die 12, ist es eine volle Stunde. Auf der 6 ist es „halb“, auf der 3 „Viertel nach“, auf der 9 „Viertel vor“.', '1 Tag = 24 Stunden\n1 Stunde = 60 Minuten\n1 Minute = 60 Sekunden\n\n½ Stunde = 30 min\n¼ Stunde = 15 min\n¾ Stunde = 45 min', 'Zeitspannen: Rechne erst bis zur vollen Stunde.\n\nVon 14:20 bis 15:05 Uhr:\nbis 15:00 sind es 40 min\ndazu 5 min\nzusammen 45 Minuten']);
+    X('m_liter', ['1 l = 1000 ml\n\n½ l = 500 ml\n¼ l = 250 ml\n¾ l = 750 ml', 'Zum Schätzen:\n5 ml: ein Teelöffel\n200 ml: ein Trinkglas\n1 l: eine Milchpackung\n10 l: ein Putzeimer']);
+    X('m_geo', ['Körper kann man anfassen:\nWürfel, Quader, Kugel, Zylinder, Kegel, Pyramide.\n\nFlächen sind flach:\nQuadrat, Rechteck, Dreieck, Kreis.', 'Würfel und Quader haben\n8 Ecken, 12 Kanten und 6 Flächen.\n\nBeim Würfel sind alle Flächen gleich große Quadrate.', 'Umfang: einmal außen herum. Zähle alle Seiten zusammen.\nRechteck 5 cm und 3 cm:\n5 + 3 + 5 + 3 = 16 cm\n\nSpiegelachse: Faltest du die Figur dort, liegen beide Hälften genau aufeinander.']);
+    X('m_sach', ['So löst du Sachaufgaben:\n\n1. Lies genau. Was ist gefragt?\n2. Welche Zahlen brauchst du?\n3. Rechne.\n4. Schreibe einen Antwortsatz.\n5. Kann das Ergebnis stimmen?', 'Achte auf Signalwörter:\n\n„zusammen, dazu, mehr“ → plus\n„weg, übrig, weniger“ → minus\n„je, jeder, -mal so viele“ → mal\n„verteilen, aufteilen, je gleich viele“ → geteilt']);
+    X('m_zufall', ['sicher: Es passiert ganz bestimmt.\nmöglich: Es kann passieren, muss aber nicht.\nunmöglich: Es kann nicht passieren.\n\nMit einem Würfel eine 7 würfeln ist unmöglich.', 'Wovon mehr da ist, das ist wahrscheinlicher.\n\n9 rote und 1 blaue Kugel im Beutel: Rot zu ziehen ist viel wahrscheinlicher.', 'Im Balkendiagramm zeigt die Höhe des Balkens die Anzahl. Lies links an der Zahlenleiste ab, wie hoch der Balken reicht.']);
+    /* ---- Deutsch ---- */
+    X('d_wortart', ['Nomen (Namenwörter) sind Namen für Menschen, Tiere, Pflanzen und Dinge.\nMan schreibt sie groß und kann der, die oder das davorsetzen.\n\nder Hund, die Blume, das Haus', 'Verben (Tunwörter) sagen, was jemand tut.\nlaufen, spielen, lachen\n\nAdjektive (Wiewörter) sagen, wie etwas ist.\ngroß, schnell, lustig', 'Artikel (Begleiter): der, die, das, ein, eine\n\nPronomen (Fürwörter) stehen für ein Nomen:\nich, du, er, sie, es, wir, ihr, sie']);
+    X('d_artikel', ['Jedes Nomen hat einen Begleiter (Artikel): der, die oder das.\n\nder Hund – die Katze – das Pferd\n\nDen Artikel musst du mit dem Wort zusammen lernen.', 'In der Mehrzahl heißt es immer „die“.\n\nder Hund → die Hunde\ndas Haus → die Häuser']);
+    X('d_mehrzahl', ['Einzahl: ein Ding. Mehrzahl: viele Dinge.\n\nder Hund → die Hunde\ndie Katze → die Katzen\ndas Kind → die Kinder', 'Oft wird aus a, o, u, au ein Umlaut:\n\nder Apfel → die Äpfel\ndas Buch → die Bücher\ndie Maus → die Mäuse', 'Manche Wörter bleiben gleich:\n\ndas Fenster → die Fenster\nder Lehrer → die Lehrer']);
+    X('d_zeit', ['Gegenwart (Präsens): Es passiert jetzt.\ner geht, sie spielt\n\n1. Vergangenheit (Präteritum): So schreibt man, was war.\ner ging, sie spielte', '2. Vergangenheit (Perfekt): So erzählt man beim Sprechen.\nMit „hat“ oder „ist“.\ner ist gegangen, sie hat gespielt\n\nZukunft (Futur): Es passiert später. Mit „wird“.\ner wird gehen']);
+    X('d_grundform', ['Die Grundform eines Verbs endet auf -en oder -n.\nSo steht das Verb im Wörterbuch.\n\ner läuft → laufen\nsie ging → gehen\nich habe gegessen → essen']);
+    X('d_satzart', ['Aussagesatz: Er erzählt etwas. Am Ende steht ein Punkt.\nIch mag Erdbeereis.\n\nFragesatz: Er fragt etwas. Am Ende steht ein Fragezeichen.\nMagst du Erdbeereis?', 'Ausrufesatz und Aufforderungssatz: Jemand ruft etwas oder fordert auf. Am Ende steht ein Ausrufezeichen.\n\nHurra, es gibt Eis!\nGib mir bitte ein Eis!']);
+    X('d_satzglied', ['Subjekt (Satzgegenstand):\nFrage „Wer oder was tut etwas?“\n\nPrädikat (Satzaussage):\nFrage „Was tut jemand?“ Es ist immer ein Verb.\n\nOma füttert die Katze.\nWer? Oma. Was tut sie? füttert.', 'Ortsangabe: Frage „Wo?“ → im Garten\nZeitangabe: Frage „Wann?“ → am Morgen', 'Umstellprobe: Wörter, die beim Umstellen zusammenbleiben, sind ein Satzglied.\n\nAm Morgen | füttert | Oma | die Katze.\nOma | füttert | am Morgen | die Katze.']);
+    X('d_gross', ['Groß schreibt man:\n• Nomen: der Hund, die Angst, das Glück\n• das erste Wort im Satz\n• Namen: Lina, München', 'Klein schreibt man Verben und Adjektive:\nlaufen, schwimmen, schön, lecker\n\nTipp: Kannst du der, die oder das davorsetzen? Dann ist es ein Nomen.']);
+    X('d_doppel', ['Sprich das Wort deutlich. Ist der Selbstlaut kurz, folgt ein doppelter Mitlaut.\n\nSonne (kurzes o) → nn\nSohn (langes o) → nur ein n', 'Statt kk schreibt man ck.\nStatt zz schreibt man tz.\n\nJacke, Zucker, Katze, Blitz']);
+    X('d_ie', ['Das lange i schreibt man meistens ie.\nBiene, Wiese, Spiel, Tier\n\nDas kurze i schreibt man i.\nFisch, Wind, Kind', 'Merkwörter mit langem i, aber ohne e:\nTiger, Kino, Igel, Maschine, Krokodil, lila']);
+    X('d_s', ['s klingt weich (summend).\nHase, Rose, Nase\n\nss steht nach einem kurzen Selbstlaut.\nWasser, Tasse, Fluss, Nuss', 'ß steht nach einem langen Selbstlaut oder nach ei, au, eu.\nFuß, Straße, groß, weiß, heiß, draußen']);
+    X('d_auslaut', ['Am Wortende klingen d und t, g und k, b und p gleich.\n\nVerlängere das Wort, dann hörst du den richtigen Buchstaben:\nHund → Hunde (d)\nBerg → Berge (g)\nKorb → Körbe (b)']);
+    X('d_umlaut', ['ä oder e? äu oder eu?\n\nSuche ein verwandtes Wort mit a oder au:\nHände kommt von Hand → ä\nBäume kommt von Baum → äu', 'Gibt es kein verwandtes Wort mit a oder au, schreibe e oder eu:\nFeld, Zelt, Leute, Feuer, neu']);
+    X('d_dehnung', ['Das Dehnungs-h hört man nicht. Es macht den Selbstlaut davor lang.\n\nEs steht oft vor l, m, n, r:\nStuhl, Zahn, Uhr, Lehrer, fahren', 'Nicht jedes Wort mit langem Selbstlaut hat ein h:\nSchule, Blume, Tür, Name, grün\n\nDas sind Merkwörter. Übe sie immer wieder.']);
+    X('d_vf', ['V und F klingen oft gleich. Wörter mit V sind Merkwörter:\nVater, Vogel, vier, viel, voll, vor, von\n\nDie Vorsilben ver- und vor- schreibt man immer mit v:\nvergessen, verlieren, vorlesen']);
+    X('d_wortfamilie', ['Wörter einer Wortfamilie haben den gleichen Wortstamm.\n\nfahren – Fahrer – Fahrrad – Abfahrt\nDer Stamm ist „fahr“.', 'Das hilft beim Schreiben: Der Stamm wird immer gleich geschrieben.\n\nfahren mit h → Fahrrad mit h\nbacken → Bäcker (ä, weil es von backen kommt)']);
+    X('d_zusammen', ['Aus zwei Nomen wird ein neues Nomen.\n\ndas Haus + die Tür = die Haustür', 'Das letzte Wort (Grundwort) bestimmt den Artikel.\n\ndie Tür → die Haustür\nder Schirm → der Regenschirm', 'Manchmal kommt ein Buchstabe dazwischen oder fällt weg:\nSonne + Brille = Sonnenbrille\nSchule + Tasche = Schultasche']);
+    X('d_steigern', ['Adjektive kann man steigern.\n\nGrundstufe: schnell\nHöherstufe: schneller\nHöchststufe: am schnellsten', 'Manche ändern sich stark:\ngut – besser – am besten\nviel – mehr – am meisten\ngern – lieber – am liebsten', 'Gegenteile:\ngroß ↔ klein\nhell ↔ dunkel\nlaut ↔ leise']);
+    X('d_abc', ['Im Wörterbuch stehen die Wörter nach dem ABC.\n\nA B C D E F G H I J K L M\nN O P Q R S T U V W X Y Z', 'Schau zuerst auf den ersten Buchstaben.\nIst er gleich, schau auf den zweiten, dann auf den dritten.\n\nBall – Baum – Bett\n(a kommt vor e, und l kommt vor u)']);
+    X('d_silben', ['Sprich das Wort langsam und klatsche bei jedem Teil.\n\nScho-ko-la-de: 4 Silben\nHund: 1 Silbe', 'Jede Silbe hat einen Selbstlaut (a, e, i, o, u, ä, ö, ü, au, ei, eu).\n\nBeim Trennen am Zeilenende trennst du nach Silben: Kat-ze, Son-ne.']);
+    X('d_pronomen', ['Pronomen stehen für ein Nomen, damit man es nicht ständig wiederholen muss.\n\nder Hund → er\ndie Katze → sie\ndas Kind → es\ndie Hunde (Mehrzahl) → sie']);
+    X('d_rede', ['Die wörtliche Rede zeigt genau, was jemand sagt. Sie steht in Anführungszeichen: unten am Anfang, oben am Ende.\n\nMia sagt: „Ich habe Hunger.“', 'Der Begleitsatz sagt, wer spricht. Steht er vorne, kommt danach ein Doppelpunkt.\n\nDas erste Wort der wörtlichen Rede schreibt man groß.']);
+    X('d_vorsilbe', ['Vorsilben stehen vor dem Verb und ändern die Bedeutung.\n\nlaufen → verlaufen, weglaufen\nlesen → vorlesen\nbrechen → zerbrechen', 'Häufige Vorsilben:\nver-, vor-, zer-, be-, er-, ent-, ab-, an-, auf-, aus-, weg-']);
+    X('d_satzbau', ['Ein Satz beginnt mit einem großgeschriebenen Wort und endet mit einem Satzzeichen.\n\nSuche zuerst: Wer tut etwas? Was tut er?', 'Im Aussagesatz steht das Verb an zweiter Stelle.\n\nDer Hund | bellt | im Garten.\nIm Garten | bellt | der Hund.']);
+    X('d_schreiben', ['So übst du Lernwörter:\n\n1. Lies das Wort genau.\n2. Sprich es deutlich in Silben.\n3. Merke dir die schwierige Stelle.\n4. Decke es ab und schreibe es.\n5. Vergleiche.']);
+    X('d_lesen', ['So verstehst du einen Text:\n\n1. Lies den Text einmal ganz durch.\n2. Lies dann die Frage.\n3. Suche die Stelle im Text, in der die Antwort steht.\n4. Lies diese Stelle nochmal genau.']);
+    /* ---- HSU ---- */
+    X('h_wald', ['Laubbäume haben breite Blätter. Im Herbst werden sie bunt und fallen ab.\nEiche, Buche, Ahorn, Kastanie, Birke, Linde\n\nNadelbäume haben Nadeln und Zapfen. Sie sind meist immergrün.\nFichte, Tanne, Kiefer, Lärche', 'Ein Baum hat Wurzeln, Stamm und Krone.\nDie Wurzeln halten ihn fest und holen Wasser.\nDer Stamm trägt die Krone. Die Rinde schützt ihn.', 'Die Stockwerke des Waldes von unten nach oben:\nWurzelschicht, Moosschicht, Krautschicht, Strauchschicht, Baumschicht']);
+    X('h_waldtiere', ['Im Wald lebt jedes Tier in seinem Stockwerk.\nRegenwurm: im Boden\nIgel und Fuchs: am Boden\nEichhörnchen und Specht: in den Bäumen', 'Im Winter:\nWinterschlaf: tief schlafen ohne Fressen (Igel)\nWinterruhe: viel schlafen, zwischendurch fressen (Eichhörnchen)\nWinterstarre: ganz starr vor Kälte (Frosch)', 'Nahrungskette: Einer frisst den anderen. Am Anfang steht immer eine Pflanze.\n\nBlatt → Raupe → Meise → Sperber']);
+    X('h_feuer', ['Feuer braucht drei Dinge:\nBrennstoff, Sauerstoff (Luft) und Hitze.\n\nFehlt eines davon, geht das Feuer aus. So löscht man: abkühlen mit Wasser oder ersticken mit einer Decke.', 'Notruf 112. Sage:\nWo ist es passiert?\nWas ist passiert?\nWie viele Verletzte?\nWer ruft an?\nDann warten auf Rückfragen.', 'Wenn es brennt: Ruhig bleiben, raus aus dem Haus, Hilfe holen. Bei Rauch gebückt gehen. Brennendes Fett nie mit Wasser löschen!']);
+    X('h_wasser', ['Wasser gibt es in drei Zuständen:\nfest (Eis), flüssig (Wasser), gasförmig (Wasserdampf)\n\nBei 0 Grad gefriert es. Bei 100 Grad kocht es.', 'Der Wasserkreislauf:\nDie Sonne erwärmt das Wasser. Es verdunstet und steigt auf. Oben kühlt es ab und bildet Wolken. Es regnet oder schneit. Das Wasser fließt über Bäche und Flüsse zurück ins Meer.']);
+    X('h_koerper', ['Gesund bleiben: viel Obst, Gemüse und Wasser, wenig Süßes. Dazu jeden Tag bewegen und genug schlafen.', 'Zähne: Schneidezähne beißen ab, Eckzähne reißen, Backenzähne zermahlen. Putze zweimal am Tag.\n\nMilchgebiss: 20 Zähne. Bleibendes Gebiss: bis zu 32.', 'Das Auge: Durch die Pupille fällt Licht ins Auge. Die Iris ist der farbige Ring. Lid und Wimpern schützen.\n\nDas Ohr: Die Ohrmuschel fängt den Schall. Das Trommelfell schwingt.']);
+    X('h_orient', ['Die vier Himmelsrichtungen:\nNorden, Osten, Süden, Westen\nMerksatz: Nie Ohne Seife Waschen.\n\nIm Osten geht die Sonne auf, im Süden steht sie mittags, im Westen geht sie unter.', 'Eine Karte zeigt alles von oben und verkleinert. Norden ist oben. Die Legende erklärt die Zeichen.\n\nBlau: Wasser. Grün: Tiefland. Braun: Gebirge.', 'Bayern: Hauptstadt München, 7 Regierungsbezirke, höchster Berg ist die Zugspitze.\nDeutschland: Hauptstadt Berlin, 16 Bundesländer.']);
+    X('h_gemeinde', ['Die Gemeinde kümmert sich um Dinge, die alle brauchen: Wasser, Müllabfuhr, Straßen, Schulen, Spielplätze.\n\nIm Rathaus arbeiten der Bürgermeister und die Verwaltung.', 'Bürgermeister und Gemeinderat werden von den Bürgern gewählt. Bei einer Abstimmung entscheidet die Mehrheit. Das nennt man Demokratie.']);
+    X('h_verkehr', ['Ein verkehrssicheres Fahrrad hat:\n2 Bremsen, Klingel, weißes Licht vorne, rotes Licht hinten und Rückstrahler. Trage immer einen Helm!', 'Wichtige Regeln:\nRechts vor links an Kreuzungen ohne Schilder.\nVor dem Abbiegen umschauen und Handzeichen geben.\nBis 8 Jahre fährst du auf dem Gehweg.', 'Verkehrszeichen:\nRund mit rotem Rand: Verbot\nRund und blau: Gebot (das musst du tun)\nDreieck mit rotem Rand: Achtung, Gefahr']);
+    X('h_getreide', ['Getreidearten: Weizen, Roggen, Gerste, Hafer, Mais, Dinkel.\n\nDie Pflanze hat Wurzeln, einen Halm und oben die Ähre mit den Körnern.', 'Vom Korn zum Brot:\nDer Landwirt sät und erntet mit dem Mähdrescher.\nDer Müller mahlt die Körner zu Mehl.\nDer Bäcker backt aus Mehl, Wasser, Salz und Hefe das Brot.']);
+    X('h_strom', ['Strom fließt nur im geschlossenen Stromkreis: von der Batterie durch das Kabel zum Lämpchen und zurück. Der Schalter öffnet und schließt den Kreis.', 'Leiter leiten den Strom: alle Metalle.\nNichtleiter leiten nicht: Plastik, Gummi, Glas, trockenes Holz.', 'Vorsicht! Strom aus der Steckdose ist lebensgefährlich. Nichts hineinstecken. Strom und Wasser nie zusammenbringen.']);
+    X('h_zeit', ['1 Jahr = 12 Monate = 365 Tage\n1 Jahrzehnt = 10 Jahre\n1 Jahrhundert = 100 Jahre\n\nJahreszeiten: Frühling (ab März), Sommer (ab Juni), Herbst (ab September), Winter (ab Dezember)', 'Wie war es früher? Das erfahren wir aus Quellen: alte Fotos, Briefe, Gegenstände und von Zeitzeugen. Auf einer Zeitleiste ordnet man Ereignisse der Reihe nach.']);
+    /* ---- Englisch ---- */
+    var EN = ['So lernst du englische Wörter:\n\n1. Hör dir das Wort an (tippe auf 🔊).\n2. Sprich es laut nach.\n3. Schau dir an, wie es geschrieben wird.\n4. Übe es mehrmals an verschiedenen Tagen.', 'Englisch schreibt man oft anders, als man es spricht.\n\nknee spricht man „nii“\neight spricht man „äit“\n\nDarum: immer hören UND lesen.'];
+    TOPICS.forEach(function (t) { if (t.s === 'en' && !EXPL[t.id]) EXPL[t.id] = EN; });
+    X('e_numbers', ['13 bis 19 enden auf -teen:\nthirteen, fourteen, fifteen …\n\nDie Zehner enden auf -ty:\nthirty, forty, fifty …', 'Höre genau hin:\nthirteen (13) – thirty (30)\nfourteen (14) – forty (40)\n\nBei -teen ist das Ende betont.'].concat(EN.slice(0, 1)));
+    X('e_days', ['Wochentage und Monate schreibt man im Englischen immer groß:\nMonday, Tuesday, Wednesday …'].concat(EN.slice(0, 1)));
+    X('e_months', ['Monate schreibt man im Englischen groß: January, February …\nJahreszeiten schreibt man klein: spring, summer, autumn, winter'].concat(EN.slice(0, 1)));
+
+    /* ---- Lesetexte ---- */
+    var TEXTE = [
+      ['Der Igel', 'Der Igel ist ein kleines Tier mit vielen Stacheln. Am Tag schläft er unter Laub oder in einer Hecke. Erst wenn es dunkel wird, sucht er Futter. Er frisst gern Käfer, Würmer und Schnecken. Bei Gefahr rollt er sich zu einer Kugel zusammen. Im Winter hält der Igel Winterschlaf.', [['Wann sucht der Igel sein Futter?', 'Wenn es dunkel wird', 'Am Mittag', 'Am frühen Morgen', 'Nur im Winter'], ['Was frisst der Igel gern?', 'Käfer, Würmer und Schnecken', 'Gras und Blätter', 'Nüsse und Eicheln', 'Fische'], ['Was macht der Igel bei Gefahr?', 'Er rollt sich zu einer Kugel zusammen', 'Er rennt schnell weg', 'Er klettert auf einen Baum', 'Er gräbt ein Loch']]],
+      ['Ein Tag am See', 'Am Samstag fuhr Lena mit ihrem Opa an den See. Sie nahmen eine Decke, zwei Äpfel und eine Flasche Saft mit. Zuerst bauten sie am Ufer eine Burg aus Steinen. Dann ging Lena schwimmen. Opa blieb lieber auf der Decke und las Zeitung. Am Nachmittag zog ein Gewitter auf, und die beiden fuhren schnell nach Hause.', [['Mit wem fuhr Lena an den See?', 'Mit ihrem Opa', 'Mit ihrer Mutter', 'Mit ihrer Freundin', 'Mit ihrem Bruder'], ['Was machten die beiden zuerst?', 'Eine Burg aus Steinen bauen', 'Schwimmen', 'Zeitung lesen', 'Äpfel essen'], ['Warum fuhren sie nach Hause?', 'Weil ein Gewitter aufzog', 'Weil es dunkel wurde', 'Weil der Saft leer war', 'Weil Opa müde war']]],
+      ['Die Schulbücherei', 'In unserer Schule gibt es eine Bücherei. Sie ist jeden Dienstag und Donnerstag in der großen Pause geöffnet. Jedes Kind darf zwei Bücher ausleihen. Nach drei Wochen muss man die Bücher zurückbringen. Wer ein Buch verliert, muss es ersetzen. Am beliebtesten sind Bücher über Tiere und Detektivgeschichten.', [['An welchen Tagen ist die Bücherei geöffnet?', 'Dienstag und Donnerstag', 'Montag und Mittwoch', 'Jeden Tag', 'Nur am Freitag'], ['Wie viele Bücher darf ein Kind ausleihen?', 'Zwei', 'Eins', 'Drei', 'Fünf'], ['Wann muss man die Bücher zurückbringen?', 'Nach drei Wochen', 'Nach einer Woche', 'Nach zwei Tagen', 'Nach einem Monat']]],
+      ['Der verschwundene Schuh', 'Tim suchte überall seinen linken Turnschuh. Unter dem Bett war er nicht, im Schrank auch nicht. „Gleich kommt der Schulbus!“, rief Mama. Da hörte Tim ein Schmatzen aus dem Wohnzimmer. Hinter dem Sofa lag Bello und kaute fröhlich auf dem Schuh herum. Tim musste lachen und zog schnell seine Stiefel an.', [['Was suchte Tim?', 'Seinen linken Turnschuh', 'Seine Schultasche', 'Seinen Hund', 'Seine Stiefel'], ['Wo war der Schuh?', 'Hinter dem Sofa bei Bello', 'Unter dem Bett', 'Im Schrank', 'Im Schulbus'], ['Was zog Tim am Ende an?', 'Seine Stiefel', 'Den nassen Turnschuh', 'Mamas Schuhe', 'Hausschuhe']]],
+      ['Bienen', 'Bienen sind sehr fleißige Insekten. Sie fliegen von Blüte zu Blüte und sammeln Nektar. Daraus machen sie im Bienenstock Honig. Beim Sammeln bleibt Blütenstaub an ihnen hängen. So bestäuben sie die Blüten, und es können Früchte wachsen. Ohne Bienen gäbe es viel weniger Äpfel, Kirschen und Erdbeeren.', [['Was sammeln die Bienen an den Blüten?', 'Nektar', 'Wasser', 'Blätter', 'Honig'], ['Wo machen die Bienen den Honig?', 'Im Bienenstock', 'In der Blüte', 'Im Boden', 'Auf dem Baum'], ['Warum sind Bienen wichtig für Obst?', 'Sie bestäuben die Blüten', 'Sie gießen die Bäume', 'Sie fressen Schädlinge', 'Sie pflücken die Früchte']]],
+      ['Der Wandertag', 'Die Klasse 3b machte einen Wandertag zur Burgruine. Der Weg führte zuerst durch einen Wald und dann steil den Berg hinauf. Oben packten alle ihre Brotzeit aus. Frau Huber erzählte, dass in der Burg vor 600 Jahren Ritter wohnten. Auf dem Rückweg fing es an zu regnen. Zum Glück hatten fast alle eine Regenjacke dabei.', [['Wohin wanderte die Klasse?', 'Zu einer Burgruine', 'Zu einem See', 'In den Zoo', 'Zum Bahnhof'], ['Wer wohnte früher in der Burg?', 'Ritter', 'Bauern', 'Fischer', 'Räuber'], ['Was passierte auf dem Rückweg?', 'Es fing an zu regnen', 'Es wurde dunkel', 'Ein Kind ging verloren', 'Der Bus kam nicht']]],
+      ['Das Eichhörnchen', 'Das Eichhörnchen ist ein geschickter Kletterer. Mit seinen scharfen Krallen hält es sich an der Rinde fest. Der buschige Schwanz hilft ihm beim Springen, das Gleichgewicht zu halten. Im Herbst vergräbt es Nüsse und Eicheln als Vorrat. Nicht alle Verstecke findet es wieder. Aus den vergessenen Nüssen wachsen manchmal neue Bäume.', [['Wobei hilft dem Eichhörnchen der Schwanz?', 'Das Gleichgewicht zu halten', 'Nüsse zu knacken', 'Im Winter zu schlafen', 'Feinde zu vertreiben'], ['Was macht das Eichhörnchen im Herbst?', 'Es vergräbt Nüsse und Eicheln', 'Es fliegt in den Süden', 'Es baut ein Nest am Boden', 'Es verliert sein Fell'], ['Was passiert mit vergessenen Nüssen?', 'Es wachsen manchmal neue Bäume', 'Der Förster sammelt sie ein', 'Sie verschwinden im Schnee', 'Andere Eichhörnchen bringen sie zurück']]]
+    ];
+    var items = [];
+    TEXTE.forEach(function (t, i) { t[2].forEach(function (f, j) {
+      items.push({ id: 'les:' + i + ':' + j, make: function () { return MC(f[0], f[1], f.slice(2), { html: '<b>' + esc(t[0]) + '</b><br>' + esc(t[1]), textLeft: true, explain: 'Die Antwort steht im Text: ' + f[1] + '.', short: t[0] + ': ' + f[0] + ' ' + f[1] }); } });
+    }); });
+    bank('de', 'd_lesen', 'Lesen & Verstehen', '📚', items);
   })();
 
   /* ================= KERN ================= */
@@ -2128,7 +2403,7 @@ p { margin: 0; }
     $('#nav').hidden = !navOn; $('#dock').hidden = v !== 'subj';
     [].forEach.call(document.querySelectorAll('#nav button'), function (b) { b.setAttribute('aria-current', b.getAttribute('data-v') === v ? 'true' : 'false'); });
     try { window.scrollTo(0, 0); } catch (e) {}
-    stopSay();
+    stopSay(); $('#ex').hidden = true;
     if (v !== 'snake') snakeStop();
     if (v !== 'tet') tetStop();
     if (v !== 'inv') invStop();
@@ -2185,12 +2460,15 @@ p { margin: 0; }
   function renderTopics() {
     var p = P(), box = $('#s-topics'); box.innerHTML = '';
     TOPICS.filter(function (t) { return t.s === SEL.s; }).forEach(function (t) {
+      var w = document.createElement('div'); w.className = 'tpw';
       var b = document.createElement('button'), n = pips(mastery(p, t.id)), on = SEL.ids.indexOf(t.id) >= 0;
       b.type = 'button'; b.className = 'tp'; b.setAttribute('aria-pressed', on ? 'true' : 'false');
       b.innerHTML = '<span class="em">' + t.e + '</span><b></b><span class="pips" aria-label="' + n + ' von 3 Sternen"><i class="' + (n > 0 ? 'on' : '') + '">★</i><i class="' + (n > 1 ? 'on' : '') + '">★</i><i class="' + (n > 2 ? 'on' : '') + '">★</i></span>';
       b.querySelector('b').textContent = t.n;
       b.addEventListener('click', function () { var i = SEL.ids.indexOf(t.id); if (i >= 0) SEL.ids.splice(i, 1); else SEL.ids.push(t.id); SND.tap(); renderTopics(); });
-      box.appendChild(b);
+      w.appendChild(b);
+      if (EXPL[t.id]) { var ib = document.createElement('button'); ib.type = 'button'; ib.className = 'tp-i'; ib.textContent = '?'; ib.setAttribute('aria-label', 'Erklärung zu ' + t.n); ib.addEventListener('click', function () { openEx(t.id); }); w.appendChild(ib); }
+      box.appendChild(w);
     });
     $('#d-info').textContent = SEL.ids.length ? SEL.ids.length + (SEL.ids.length === 1 ? ' Thema' : ' Themen') + ' ausgewählt' : 'Alle Themen gemischt';
   }
@@ -2227,8 +2505,8 @@ p { margin: 0; }
       r = Math.random() * tot;
       var it = pool[pool.length - 1];
       for (i = 0; i < pool.length; i++) { r -= ws[i]; if (r <= 0) { it = pool[i]; break; } }
-      key = it.id; S.used[key] = 1; q = it.make(L);
-    } else q = tp.gen(L);
+      key = it.id; S.used[key] = 1; q = it.make(L, S.mode !== 'blitz');
+    } else q = tp.gen(L, S.mode !== 'blitz');
     return { tp: tp, key: key, q: q, L: L };
   }
   function buildKeys() {
@@ -2244,14 +2522,16 @@ p { margin: 0; }
     if (!S) return;
     clearTimeout(S.to);
     if (S.mode !== 'blitz' && S.asked >= S.n) { finish(); return; }
-    var c = pickQ(), q = c.q;
+    var c = pickQ(), tries = 0;
+    while (S.mode === 'blitz' && (c.q.write || c.q.order || c.q.match) && tries++ < 8) c = pickQ();
+    var q = c.q;
     S.cur = c; S.asked++; S.input = ''; S.locked = false;
     if (S.mode !== 'blitz') $('#p-prog').style.transform = 'scaleX(' + (S.asked - 1) / S.n + ')';
     $('#p-tag').textContent = c.tp.e + ' ' + c.tp.n + (c.again ? ' · nochmal' : '');
     $('#p-tag').style.background = SUBJ[c.tp.s].c;
     $('#p-q').className = 'q';
     $('#p-text').textContent = q.text;
-    $('#p-html').hidden = !q.html; $('#p-html').innerHTML = q.html || '';
+    $('#p-html').hidden = !q.html; $('#p-html').innerHTML = q.html || ''; $('#p-html').className = 'q-html' + (q.textLeft ? ' left' : '');
     var showBig = q.big != null && !q.listen;
     $('#p-big').hidden = !showBig; $('#p-big').textContent = showBig ? q.big : '';
     $('#p-big').className = 'q-big' + (q.small ? ' small' : showBig && String(q.big).length > 9 ? ' long' : '');
@@ -2260,11 +2540,13 @@ p { margin: 0; }
     $('#p-spk').hidden = !spk; $('#p-spk').className = 'spk' + (q.listen ? '' : ' sm');
     $('#p-bigrow').hidden = !(showBig || q.emoji || spk);
     $('#p-img').hidden = !q.img; $('#p-img').innerHTML = q.img || ''; $('#p-img').className = 'art' + (q.wide ? ' wide' : '');
-    var isNum = q.num != null;
+    var isNum = q.num != null, isX = !!(q.write || q.order || q.match);
     $('#p-ans').hidden = !isNum; $('#p-ans').textContent = '';
     $('#p-keys').hidden = !isNum; $('#p-keys').setAttribute('data-locked', 'false');
-    var box = $('#p-opts'); box.hidden = isNum; box.innerHTML = ''; box.setAttribute('data-locked', 'false');
-    if (!isNum) {
+    var box = $('#p-opts'); box.hidden = isNum || isX; box.innerHTML = ''; box.setAttribute('data-locked', 'false');
+    $('#p-x').hidden = !isX; $('#p-x').innerHTML = ''; $('#p-x').setAttribute('data-locked', 'false');
+    if (isX) buildX(q);
+    else if (!isNum) {
       var long = q.opts.some(function (o) { return o.t.length > 16; }), short = q.opts.length === 3 && q.opts.every(function (o) { return o.t.length <= 5; });
       box.className = 'opts' + (q.pics ? '' : short ? ' three' : (long || q.opts.length === 3 || q.opts.length === 5) ? ' one' : '');
       q.opts.forEach(function (o, i) {
@@ -2276,6 +2558,8 @@ p { margin: 0; }
     }
     $('#p-fb').hidden = true;
     if (q.auto && q.say) setTimeout(function () { if (S && S.cur === c && !S.locked) say(q.say, $('#p-spk')); }, 250);
+    else if (q.auto && q.sayDe) setTimeout(function () { if (S && S.cur === c && !S.locked) speakDe(q.sayDe, $('#p-spk'), 0.8); }, 250);
+    else if (D.read && S.mode !== 'blitz') setTimeout(function () { if (S && S.cur === c && !S.locked) readQ(); }, 300);
   }
   function answer(ok, idx) {
     var c = S.cur, q = c.q, p = P(), t = p.topics[c.tp.id] || (p.topics[c.tp.id] = { seen: 0, right: 0, rec: '' });
@@ -2287,7 +2571,8 @@ p { margin: 0; }
     else { S.streak = 0; S.wrong.push(q.short || q.explain || q.ans); if (S.mode !== 'blitz' && !c.again) S.retry.push({ tp: c.tp, key: c.key, q: q, L: c.L, due: S.asked + 3 }); }
     save();
     $('#p-pts').textContent = S.pts;
-    if (q.num == null) { var bs = $('#p-opts').children; q.opts.forEach(function (o, j) { bs[j].classList.add(o.ok ? 'right' : j === idx ? 'wrong' : 'dim'); }); $('#p-opts').setAttribute('data-locked', 'true'); }
+    if (q.write || q.order || q.match) $('#p-x').setAttribute('data-locked', 'true');
+    else if (q.num == null) { var bs = $('#p-opts').children; q.opts.forEach(function (o, j) { bs[j].classList.add(o.ok ? 'right' : j === idx ? 'wrong' : 'dim'); }); $('#p-opts').setAttribute('data-locked', 'true'); }
     else $('#p-keys').setAttribute('data-locked', 'true');
     $('#p-q').className = 'q ' + (ok ? 'ok' : 'no');
     if (ok) { SND.ok(S.streak); burstAt($('#p-q'), S.streak % 5 === 0 ? 28 : 10, S.streak % 5 === 0); } else SND.no();
@@ -2300,7 +2585,8 @@ p { margin: 0; }
   }
   function fb(ok, q, gain, quick, english) {
     var el = $('#p-fb'); el.hidden = false; el.className = 'fb ' + (ok ? 'good' : 'bad');
-    $('#p-fbt').textContent = ok ? pick(['Richtig!', 'Super!', 'Genau!', 'Stark!', 'Klasse!']) + (S.streak >= 3 ? ' ' + S.streak + ' in Folge' : '') : 'Richtig ist: ' + q.ans;
+    $('#p-fbt').textContent = ok ? pick(['Richtig!', 'Super!', 'Genau!', 'Stark!', 'Klasse!']) + (S.streak >= 3 ? ' ' + S.streak + ' in Folge' : '') : q.match ? 'Geschafft, aber mit ' + (S.miss || 1) + (S.miss === 1 ? ' Fehlversuch' : ' Fehlversuchen') : 'Richtig ist: ' + q.ans;
+    $('#p-why').hidden = ok || quick || !EXPL[S.cur.tp.id];
     $('#p-gain').textContent = ok ? '+' + gain : '';
     $('#p-fbspk').hidden = !q.say;
     $('#p-ex').textContent = (!ok || english) ? (q.explain || '') : ''; $('#p-ex').hidden = !$('#p-ex').textContent;
@@ -2415,6 +2701,7 @@ p { margin: 0; }
     if (document.activeElement !== $('#f-name')) $('#f-name').value = p.name;
     lookPicker($('#f-looks'), p.look, function (k) { p.look = k; save(); pushScore(p); renderProf(); });
     $('#f-snd').textContent = D.sound ? '🔊 Ton an' : '🔇 Ton aus'; $('#f-snd').setAttribute('aria-pressed', D.sound ? 'true' : 'false');
+    $('#f-read').textContent = D.read ? '🔈 Fragen vorlesen: an' : '🔈 Fragen vorlesen: aus'; $('#f-read').setAttribute('aria-pressed', D.read ? 'true' : 'false');
     var box = $('#f-players'); box.innerHTML = '';
     D.players.forEach(function (q, i) {
       var b = document.createElement('button'); b.type = 'button'; b.className = 'rk' + (i === D.cur ? ' me' : '');
@@ -2757,6 +3044,103 @@ p { margin: 0; }
     document.addEventListener('keyup', function (e) { if (V && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) V.hold = 0; });
   })();
 
+  /* ---------- Deutsch vorlesen (Stimme des Geraets) ---------- */
+  var DEV = null;
+  function findDe() {
+    try {
+      var vs = speechSynthesis.getVoices().filter(function (x) { return /^de/i.test(x.lang); }), pref = ['Anna', 'Petra', 'Helena', 'Markus', 'Viktor', 'Martin', 'Google Deutsch'], i, v;
+      for (i = 0; i < pref.length; i++) { v = vs.filter(function (x) { return x.name.indexOf(pref[i]) === 0; })[0]; if (v) return v; }
+      return vs[0] || null;
+    } catch (e) { return null; }
+  }
+  function deVoiceOK() { try { return 'speechSynthesis' in window && (speechSynthesis.getVoices().length === 0 || !!findDe()); } catch (e) { return false; } }
+  function speakDe(text, btn, rate) {
+    try {
+      if (!('speechSynthesis' in window)) { toast('Dieses Gerät kann leider nicht vorlesen.'); return; }
+      stopSay();
+      var u = new SpeechSynthesisUtterance(String(text).replace(/▢/g, ' Lücke ').replace(/[„“”]/g, '').replace(/ × /g, ' mal ').replace(/ : /g, ' geteilt durch ').replace(/ − /g, ' minus ').replace(/→/g, ', dann '));
+      u.lang = 'de-DE'; u.rate = rate || 0.95;
+      if (!DEV) DEV = findDe();
+      if (DEV) u.voice = DEV;
+      if (btn) { sayBtn = btn; btn.classList.add('playing'); u.onend = u.onerror = function () { btn.classList.remove('playing'); }; }
+      speechSynthesis.speak(u);
+    } catch (e) {}
+  }
+  function readQ() {
+    if (!S || !S.cur) return;
+    var q = S.cur.q, parts = [];
+    if (!$('#p-fb').hidden && $('#p-ex').textContent && S.cur.tp.s !== 'en') { speakDe($('#p-fbt').textContent + '. ' + $('#p-ex').textContent, $('#p-read')); return; }
+    parts.push(q.text);
+    if (q.html) parts.push($('#p-html').textContent);
+    if (S.cur.tp.s !== 'en' && q.big != null && !q.listen && !q.write) parts.push(String(q.big));
+    if (S.cur.tp.s !== 'en' && q.opts && !q.pics && q.opts.every(function (o) { return o.t.length > 3; })) parts.push(q.opts.map(function (o) { return o.t; }).join('. Oder: '));
+    speakDe(parts.join('. '), $('#p-read'));
+  }
+
+  /* ---------- Schreiben, Sortieren, Zuordnen ---------- */
+  function buildX(q) {
+    var box = $('#p-x'), i;
+    S.miss = 0;
+    if (q.write) {
+      box.innerHTML = '<div class="wr-row"><input class="field" id="p-wr" type="text" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" enterkeyhint="done" aria-label="Deine Antwort"><button class="btn" id="p-wrok" type="button">OK</button></div>';
+      var inp = $('#p-wr');
+      var go = function () {
+        if (!S || S.locked) return;
+        var v = inp.value.trim().replace(/\s+/g, ' '); if (!v) { inp.focus(); return; }
+        var w = q.write, ok = w.ans.some(function (a) { return w.ci ? a.toLowerCase() === v.toLowerCase() : a === v; });
+        if (!ok && !w.ci && w.ans.some(function (a) { return a.toLowerCase() === v.toLowerCase(); })) q.explain = 'Fast! Achte auf die Groß- und Kleinschreibung: ' + w.ans[0];
+        inp.blur(); answer(ok);
+      };
+      $('#p-wrok').addEventListener('click', go);
+      inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); go(); } e.stopPropagation(); });
+      setTimeout(function () { try { inp.focus(); } catch (e) {} }, 80);
+      return;
+    }
+    if (q.order) {
+      var items = q.order.items, pool = [], sel = [], tiny = q.order.small;
+      do { pool = shuf(items.map(function (_, k) { return k; })); } while (items.length > 1 && pool.every(function (k, j) { return items[k] === items[j]; }));
+      box.innerHTML = '<div class="ord-ans' + (q.order.sep === '' ? ' joined' : '') + '" id="p-oa"></div><div class="ord-pool" id="p-op"></div><button class="btn" id="p-ook" type="button" disabled>Fertig</button>';
+      var draw = function () {
+        var a = $('#p-oa'), o = $('#p-op'); a.innerHTML = ''; o.innerHTML = '';
+        sel.forEach(function (k, j) { var b = document.createElement('button'); b.type = 'button'; b.className = 'oc' + (tiny ? ' tiny' : ''); b.textContent = items[k]; b.addEventListener('click', function () { SND.tap(); sel.splice(j, 1); pool.push(k); draw(); }); a.appendChild(b); });
+        pool.forEach(function (k, j) { var b = document.createElement('button'); b.type = 'button'; b.className = 'oc' + (tiny ? ' tiny' : ''); b.textContent = items[k]; b.addEventListener('click', function () { SND.tap(); pool.splice(j, 1); sel.push(k); draw(); }); o.appendChild(b); });
+        $('#p-ook').disabled = pool.length > 0;
+      };
+      draw();
+      $('#p-ook').addEventListener('click', function () { if (S && !S.locked && !pool.length) answer(sel.every(function (k, j) { return items[k] === items[j]; })); });
+      return;
+    }
+    var pairs = q.match.pairs, left = shuf(pairs.map(function (_, k) { return k; })), right = shuf(left), cur = -1, done = 0, grid = document.createElement('div');
+    grid.className = 'mt';
+    var lb = {}, rb = {};
+    for (i = 0; i < pairs.length; i++) (function (li, ri) {
+      var a = document.createElement('button'); a.type = 'button'; a.className = 'mc'; a.textContent = pairs[li][0]; lb[li] = a;
+      a.addEventListener('click', function () { if (cur >= 0) lb[cur].classList.remove('sel'); cur = li; a.classList.add('sel'); SND.tap(); });
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'mc'; b.textContent = pairs[ri][1]; rb[ri] = b;
+      b.addEventListener('click', function () {
+        if (cur < 0) { toast('Tippe zuerst links ein Kästchen an.'); return; }
+        if (pairs[cur][1] === pairs[ri][1]) { lb[cur].className = 'mc done'; b.className = 'mc done'; cur = -1; done++; SND.ok(done); if (done === pairs.length) answer(S.miss === 0); }
+        else { S.miss++; SND.no(); b.classList.add('miss'); setTimeout(function () { b.classList.remove('miss'); }, 350); }
+      });
+      grid.appendChild(a); grid.appendChild(b);
+    })(left[i], right[i]);
+    box.appendChild(grid);
+  }
+
+  /* ---------- Erklaer-Karten ---------- */
+  var EX = { id: '', i: 0 };
+  function openEx(id) { if (!EXPL[id]) return; EX = { id: id, i: 0 }; $('#ex-t').textContent = BY_ID[id].e + ' ' + BY_ID[id].n; drawEx(); $('#ex').hidden = false; }
+  function drawEx() {
+    var st = EXPL[EX.id], d = $('#ex-d'); $('#ex-s').textContent = st[EX.i]; d.innerHTML = '';
+    st.forEach(function (_, j) { var i = document.createElement('i'); if (j === EX.i) i.className = 'on'; d.appendChild(i); });
+    $('#ex-k').textContent = 'Erklärung · Karte ' + (EX.i + 1) + ' von ' + st.length;
+    $('#ex-next').textContent = EX.i + 1 < st.length ? 'Weiter' : 'Verstanden!';
+    if (D.read) speakDe(st[EX.i], $('#ex-read'));
+  }
+  $('#ex-next').addEventListener('click', function () { stopSay(); if (EX.i + 1 < EXPL[EX.id].length) { EX.i++; drawEx(); } else $('#ex').hidden = true; });
+  $('#ex-x').addEventListener('click', function () { stopSay(); $('#ex').hidden = true; });
+  $('#ex-read').addEventListener('click', function () { speakDe(EXPL[EX.id][EX.i], $('#ex-read')); });
+
   /* ---------- Verdrahtung ---------- */
   $('#o-go').addEventListener('click', function () {
     var name = $('#o-name').value.trim().slice(0, 12);
@@ -2777,7 +3161,7 @@ p { margin: 0; }
   $('#d-blitz').addEventListener('click', function () { start('blitz', selIds(), SEL.s); });
   $('#p-quit').addEventListener('click', function () { var s = S && S.subj; stop(); S = null; if (s && s !== 'mix') { renderTopics(); show('subj'); } else goHome(); });
   $('#p-next').addEventListener('click', next);
-  $('#p-spk').addEventListener('click', function () { if (S && S.cur && S.cur.q.say) say(S.cur.q.say, $('#p-spk')); });
+  $('#p-spk').addEventListener('click', function () { if (S && S.cur && S.cur.q.say) say(S.cur.q.say, $('#p-spk')); else if (S && S.cur && S.cur.q.sayDe) speakDe(S.cur.q.sayDe, $('#p-spk'), 0.8); });
   $('#p-fbspk').addEventListener('click', function () { if (S && S.cur && S.cur.q.say) say(S.cur.q.say, $('#p-fbspk')); });
   $('#r-home').addEventListener('click', goHome);
   $('#ov-x').addEventListener('click', closeOv);
@@ -2788,6 +3172,9 @@ p { margin: 0; }
   $('#f-name').addEventListener('input', function (e) { var v = e.target.value.trim().slice(0, 12); if (v) { P().name = v; save(); } });
   $('#f-name').addEventListener('blur', function () { pushScore(P()); renderProf(); });
   $('#f-snd').addEventListener('click', function () { D.sound = !D.sound; save(); SND.ok(); renderProf(); });
+  $('#f-read').addEventListener('click', function () { D.read = !D.read; save(); renderProf(); if (D.read) speakDe('Ich lese dir jetzt jede Frage vor.'); });
+  $('#p-read').addEventListener('click', readQ);
+  $('#p-why').addEventListener('click', function () { if (S && S.cur) openEx(S.cur.tp.id); });
   $('#f-add').addEventListener('click', function () { openOnb(false); });
   $('#f-del').addEventListener('click', function () {
     var p = P();
@@ -2812,7 +3199,7 @@ p { margin: 0; }
     if (view !== 'play' || !S) return;
     if (S.locked) { if (e.key === 'Enter' && !$('#p-next').hidden) next(); return; }
     if (S.cur.q.num != null) { if (e.key >= '0' && e.key <= '9') digit(e.key); else if (e.key === 'Backspace') { S.input = S.input.slice(0, -1); $('#p-ans').textContent = S.input; } else if (e.key === 'Enter' && S.input) answer(+S.input === S.cur.q.num); }
-    else if (e.key >= '1' && e.key <= '5' && S.cur.q.opts[+e.key - 1]) answer(!!S.cur.q.opts[+e.key - 1].ok, +e.key - 1);
+    else if (S.cur.q.opts && e.key >= '1' && e.key <= '5' && S.cur.q.opts[+e.key - 1]) answer(!!S.cur.q.opts[+e.key - 1].ok, +e.key - 1);
   });
   document.addEventListener('visibilitychange', function () { if (document.hidden) stopTune(); });
 
@@ -2824,7 +3211,7 @@ p { margin: 0; }
     if (ON.ready && !D.code && kk.length >= 4) joinCode(kk);
     else if (ON.ready && D.code) pushScore(P()).then(fetchBoard).then(function () { if (view === 'home') renderTeaser(); });
   }
-  window.__k3 = { snake: function () { return K; }, tet: function () { return T; }, inv: function () { return V; }, TOPICS: TOPICS, CLIPS: CLIPS, ask: function (id) { start('practice', [id], BY_ID[id].s); }, clip: function (i) { showClip(CLIPS[i], true, i + 1); } };
+  window.__k3 = { cur: function () { return S && S.cur; }, snake: function () { return K; }, tet: function () { return T; }, inv: function () { return V; }, TOPICS: TOPICS, CLIPS: CLIPS, ask: function (id) { start('practice', [id], BY_ID[id].s); }, clip: function (i) { showClip(CLIPS[i], true, i + 1); } };
 
 
 })();

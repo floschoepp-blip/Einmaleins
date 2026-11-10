@@ -251,7 +251,7 @@
     $('#nav').hidden = !navOn; $('#dock').hidden = v !== 'subj';
     [].forEach.call(document.querySelectorAll('#nav button'), function (b) { b.setAttribute('aria-current', b.getAttribute('data-v') === v ? 'true' : 'false'); });
     try { window.scrollTo(0, 0); } catch (e) {}
-    stopSay();
+    stopSay(); $('#ex').hidden = true;
     if (v !== 'snake') snakeStop();
     if (v !== 'tet') tetStop();
     if (v !== 'inv') invStop();
@@ -308,12 +308,15 @@
   function renderTopics() {
     var p = P(), box = $('#s-topics'); box.innerHTML = '';
     TOPICS.filter(function (t) { return t.s === SEL.s; }).forEach(function (t) {
+      var w = document.createElement('div'); w.className = 'tpw';
       var b = document.createElement('button'), n = pips(mastery(p, t.id)), on = SEL.ids.indexOf(t.id) >= 0;
       b.type = 'button'; b.className = 'tp'; b.setAttribute('aria-pressed', on ? 'true' : 'false');
       b.innerHTML = '<span class="em">' + t.e + '</span><b></b><span class="pips" aria-label="' + n + ' von 3 Sternen"><i class="' + (n > 0 ? 'on' : '') + '">★</i><i class="' + (n > 1 ? 'on' : '') + '">★</i><i class="' + (n > 2 ? 'on' : '') + '">★</i></span>';
       b.querySelector('b').textContent = t.n;
       b.addEventListener('click', function () { var i = SEL.ids.indexOf(t.id); if (i >= 0) SEL.ids.splice(i, 1); else SEL.ids.push(t.id); SND.tap(); renderTopics(); });
-      box.appendChild(b);
+      w.appendChild(b);
+      if (EXPL[t.id]) { var ib = document.createElement('button'); ib.type = 'button'; ib.className = 'tp-i'; ib.textContent = '?'; ib.setAttribute('aria-label', 'Erklärung zu ' + t.n); ib.addEventListener('click', function () { openEx(t.id); }); w.appendChild(ib); }
+      box.appendChild(w);
     });
     $('#d-info').textContent = SEL.ids.length ? SEL.ids.length + (SEL.ids.length === 1 ? ' Thema' : ' Themen') + ' ausgewählt' : 'Alle Themen gemischt';
   }
@@ -350,8 +353,8 @@
       r = Math.random() * tot;
       var it = pool[pool.length - 1];
       for (i = 0; i < pool.length; i++) { r -= ws[i]; if (r <= 0) { it = pool[i]; break; } }
-      key = it.id; S.used[key] = 1; q = it.make(L);
-    } else q = tp.gen(L);
+      key = it.id; S.used[key] = 1; q = it.make(L, S.mode !== 'blitz');
+    } else q = tp.gen(L, S.mode !== 'blitz');
     return { tp: tp, key: key, q: q, L: L };
   }
   function buildKeys() {
@@ -367,14 +370,16 @@
     if (!S) return;
     clearTimeout(S.to);
     if (S.mode !== 'blitz' && S.asked >= S.n) { finish(); return; }
-    var c = pickQ(), q = c.q;
+    var c = pickQ(), tries = 0;
+    while (S.mode === 'blitz' && (c.q.write || c.q.order || c.q.match) && tries++ < 8) c = pickQ();
+    var q = c.q;
     S.cur = c; S.asked++; S.input = ''; S.locked = false;
     if (S.mode !== 'blitz') $('#p-prog').style.transform = 'scaleX(' + (S.asked - 1) / S.n + ')';
     $('#p-tag').textContent = c.tp.e + ' ' + c.tp.n + (c.again ? ' · nochmal' : '');
     $('#p-tag').style.background = SUBJ[c.tp.s].c;
     $('#p-q').className = 'q';
     $('#p-text').textContent = q.text;
-    $('#p-html').hidden = !q.html; $('#p-html').innerHTML = q.html || '';
+    $('#p-html').hidden = !q.html; $('#p-html').innerHTML = q.html || ''; $('#p-html').className = 'q-html' + (q.textLeft ? ' left' : '');
     var showBig = q.big != null && !q.listen;
     $('#p-big').hidden = !showBig; $('#p-big').textContent = showBig ? q.big : '';
     $('#p-big').className = 'q-big' + (q.small ? ' small' : showBig && String(q.big).length > 9 ? ' long' : '');
@@ -383,11 +388,13 @@
     $('#p-spk').hidden = !spk; $('#p-spk').className = 'spk' + (q.listen ? '' : ' sm');
     $('#p-bigrow').hidden = !(showBig || q.emoji || spk);
     $('#p-img').hidden = !q.img; $('#p-img').innerHTML = q.img || ''; $('#p-img').className = 'art' + (q.wide ? ' wide' : '');
-    var isNum = q.num != null;
+    var isNum = q.num != null, isX = !!(q.write || q.order || q.match);
     $('#p-ans').hidden = !isNum; $('#p-ans').textContent = '';
     $('#p-keys').hidden = !isNum; $('#p-keys').setAttribute('data-locked', 'false');
-    var box = $('#p-opts'); box.hidden = isNum; box.innerHTML = ''; box.setAttribute('data-locked', 'false');
-    if (!isNum) {
+    var box = $('#p-opts'); box.hidden = isNum || isX; box.innerHTML = ''; box.setAttribute('data-locked', 'false');
+    $('#p-x').hidden = !isX; $('#p-x').innerHTML = ''; $('#p-x').setAttribute('data-locked', 'false');
+    if (isX) buildX(q);
+    else if (!isNum) {
       var long = q.opts.some(function (o) { return o.t.length > 16; }), short = q.opts.length === 3 && q.opts.every(function (o) { return o.t.length <= 5; });
       box.className = 'opts' + (q.pics ? '' : short ? ' three' : (long || q.opts.length === 3 || q.opts.length === 5) ? ' one' : '');
       q.opts.forEach(function (o, i) {
@@ -399,6 +406,8 @@
     }
     $('#p-fb').hidden = true;
     if (q.auto && q.say) setTimeout(function () { if (S && S.cur === c && !S.locked) say(q.say, $('#p-spk')); }, 250);
+    else if (q.auto && q.sayDe) setTimeout(function () { if (S && S.cur === c && !S.locked) speakDe(q.sayDe, $('#p-spk'), 0.8); }, 250);
+    else if (D.read && S.mode !== 'blitz') setTimeout(function () { if (S && S.cur === c && !S.locked) readQ(); }, 300);
   }
   function answer(ok, idx) {
     var c = S.cur, q = c.q, p = P(), t = p.topics[c.tp.id] || (p.topics[c.tp.id] = { seen: 0, right: 0, rec: '' });
@@ -410,7 +419,8 @@
     else { S.streak = 0; S.wrong.push(q.short || q.explain || q.ans); if (S.mode !== 'blitz' && !c.again) S.retry.push({ tp: c.tp, key: c.key, q: q, L: c.L, due: S.asked + 3 }); }
     save();
     $('#p-pts').textContent = S.pts;
-    if (q.num == null) { var bs = $('#p-opts').children; q.opts.forEach(function (o, j) { bs[j].classList.add(o.ok ? 'right' : j === idx ? 'wrong' : 'dim'); }); $('#p-opts').setAttribute('data-locked', 'true'); }
+    if (q.write || q.order || q.match) $('#p-x').setAttribute('data-locked', 'true');
+    else if (q.num == null) { var bs = $('#p-opts').children; q.opts.forEach(function (o, j) { bs[j].classList.add(o.ok ? 'right' : j === idx ? 'wrong' : 'dim'); }); $('#p-opts').setAttribute('data-locked', 'true'); }
     else $('#p-keys').setAttribute('data-locked', 'true');
     $('#p-q').className = 'q ' + (ok ? 'ok' : 'no');
     if (ok) { SND.ok(S.streak); burstAt($('#p-q'), S.streak % 5 === 0 ? 28 : 10, S.streak % 5 === 0); } else SND.no();
@@ -423,7 +433,8 @@
   }
   function fb(ok, q, gain, quick, english) {
     var el = $('#p-fb'); el.hidden = false; el.className = 'fb ' + (ok ? 'good' : 'bad');
-    $('#p-fbt').textContent = ok ? pick(['Richtig!', 'Super!', 'Genau!', 'Stark!', 'Klasse!']) + (S.streak >= 3 ? ' ' + S.streak + ' in Folge' : '') : 'Richtig ist: ' + q.ans;
+    $('#p-fbt').textContent = ok ? pick(['Richtig!', 'Super!', 'Genau!', 'Stark!', 'Klasse!']) + (S.streak >= 3 ? ' ' + S.streak + ' in Folge' : '') : q.match ? 'Geschafft, aber mit ' + (S.miss || 1) + (S.miss === 1 ? ' Fehlversuch' : ' Fehlversuchen') : 'Richtig ist: ' + q.ans;
+    $('#p-why').hidden = ok || quick || !EXPL[S.cur.tp.id];
     $('#p-gain').textContent = ok ? '+' + gain : '';
     $('#p-fbspk').hidden = !q.say;
     $('#p-ex').textContent = (!ok || english) ? (q.explain || '') : ''; $('#p-ex').hidden = !$('#p-ex').textContent;
@@ -538,6 +549,7 @@
     if (document.activeElement !== $('#f-name')) $('#f-name').value = p.name;
     lookPicker($('#f-looks'), p.look, function (k) { p.look = k; save(); pushScore(p); renderProf(); });
     $('#f-snd').textContent = D.sound ? '🔊 Ton an' : '🔇 Ton aus'; $('#f-snd').setAttribute('aria-pressed', D.sound ? 'true' : 'false');
+    $('#f-read').textContent = D.read ? '🔈 Fragen vorlesen: an' : '🔈 Fragen vorlesen: aus'; $('#f-read').setAttribute('aria-pressed', D.read ? 'true' : 'false');
     var box = $('#f-players'); box.innerHTML = '';
     D.players.forEach(function (q, i) {
       var b = document.createElement('button'); b.type = 'button'; b.className = 'rk' + (i === D.cur ? ' me' : '');
@@ -880,6 +892,103 @@
     document.addEventListener('keyup', function (e) { if (V && (e.key === 'ArrowLeft' || e.key === 'ArrowRight')) V.hold = 0; });
   })();
 
+  /* ---------- Deutsch vorlesen (Stimme des Geraets) ---------- */
+  var DEV = null;
+  function findDe() {
+    try {
+      var vs = speechSynthesis.getVoices().filter(function (x) { return /^de/i.test(x.lang); }), pref = ['Anna', 'Petra', 'Helena', 'Markus', 'Viktor', 'Martin', 'Google Deutsch'], i, v;
+      for (i = 0; i < pref.length; i++) { v = vs.filter(function (x) { return x.name.indexOf(pref[i]) === 0; })[0]; if (v) return v; }
+      return vs[0] || null;
+    } catch (e) { return null; }
+  }
+  function deVoiceOK() { try { return 'speechSynthesis' in window && (speechSynthesis.getVoices().length === 0 || !!findDe()); } catch (e) { return false; } }
+  function speakDe(text, btn, rate) {
+    try {
+      if (!('speechSynthesis' in window)) { toast('Dieses Gerät kann leider nicht vorlesen.'); return; }
+      stopSay();
+      var u = new SpeechSynthesisUtterance(String(text).replace(/▢/g, ' Lücke ').replace(/[„“”]/g, '').replace(/ × /g, ' mal ').replace(/ : /g, ' geteilt durch ').replace(/ − /g, ' minus ').replace(/→/g, ', dann '));
+      u.lang = 'de-DE'; u.rate = rate || 0.95;
+      if (!DEV) DEV = findDe();
+      if (DEV) u.voice = DEV;
+      if (btn) { sayBtn = btn; btn.classList.add('playing'); u.onend = u.onerror = function () { btn.classList.remove('playing'); }; }
+      speechSynthesis.speak(u);
+    } catch (e) {}
+  }
+  function readQ() {
+    if (!S || !S.cur) return;
+    var q = S.cur.q, parts = [];
+    if (!$('#p-fb').hidden && $('#p-ex').textContent && S.cur.tp.s !== 'en') { speakDe($('#p-fbt').textContent + '. ' + $('#p-ex').textContent, $('#p-read')); return; }
+    parts.push(q.text);
+    if (q.html) parts.push($('#p-html').textContent);
+    if (S.cur.tp.s !== 'en' && q.big != null && !q.listen && !q.write) parts.push(String(q.big));
+    if (S.cur.tp.s !== 'en' && q.opts && !q.pics && q.opts.every(function (o) { return o.t.length > 3; })) parts.push(q.opts.map(function (o) { return o.t; }).join('. Oder: '));
+    speakDe(parts.join('. '), $('#p-read'));
+  }
+
+  /* ---------- Schreiben, Sortieren, Zuordnen ---------- */
+  function buildX(q) {
+    var box = $('#p-x'), i;
+    S.miss = 0;
+    if (q.write) {
+      box.innerHTML = '<div class="wr-row"><input class="field" id="p-wr" type="text" autocomplete="off" autocorrect="off" autocapitalize="none" spellcheck="false" enterkeyhint="done" aria-label="Deine Antwort"><button class="btn" id="p-wrok" type="button">OK</button></div>';
+      var inp = $('#p-wr');
+      var go = function () {
+        if (!S || S.locked) return;
+        var v = inp.value.trim().replace(/\s+/g, ' '); if (!v) { inp.focus(); return; }
+        var w = q.write, ok = w.ans.some(function (a) { return w.ci ? a.toLowerCase() === v.toLowerCase() : a === v; });
+        if (!ok && !w.ci && w.ans.some(function (a) { return a.toLowerCase() === v.toLowerCase(); })) q.explain = 'Fast! Achte auf die Groß- und Kleinschreibung: ' + w.ans[0];
+        inp.blur(); answer(ok);
+      };
+      $('#p-wrok').addEventListener('click', go);
+      inp.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); go(); } e.stopPropagation(); });
+      setTimeout(function () { try { inp.focus(); } catch (e) {} }, 80);
+      return;
+    }
+    if (q.order) {
+      var items = q.order.items, pool = [], sel = [], tiny = q.order.small;
+      do { pool = shuf(items.map(function (_, k) { return k; })); } while (items.length > 1 && pool.every(function (k, j) { return items[k] === items[j]; }));
+      box.innerHTML = '<div class="ord-ans' + (q.order.sep === '' ? ' joined' : '') + '" id="p-oa"></div><div class="ord-pool" id="p-op"></div><button class="btn" id="p-ook" type="button" disabled>Fertig</button>';
+      var draw = function () {
+        var a = $('#p-oa'), o = $('#p-op'); a.innerHTML = ''; o.innerHTML = '';
+        sel.forEach(function (k, j) { var b = document.createElement('button'); b.type = 'button'; b.className = 'oc' + (tiny ? ' tiny' : ''); b.textContent = items[k]; b.addEventListener('click', function () { SND.tap(); sel.splice(j, 1); pool.push(k); draw(); }); a.appendChild(b); });
+        pool.forEach(function (k, j) { var b = document.createElement('button'); b.type = 'button'; b.className = 'oc' + (tiny ? ' tiny' : ''); b.textContent = items[k]; b.addEventListener('click', function () { SND.tap(); pool.splice(j, 1); sel.push(k); draw(); }); o.appendChild(b); });
+        $('#p-ook').disabled = pool.length > 0;
+      };
+      draw();
+      $('#p-ook').addEventListener('click', function () { if (S && !S.locked && !pool.length) answer(sel.every(function (k, j) { return items[k] === items[j]; })); });
+      return;
+    }
+    var pairs = q.match.pairs, left = shuf(pairs.map(function (_, k) { return k; })), right = shuf(left), cur = -1, done = 0, grid = document.createElement('div');
+    grid.className = 'mt';
+    var lb = {}, rb = {};
+    for (i = 0; i < pairs.length; i++) (function (li, ri) {
+      var a = document.createElement('button'); a.type = 'button'; a.className = 'mc'; a.textContent = pairs[li][0]; lb[li] = a;
+      a.addEventListener('click', function () { if (cur >= 0) lb[cur].classList.remove('sel'); cur = li; a.classList.add('sel'); SND.tap(); });
+      var b = document.createElement('button'); b.type = 'button'; b.className = 'mc'; b.textContent = pairs[ri][1]; rb[ri] = b;
+      b.addEventListener('click', function () {
+        if (cur < 0) { toast('Tippe zuerst links ein Kästchen an.'); return; }
+        if (pairs[cur][1] === pairs[ri][1]) { lb[cur].className = 'mc done'; b.className = 'mc done'; cur = -1; done++; SND.ok(done); if (done === pairs.length) answer(S.miss === 0); }
+        else { S.miss++; SND.no(); b.classList.add('miss'); setTimeout(function () { b.classList.remove('miss'); }, 350); }
+      });
+      grid.appendChild(a); grid.appendChild(b);
+    })(left[i], right[i]);
+    box.appendChild(grid);
+  }
+
+  /* ---------- Erklaer-Karten ---------- */
+  var EX = { id: '', i: 0 };
+  function openEx(id) { if (!EXPL[id]) return; EX = { id: id, i: 0 }; $('#ex-t').textContent = BY_ID[id].e + ' ' + BY_ID[id].n; drawEx(); $('#ex').hidden = false; }
+  function drawEx() {
+    var st = EXPL[EX.id], d = $('#ex-d'); $('#ex-s').textContent = st[EX.i]; d.innerHTML = '';
+    st.forEach(function (_, j) { var i = document.createElement('i'); if (j === EX.i) i.className = 'on'; d.appendChild(i); });
+    $('#ex-k').textContent = 'Erklärung · Karte ' + (EX.i + 1) + ' von ' + st.length;
+    $('#ex-next').textContent = EX.i + 1 < st.length ? 'Weiter' : 'Verstanden!';
+    if (D.read) speakDe(st[EX.i], $('#ex-read'));
+  }
+  $('#ex-next').addEventListener('click', function () { stopSay(); if (EX.i + 1 < EXPL[EX.id].length) { EX.i++; drawEx(); } else $('#ex').hidden = true; });
+  $('#ex-x').addEventListener('click', function () { stopSay(); $('#ex').hidden = true; });
+  $('#ex-read').addEventListener('click', function () { speakDe(EXPL[EX.id][EX.i], $('#ex-read')); });
+
   /* ---------- Verdrahtung ---------- */
   $('#o-go').addEventListener('click', function () {
     var name = $('#o-name').value.trim().slice(0, 12);
@@ -900,7 +1009,7 @@
   $('#d-blitz').addEventListener('click', function () { start('blitz', selIds(), SEL.s); });
   $('#p-quit').addEventListener('click', function () { var s = S && S.subj; stop(); S = null; if (s && s !== 'mix') { renderTopics(); show('subj'); } else goHome(); });
   $('#p-next').addEventListener('click', next);
-  $('#p-spk').addEventListener('click', function () { if (S && S.cur && S.cur.q.say) say(S.cur.q.say, $('#p-spk')); });
+  $('#p-spk').addEventListener('click', function () { if (S && S.cur && S.cur.q.say) say(S.cur.q.say, $('#p-spk')); else if (S && S.cur && S.cur.q.sayDe) speakDe(S.cur.q.sayDe, $('#p-spk'), 0.8); });
   $('#p-fbspk').addEventListener('click', function () { if (S && S.cur && S.cur.q.say) say(S.cur.q.say, $('#p-fbspk')); });
   $('#r-home').addEventListener('click', goHome);
   $('#ov-x').addEventListener('click', closeOv);
@@ -911,6 +1020,9 @@
   $('#f-name').addEventListener('input', function (e) { var v = e.target.value.trim().slice(0, 12); if (v) { P().name = v; save(); } });
   $('#f-name').addEventListener('blur', function () { pushScore(P()); renderProf(); });
   $('#f-snd').addEventListener('click', function () { D.sound = !D.sound; save(); SND.ok(); renderProf(); });
+  $('#f-read').addEventListener('click', function () { D.read = !D.read; save(); renderProf(); if (D.read) speakDe('Ich lese dir jetzt jede Frage vor.'); });
+  $('#p-read').addEventListener('click', readQ);
+  $('#p-why').addEventListener('click', function () { if (S && S.cur) openEx(S.cur.tp.id); });
   $('#f-add').addEventListener('click', function () { openOnb(false); });
   $('#f-del').addEventListener('click', function () {
     var p = P();
@@ -935,7 +1047,7 @@
     if (view !== 'play' || !S) return;
     if (S.locked) { if (e.key === 'Enter' && !$('#p-next').hidden) next(); return; }
     if (S.cur.q.num != null) { if (e.key >= '0' && e.key <= '9') digit(e.key); else if (e.key === 'Backspace') { S.input = S.input.slice(0, -1); $('#p-ans').textContent = S.input; } else if (e.key === 'Enter' && S.input) answer(+S.input === S.cur.q.num); }
-    else if (e.key >= '1' && e.key <= '5' && S.cur.q.opts[+e.key - 1]) answer(!!S.cur.q.opts[+e.key - 1].ok, +e.key - 1);
+    else if (S.cur.q.opts && e.key >= '1' && e.key <= '5' && S.cur.q.opts[+e.key - 1]) answer(!!S.cur.q.opts[+e.key - 1].ok, +e.key - 1);
   });
   document.addEventListener('visibilitychange', function () { if (document.hidden) stopTune(); });
 
@@ -947,4 +1059,4 @@
     if (ON.ready && !D.code && kk.length >= 4) joinCode(kk);
     else if (ON.ready && D.code) pushScore(P()).then(fetchBoard).then(function () { if (view === 'home') renderTeaser(); });
   }
-  window.__k3 = { snake: function () { return K; }, tet: function () { return T; }, inv: function () { return V; }, TOPICS: TOPICS, CLIPS: CLIPS, ask: function (id) { start('practice', [id], BY_ID[id].s); }, clip: function (i) { showClip(CLIPS[i], true, i + 1); } };
+  window.__k3 = { cur: function () { return S && S.cur; }, snake: function () { return K; }, tet: function () { return T; }, inv: function () { return V; }, TOPICS: TOPICS, CLIPS: CLIPS, ask: function (id) { start('practice', [id], BY_ID[id].s); }, clip: function (i) { showClip(CLIPS[i], true, i + 1); } };
