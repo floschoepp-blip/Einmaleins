@@ -1840,18 +1840,45 @@ p { margin: 0; }
     } catch (e) { return null; }
   }
   try { if ('speechSynthesis' in window) { VOICE = findVoice(); speechSynthesis.onvoiceschanged = function () { VOICE = findVoice(); }; } } catch (e) {}
-  function say(text, btn) {
+  /* Aufnahmen (audio/<wort>.mp3) zuerst, Geraetestimme nur als Ersatz */
+  var AUD = null, audUnlocked = false, SILENT = 'data:audio/wav;base64,UklGRiQAAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQAAAAA=';
+  try { AUD = new Audio(); AUD.preload = 'auto'; } catch (e) {}
+  function unlockAudio() {
+    if (audUnlocked || !AUD) return; audUnlocked = true;
+    try { AUD.src = SILENT; var pr = AUD.play(); if (pr && pr.catch) pr.catch(function () {}); } catch (e) {}
+  }
+  document.addEventListener('pointerdown', unlockAudio, true);
+  document.addEventListener('touchend', unlockAudio, true);
+  function slug(t) { return String(t).toLowerCase().replace(/'/g, '').replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, ''); }
+  function speakDevice(text, btn) {
     try {
-      if (!('speechSynthesis' in window)) { toast('Dieses Gerät kann leider nicht vorlesen.'); return; }
+      if (!('speechSynthesis' in window)) return;
       speechSynthesis.cancel();
       var u = new SpeechSynthesisUtterance(text);
-      u.lang = 'en-GB'; u.rate = 0.82; u.pitch = 1.05;
+      u.lang = 'en-GB'; u.rate = 0.9;
       if (!VOICE) VOICE = findVoice();
       if (VOICE) u.voice = VOICE;
       if (btn) { btn.classList.add('playing'); u.onend = u.onerror = function () { btn.classList.remove('playing'); }; }
       speechSynthesis.speak(u);
     } catch (e) {}
   }
+  var sayBtn = null, sayId = 0;
+  function say(text, btn) {
+    if (!AUD) { speakDevice(text, btn); return; }
+    var id = ++sayId, done = false;
+    if (sayBtn) sayBtn.classList.remove('playing');
+    sayBtn = btn || null;
+    function end() { if (id === sayId && sayBtn) sayBtn.classList.remove('playing'); }
+    function fail() { if (done || id !== sayId) return; done = true; end(); speakDevice(text, btn); }
+    try {
+      AUD.onended = end; AUD.onerror = fail;
+      AUD.src = 'audio/' + slug(text) + '.mp3';
+      if (btn) btn.classList.add('playing');
+      var pr = AUD.play();
+      if (pr && pr.catch) pr.catch(function (e) { if (e && e.name === 'AbortError') return; fail(); });
+    } catch (e) { fail(); }
+  }
+  function stopSay() { sayId++; try { if (AUD) AUD.pause(); } catch (e) {} if (sayBtn) sayBtn.classList.remove('playing'); try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch (e) {} }
 
   /* ---------- Effekte ---------- */
   function burst(x, y, n, wide) {
@@ -1982,7 +2009,7 @@ p { margin: 0; }
     $('#nav').hidden = !navOn; $('#dock').hidden = v !== 'subj';
     [].forEach.call(document.querySelectorAll('#nav button'), function (b) { b.setAttribute('aria-current', b.getAttribute('data-v') === v ? 'true' : 'false'); });
     try { window.scrollTo(0, 0); } catch (e) {}
-    try { if ('speechSynthesis' in window) speechSynthesis.cancel(); } catch (e) {}
+    stopSay();
   }
   function mastery(p, id) { var t = p.topics[id]; if (!t || !t.rec) return 0; return (t.rec.split('1').length - 1) / 12; }
   function pips(m) { return m >= 0.92 ? 3 : m >= 0.6 ? 2 : m >= 0.3 ? 1 : 0; }
