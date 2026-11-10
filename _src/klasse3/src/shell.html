@@ -221,6 +221,26 @@ p { margin: 0; }
 .clip.locked { opacity: .7; }
 .clip.locked .thumb { filter: none; color: #5A50C8; }
 
+/* Snake */
+.snk-card { display: flex; align-items: center; gap: 12px; text-align: left; width: 100%; background: linear-gradient(120deg, #1F8F52, #2FD67B); color: #062B16; border-radius: 22px; padding: 14px 16px; box-shadow: 0 6px 0 rgba(0,0,0,.35), inset 0 -8px 0 rgba(0,0,0,.12); }
+.snk-card:disabled { filter: grayscale(.8); opacity: .75; }
+.snk-card .ic { font-size: 2.6rem; line-height: 1; }
+.snk-card div { flex: 1; min-width: 0; }
+.snk-card b { display: block; font-family: var(--display); font-size: 1.4rem; font-weight: 800; line-height: 1.1; }
+.snk-card span { font-size: .88rem; font-weight: 800; }
+.tix { font-family: var(--display); font-weight: 800; font-size: 1.2rem; background: #fff; color: #062B16; border-radius: 999px; padding: 4px 12px; white-space: nowrap; flex: 0 0 auto; }
+.snk-wrap { position: relative; width: 100%; max-width: 420px; margin-inline: auto; aspect-ratio: 1; border-radius: 20px; overflow: hidden; box-shadow: 0 0 0 3px var(--line); background: #0F0B36; touch-action: none; }
+.snk-wrap canvas { width: 100%; height: 100%; display: block; touch-action: none; }
+.snk-msg { position: absolute; inset: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px; padding: 16px; text-align: center; background: rgba(15,11,54,.82); }
+.snk-msg b { font-family: var(--display); font-size: 1.9rem; font-weight: 800; line-height: 1.1; }
+.snk-msg .btn { max-width: 260px; }
+.pad { display: grid; grid-template-columns: repeat(3, 1fr); grid-template-rows: repeat(2, 60px); gap: 8px; max-width: 300px; width: 100%; margin-inline: auto; }
+.pad button { border-radius: 16px; background: var(--paper); color: var(--paper-ink); font-size: 1.7rem; font-weight: 900; box-shadow: 0 4px 0 rgba(0,0,0,.4), inset 0 -4px 0 #DAD3FF; touch-action: none; }
+.pad button:active { transform: translateY(2px); }
+.pad .u { grid-column: 2; grid-row: 1; } .pad .l { grid-column: 1; grid-row: 2; } .pad .d { grid-column: 2; grid-row: 2; } .pad .r { grid-column: 3; grid-row: 2; }
+.snk-hud { display: flex; align-items: center; gap: 10px; }
+.snk-hud .stat { flex: 1; }
+
 /* Profil */
 .looks { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; justify-items: center; }
 .looks button { border-radius: 50%; padding: 3px; }
@@ -334,7 +354,28 @@ p { margin: 0; }
     <div><div class="bignum" id="r-pts"></div><p class="muted" id="r-sub"></p></div>
     <div style="width:100%"><div class="xp"><i id="r-xp"></i></div><div class="xp-row"><span id="r-lv"></span><span id="r-next"></span></div></div>
     <div class="panel" id="r-redo-box" style="width:100%;text-align:left" hidden><p class="label">Das merken wir uns</p><ul class="redo" id="r-redo"></ul></div>
+    <button class="snk-card" id="r-snake" type="button" hidden><span class="ic">🐍</span><div><b>Snake spielen</b><span id="r-snk-sub"></span></div><span class="tix" id="r-tix"></span></button>
     <div class="row" style="width:100%"><button class="btn ghost" id="r-home" type="button">Fertig</button><button class="btn" id="r-again" type="button">Nochmal</button></div>
+  </section>
+
+  <section id="v-snake" hidden>
+    <div class="snk-hud">
+      <button class="back" id="k-quit" type="button" aria-label="Zurück">✕</button>
+      <div class="stat"><b id="k-score">0</b><span>Punkte</span></div>
+      <div class="stat"><b id="k-best">0</b><span>Rekord</span></div>
+      <div class="stat"><b id="k-time">2:00</b><span>Zeit</span></div>
+    </div>
+    <div class="snk-wrap" id="k-wrap">
+      <canvas id="k-cv" width="600" height="600" aria-label="Snake-Spielfeld"></canvas>
+      <div class="snk-msg" id="k-msg"><b id="k-mt"></b><p class="muted" id="k-ms"></p><button class="btn" id="k-go" type="button"></button><button class="btn ghost" id="k-end" type="button">Zurück zum Lernen</button></div>
+    </div>
+    <div class="pad" id="k-pad">
+      <button class="u" type="button" data-d="u" aria-label="Hoch">▲</button>
+      <button class="l" type="button" data-d="l" aria-label="Links">◀</button>
+      <button class="d" type="button" data-d="d" aria-label="Runter">▼</button>
+      <button class="r" type="button" data-d="r" aria-label="Rechts">▶</button>
+    </div>
+    <p class="note" style="text-align:center">Wische über das Feld oder nimm die Pfeile. Durch die Wände kommst du auf der anderen Seite wieder heraus.</p>
   </section>
 
   <section id="v-board" hidden>
@@ -357,7 +398,9 @@ p { margin: 0; }
   </section>
 
   <section id="v-album" hidden>
-    <h2>Deine GIF-Sammlung</h2>
+    <h2>Belohnungen</h2>
+    <button class="snk-card" id="a-snake" type="button"><span class="ic">🐍</span><div><b>Snake spielen</b><span id="a-snk-sub"></span></div><span class="tix" id="a-tix"></span></button>
+    <h3>Deine GIF-Sammlung</h3>
     <p class="muted" id="a-sub"></p>
     <div class="album" id="a-list"></div>
   </section>
@@ -384,14 +427,14 @@ p { margin: 0; }
       </div>
     </div>
     <p class="note">Tipp: Tippe in Safari auf „Teilen“ und dann „Zum Home-Bildschirm“. Dann startet die App wie eine echte App.</p>
-    <p class="note" id="f-ver">Version 6</p>
+    <p class="note" id="f-ver">Version 7</p>
   </section>
 </main>
 
 <nav class="nav" id="nav" hidden><div>
   <button type="button" data-v="home"><i>🏠</i>Start</button>
   <button type="button" data-v="board"><i>🏆</i>Bestenliste</button>
-  <button type="button" data-v="album"><i>🎬</i>Sammlung</button>
+  <button type="button" data-v="album"><i>🎁</i>Belohnung</button>
   <button type="button" data-v="prof"><i>🙂</i>Profil</button>
 </div></nav>
 <div class="dock" id="dock" hidden><div>

@@ -242,7 +242,7 @@
   }
 
   /* ---------- Ansichten ---------- */
-  var VIEWS = ['onb', 'home', 'subj', 'play', 'res', 'board', 'album', 'prof'], view = '';
+  var VIEWS = ['onb', 'home', 'subj', 'play', 'res', 'board', 'album', 'prof', 'snake'], view = '';
   function show(v) {
     view = v;
     VIEWS.forEach(function (k) { $('#v-' + k).hidden = k !== v; });
@@ -251,6 +251,7 @@
     [].forEach.call(document.querySelectorAll('#nav button'), function (b) { b.setAttribute('aria-current', b.getAttribute('data-v') === v ? 'true' : 'false'); });
     try { window.scrollTo(0, 0); } catch (e) {}
     stopSay();
+    if (v !== 'snake') snakeStop();
   }
   function mastery(p, id) { var t = p.topics[id]; if (!t || !t.rec) return 0; return (t.rec.split('1').length - 1) / 12; }
   function pips(m) { return m >= 0.92 ? 3 : m >= 0.6 ? 2 : m >= 0.3 ? 1 : 0; }
@@ -437,7 +438,8 @@
     p.pts += total; p.wpts += total; p.rounds++;
     SUBJ_ORDER.forEach(function (s) { var share = S.by[s] + (S.pts ? Math.round(bonus * S.by[s] / S.pts) : 0); p.sub[s] += share; p.wsub[s] += share; });
     if (p.streak.d !== td) { p.streak.n = p.streak.d === yesterday() ? p.streak.n + 1 : 1; p.streak.d = td; }
-    var after = level(p.pts);
+    var after = level(p.pts), gotTix = stars >= 2 && (p.tix || 0) < 5;
+    if (gotTix) p.tix = (p.tix || 0) + 1;
     save(); pushScore(p).then(function () { return fetchBoard(); });
     $('#r-title').textContent = title;
     $('#r-av').innerHTML = av(p.look, 'xl', stars ? 'happy' : 'idle');
@@ -450,6 +452,8 @@
     var ul = $('#r-redo'); ul.innerHTML = '';
     uniq(S.wrong).slice(0, 8).forEach(function (w) { var li = document.createElement('li'); li.textContent = w; ul.appendChild(li); });
     $('#r-redo-box').hidden = !S.wrong.length;
+    $('#r-snake').hidden = !(p.tix > 0); $('#r-tix').textContent = '🎟️ ' + (p.tix || 0);
+    $('#r-snk-sub').textContent = gotTix ? 'Du hast ein Spielticket gewonnen!' : stars >= 2 ? 'Mehr als 5 Tickets kannst du nicht sammeln.' : 'Du hast noch Tickets übrig.';
     var again = { mode: S.mode, ids: S.ids, subj: S.subj };
     $('#r-again').onclick = function () { start(again.mode, again.ids, again.subj); };
     S = null; show('res');
@@ -506,6 +510,8 @@
   /* ---------- Sammlung ---------- */
   function renderAlbum() {
     var p = P(), l = level(p.pts), box = $('#a-list'); box.innerHTML = '';
+    $('#a-tix').textContent = '🎟️ ' + (p.tix || 0); $('#a-snake').disabled = !(p.tix > 0);
+    $('#a-snk-sub').textContent = p.tix > 0 ? 'Ein Spiel kostet 1 Ticket. Rekord: ' + (p.snk || 0) : 'Hol dir ein Ticket: Schaffe in einer Runde 2 oder 3 Sterne. Rekord: ' + (p.snk || 0);
     $('#a-sub').textContent = Math.min(l, CLIPS.length) + ' von ' + CLIPS.length + ' GIFs gesammelt. Jedes neue Level schaltet ein GIF frei.';
     CLIPS.forEach(function (c, i) {
       var got = l > i, b = document.createElement('button'); b.type = 'button'; b.className = 'clip' + (got ? '' : ' locked'); b.disabled = !got;
@@ -552,6 +558,99 @@
     show('onb');
   }
   function goHome() { stop(); S = null; document.documentElement.style.setProperty('--acc', 'var(--sun)'); renderHome(); show('home'); }
+
+  /* ---------- Snake (Belohnung, kostet 1 Spielticket) ---------- */
+  var K = null, KN = 14, KMAX = 120;
+  function snakeStop() { if (K) { cancelAnimationFrame(K.raf); clearInterval(K.clock); K.run = false; } document.body.classList.remove('noscroll'); }
+  function snakeOpen() {
+    var p = P();
+    K = { run: false, raf: 0, clock: 0, snake: [], dir: [1, 0], q: [], food: null, score: 0, step: 190, acc: 0, last: 0, left: KMAX, back: view === 'res' ? 'res' : 'album' };
+    $('#k-score').textContent = '0'; $('#k-best').textContent = p.snk || 0; $('#k-time').textContent = '2:00';
+    show('snake'); document.body.classList.add('noscroll');
+    snakeMsg('Snake', 'Friss die Sterne und beiß dich nicht selbst. Ein Spiel dauert höchstens 2 Minuten.', 'Start (1 Ticket)', true);
+    snakeReset(); snakeDraw();
+  }
+  function snakeMsg(t, sub, btn, canGo) { $('#k-msg').hidden = false; $('#k-mt').textContent = t; $('#k-ms').textContent = sub; $('#k-go').textContent = btn; $('#k-go').hidden = !canGo; }
+  function snakeReset() { K.snake = [[5, 7], [4, 7], [3, 7]]; K.dir = [1, 0]; K.q = []; K.score = 0; K.step = 190; K.acc = 0; K.left = KMAX; snakeFood(); }
+  function snakeFood() { var f; do { f = [R(0, KN - 1), R(0, KN - 1)]; } while (K.snake.some(function (s) { return s[0] === f[0] && s[1] === f[1]; })); K.food = f; }
+  function snakeStart() {
+    var p = P();
+    if (!(p.tix > 0)) return;
+    p.tix--; save(); snakeReset();
+    $('#k-msg').hidden = true; $('#k-score').textContent = '0';
+    K.run = true; K.last = 0;
+    clearInterval(K.clock);
+    K.clock = setInterval(function () { if (!K.run || document.hidden) return; K.left--; $('#k-time').textContent = Math.floor(K.left / 60) + ':' + ('0' + K.left % 60).slice(-2); if (K.left <= 0) snakeOver(true); }, 1000);
+    K.raf = requestAnimationFrame(snakeLoop);
+  }
+  function snakeLoop(t) {
+    if (!K || !K.run) return;
+    if (!K.last) K.last = t;
+    K.acc += Math.min(250, t - K.last); K.last = t;
+    while (K.acc >= K.step && K.run) { K.acc -= K.step; snakeTick(); }
+    snakeDraw();
+    if (K.run) K.raf = requestAnimationFrame(snakeLoop);
+  }
+  function snakeTurn(d) {
+    if (!K || !K.run) return;
+    var v = { u: [0, -1], d: [0, 1], l: [-1, 0], r: [1, 0] }[d], last = K.q.length ? K.q[K.q.length - 1] : K.dir;
+    if (!v || (v[0] === -last[0] && v[1] === -last[1]) || (v[0] === last[0] && v[1] === last[1]) || K.q.length >= 2) return;
+    K.q.push(v);
+  }
+  function snakeTick() {
+    if (K.q.length) K.dir = K.q.shift();
+    var h = K.snake[0], n = [(h[0] + K.dir[0] + KN) % KN, (h[1] + K.dir[1] + KN) % KN], eat = n[0] === K.food[0] && n[1] === K.food[1];
+    if (!eat) K.snake.pop();
+    if (K.snake.some(function (s) { return s[0] === n[0] && s[1] === n[1]; })) { K.snake.unshift(n); snakeOver(false); return; }
+    K.snake.unshift(n);
+    if (eat) { K.score++; $('#k-score').textContent = K.score; K.step = Math.max(95, 190 - K.score * 4); tone(660 + (K.score % 8) * 60, 0, 0.09, 0.1); if (K.snake.length < KN * KN) snakeFood(); }
+  }
+  function snakeOver(time) {
+    K.run = false; cancelAnimationFrame(K.raf); clearInterval(K.clock);
+    var p = P(), rec = K.score > (p.snk || 0);
+    if (rec) { p.snk = K.score; save(); $('#k-best').textContent = p.snk; }
+    if (rec && K.score > 0) { SND.win(); burstAt($('#k-wrap'), 40, true); } else if (!time) SND.no(); else SND.ok();
+    snakeDraw();
+    snakeMsg(rec && K.score > 0 ? 'Neuer Rekord: ' + K.score + '!' : time ? 'Zeit um! ' + K.score + ' Sterne' : 'Autsch! ' + K.score + ' Sterne', p.tix > 0 ? 'Du hast noch ' + p.tix + (p.tix === 1 ? ' Ticket.' : ' Tickets.') : 'Keine Tickets mehr. Mit 2 oder 3 Sternen in einer Lernrunde bekommst du ein neues.', 'Nochmal (1 Ticket)', p.tix > 0);
+  }
+  function snakeDraw() {
+    var cv = $('#k-cv'), c = cv.getContext('2d'), W = cv.width, s = W / KN, i, L = LOOKS[P().look] || LOOKS.kiwi, col = L.c[0] === '#FFFFFF' ? '#3EE08A' : L.c[0];
+    c.fillStyle = '#0F0B36'; c.fillRect(0, 0, W, W);
+    for (i = 0; i < KN * KN; i++) if ((i + Math.floor(i / KN)) % 2 === 0) { c.fillStyle = '#17124A'; c.fillRect((i % KN) * s, Math.floor(i / KN) * s, s, s); }
+    function rr(x, y, w, h, r) { c.beginPath(); c.moveTo(x + r, y); c.arcTo(x + w, y, x + w, y + h, r); c.arcTo(x + w, y + h, x, y + h, r); c.arcTo(x, y + h, x, y, r); c.arcTo(x, y, x + w, y, r); c.closePath(); c.fill(); }
+    if (K.food) {
+      var fx = (K.food[0] + 0.5) * s, fy = (K.food[1] + 0.5) * s, a, r;
+      c.fillStyle = '#FFD23F'; c.beginPath();
+      for (i = 0; i < 10; i++) { a = -Math.PI / 2 + i * Math.PI / 5; r = (i % 2 ? 0.2 : 0.44) * s; c.lineTo(fx + r * Math.cos(a), fy + r * Math.sin(a)); }
+      c.closePath(); c.fill();
+    }
+    for (i = K.snake.length - 1; i >= 0; i--) {
+      var g = K.snake[i]; c.fillStyle = i === 0 ? '#FFFFFF' : col; c.globalAlpha = i === 0 ? 1 : Math.max(0.55, 1 - i * 0.02);
+      rr(g[0] * s + 2, g[1] * s + 2, s - 4, s - 4, s * 0.3);
+      if (i === 0) { c.globalAlpha = 1; c.fillStyle = col; rr(g[0] * s + 5, g[1] * s + 5, s - 10, s - 10, s * 0.25); c.fillStyle = '#14103F'; var ex = K.dir[1] !== 0 ? 0.22 : 0, ey = K.dir[0] !== 0 ? 0.22 : 0, ox = K.dir[0] * 0.14, oy = K.dir[1] * 0.14; c.beginPath(); c.arc((g[0] + 0.5 + ox - ex) * s, (g[1] + 0.5 + oy - ey) * s, s * 0.09, 0, 7); c.arc((g[0] + 0.5 + ox + ex) * s, (g[1] + 0.5 + oy + ey) * s, s * 0.09, 0, 7); c.fill(); }
+    }
+    c.globalAlpha = 1;
+  }
+  (function () {
+    var wrap = $('#k-wrap'), sx = 0, sy = 0, on = false;
+    wrap.addEventListener('touchstart', function (e) { var t = e.touches[0]; sx = t.clientX; sy = t.clientY; on = true; }, { passive: true });
+    wrap.addEventListener('touchmove', function (e) {
+      if (K && K.run) e.preventDefault();
+      if (!on) return;
+      var t = e.touches[0], dx = t.clientX - sx, dy = t.clientY - sy;
+      if (Math.abs(dx) < 18 && Math.abs(dy) < 18) return;
+      snakeTurn(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'r' : 'l') : (dy > 0 ? 'd' : 'u')); sx = t.clientX; sy = t.clientY;
+    }, { passive: false });
+    wrap.addEventListener('touchend', function () { on = false; });
+    [].forEach.call(document.querySelectorAll('#k-pad button'), function (b) {
+      b.addEventListener('pointerdown', function (e) { e.preventDefault(); snakeTurn(b.getAttribute('data-d')); });
+    });
+    $('#k-go').addEventListener('click', snakeStart);
+    function leave() { var b = K ? K.back : 'album'; snakeStop(); if (b === 'res' && !$('#r-title').textContent) b = 'album'; if (b === 'res') { $('#r-snake').hidden = !(P().tix > 0); $('#r-tix').textContent = '🎟️ ' + (P().tix || 0); show('res'); } else { renderAlbum(); show('album'); } }
+    $('#k-end').addEventListener('click', leave); $('#k-quit').addEventListener('click', leave);
+    $('#a-snake').addEventListener('click', snakeOpen); $('#r-snake').addEventListener('click', snakeOpen);
+    document.addEventListener('keydown', function (e) { if (view !== 'snake') return; var m = { ArrowUp: 'u', ArrowDown: 'd', ArrowLeft: 'l', ArrowRight: 'r' }[e.key]; if (m) { snakeTurn(m); e.preventDefault(); } });
+  })();
 
   /* ---------- Verdrahtung ---------- */
   $('#o-go').addEventListener('click', function () {
@@ -620,4 +719,4 @@
     if (ON.ready && !D.code && kk.length >= 4) joinCode(kk);
     else if (ON.ready && D.code) pushScore(P()).then(fetchBoard).then(function () { if (view === 'home') renderTeaser(); });
   }
-  window.__k3 = { TOPICS: TOPICS, CLIPS: CLIPS, ask: function (id) { start('practice', [id], BY_ID[id].s); }, clip: function (i) { showClip(CLIPS[i], true, i + 1); } };
+  window.__k3 = { snake: function () { return K; }, TOPICS: TOPICS, CLIPS: CLIPS, ask: function (id) { start('practice', [id], BY_ID[id].s); }, clip: function (i) { showClip(CLIPS[i], true, i + 1); } };
