@@ -1,0 +1,108 @@
+/* Belohnungs-GIFs: kleine Szenen mit dem eigenen Tier */
+.scn { position: absolute; inset: 0; overflow: hidden; }
+.scn .m { position: absolute; left: 29%; bottom: 12%; width: 42%; aspect-ratio: 1; }
+.scn .m svg { width: 100%; height: 100%; display: block; overflow: visible; }
+.scn i, .scn b { position: absolute; display: block; font-style: normal; }
+.c-dance { background: linear-gradient(160deg, #2a1456, #6b2b8f 60%, #c2438f); }
+.c-dance .lt { width: 60%; aspect-ratio: 1; border-radius: 50%; filter: blur(22px); opacity: .5; }
+.c-dance .l1 { left: -15%; top: -10%; background: #ff5ea8; } .c-dance .l2 { right: -18%; top: 5%; background: #3fd9ff; } .c-dance .l3 { left: 20%; bottom: -25%; background: #ffd23f; }
+.c-dance .disco { left: 38%; top: -6%; width: 24%; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle at 35% 30%, #fff, #b9c3ff 40%, #6c78c9 75%); box-shadow: 0 0 24px rgba(255,255,255,.6); transform-origin: 50% -60%; }
+.c-rocket { background: linear-gradient(#0b1030, #3a2a7a); }
+.c-rocket .rk { left: 33%; top: 12%; width: 34%; aspect-ratio: 1 / 2; }
+.c-rocket .rk svg.body { width: 100%; height: 100%; display: block; overflow: visible; }
+.c-rocket .rk svg.fl { position: absolute; left: 27%; top: 96%; width: 46%; height: 34%; transform-origin: 50% 0; }
+.c-rocket .win { left: 23%; top: 22%; width: 54%; aspect-ratio: 1; border-radius: 50%; overflow: hidden; background: #8fd3ff; border: 4px solid #fff; }
+.c-rocket .win svg { position: absolute; width: 150%; height: 150%; left: -25%; top: -18%; }
+.c-rocket .sk { top: -30%; width: 2px; height: 26%; background: rgba(255,255,255,.7); border-radius: 2px; }
+.c-tramp { background: linear-gradient(#7fd4ff, #d8f4ff 70%, #7ccf6a 70%); }
+.c-tramp .bed { left: 18%; right: 18%; bottom: 14%; height: 5%; background: #3b2d8f; border-radius: 50%; box-shadow: 0 6px 0 #241b6b; }
+.c-tramp .leg { bottom: 4%; width: 3%; height: 12%; background: #241b6b; border-radius: 3px; } .c-tramp .lg1 { left: 22%; } .c-tramp .lg2 { right: 22%; }
+.c-tramp .m { bottom: 17%; }
+.c-juggle { background: linear-gradient(#ffe8a3, #ff9bb0); }
+.c-juggle .jx { left: 41.5%; bottom: 44%; width: 17%; aspect-ratio: 1; }
+.c-juggle .jy { position: static; width: 100%; height: 100%; display: grid; place-items: center; border-radius: 50%; font-family: var(--display); font-weight: 800; font-size: 1.3rem; color: #fff; box-shadow: inset -4px -4px 0 rgba(0,0,0,.15); }
+.c-skate { background: linear-gradient(#ffcf6b, #ff8a5c 68%, #5b4b8a 68%); }
+.c-skate .sun { right: 10%; top: 10%; width: 22%; aspect-ratio: 1; border-radius: 50%; background: #fff3b0; }
+.c-skate .rd { left: 29%; bottom: 16%; width: 42%; aspect-ratio: 1; }
+.c-skate .rd .m { position: static; width: 100%; }
+.c-skate .brd { left: 5%; right: 5%; bottom: -9%; height: 9%; background: #ff4fa3; border-radius: 999px; box-shadow: 14px 9px 0 -3px #241b6b, -14px 9px 0 -3px #241b6b; }
+.c-balloon { background: linear-gradient(#58b8ff, #c7ecff); }
+.c-balloon .cl { height: 10%; width: 32%; border-radius: 999px; background: #fff; opacity: .9; } .c-balloon .c1 { top: 16%; left: 8%; } .c-balloon .c2 { top: 62%; left: 60%; width: 26%; } .c-balloon .c3 { top: 82%; left: 16%; width: 22%; }
+.c-balloon .fl { left: 29%; top: 12%; width: 42%; height: 80%; }
+.c-balloon .fl .m { position: absolute; left: 0; bottom: 0; width: 100%; }
+.c-balloon .bl { top: 0; width: 34%; aspect-ratio: 4 / 5; border-radius: 50%; transform-origin: 50% 190%; }
+.c-balloon .bl::after { content: ""; position: absolute; left: 50%; top: 100%; width: 2px; height: 70%; background: rgba(36,27,107,.6); }
+.c-balloon .b1 { left: 0; background: #ff4fa3; } .c-balloon .b2 { left: 33%; top: -4%; background: #ffd23f; } .c-balloon .b3 { left: 66%; background: #2fd67b; }
+.c-hero { background: linear-gradient(#6fd0ff, #dff5ff); }
+.c-hero .cl { height: 10%; width: 32%; border-radius: 999px; background: #fff; opacity: .9; } .c-hero .c1 { top: 14%; left: 8%; } .c-hero .c2 { top: 58%; left: 60%; width: 26%; } .c-hero .c3 { top: 80%; left: 20%; width: 22%; }
+.c-hero .fly { left: 27%; top: 30%; width: 46%; aspect-ratio: 1; }
+.c-hero .fly .m { position: relative; left: 0; bottom: 0; width: 100%; z-index: 1; }
+.c-hero .cape { left: -26%; top: 26%; width: 62%; transform-origin: 100% 40%; }
+.c-hero .pow { right: 8%; top: 8%; font-family: var(--display); font-weight: 800; font-size: 1.9rem; color: #ff3d6e; text-shadow: 2px 2px 0 #fff; transform: rotate(8deg); }
+.c-dj { background: linear-gradient(#1a0f3d, #3d1a6b); }
+.c-dj .eq { bottom: 0; width: 9%; height: 70%; border-radius: 6px 6px 0 0; transform-origin: 50% 100%; opacity: .85; }
+.c-dj .desk { left: 14%; right: 14%; bottom: 6%; height: 18%; background: #241b6b; border-radius: 14px; box-shadow: inset 0 0 0 3px #ff4fa3; z-index: 2; }
+.c-dj .disc { bottom: 9%; width: 16%; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle, #ffd23f 0 18%, #111 20% 100%); z-index: 3; } .c-dj .d1 { left: 22%; } .c-dj .d2 { right: 22%; }
+.c-dj .m { bottom: 20%; z-index: 1; }
+.c-rainbow { background: linear-gradient(#8fd8ff, #e7f8ff); }
+.c-rainbow .rb { left: -10%; right: -10%; bottom: -60%; aspect-ratio: 1; border-radius: 50%; background: radial-gradient(circle, transparent 0 44%, #9b5de5 44% 48%, #3da5ff 48% 52%, #2fd67b 52% 56%, #ffd23f 56% 60%, #ff9f1c 60% 64%, #ff4f6d 64% 68%, transparent 68%); }
+.c-rainbow .orb { left: 50%; bottom: 0; width: 0; height: 104%; transform-origin: 50% 100%; }
+.c-rainbow .orb .m { left: -62px; top: 0; bottom: auto; width: 124px; max-width: none; }
+.c-rainbow .cld { bottom: -4%; width: 44%; height: 20%; border-radius: 999px; background: #fff; z-index: 2; } .c-rainbow .cd1 { left: -8%; } .c-rainbow .cd2 { right: -8%; }
+.c-fire { background: linear-gradient(#070b2e, #1d1456); }
+.c-fire .fw { width: 6px; height: 6px; border-radius: 50%; background: transparent; box-shadow: 0 -46px 0 var(--k), 32px -32px 0 var(--k), 46px 0 0 var(--k), 32px 32px 0 var(--k), 0 46px 0 var(--k), -32px 32px 0 var(--k), -46px 0 0 var(--k), -32px -32px 0 var(--k), 0 -24px 0 #fff, 17px -17px 0 #fff, 24px 0 0 #fff, 17px 17px 0 #fff, 0 24px 0 #fff, -17px 17px 0 #fff, -24px 0 0 #fff, -17px -17px 0 #fff; opacity: 0; }
+.c-fire .f1 { left: 24%; top: 26%; --k: #ff4fa3; } .c-fire .f2 { left: 72%; top: 20%; --k: #ffd23f; } .c-fire .f3 { left: 50%; top: 38%; --k: #3da5ff; } .c-fire .f4 { left: 82%; top: 50%; --k: #2fd67b; }
+.c-pizza { background: linear-gradient(#ffe0b0, #ff9f5a); }
+.c-pizza .pz { top: -20%; width: 16%; }
+.c-cup { background: #ffb703; }
+.c-cup .rays { left: -50%; top: -50%; width: 200%; height: 200%; background: repeating-conic-gradient(#ffd23f 0 15deg, #ffb703 15deg 30deg); }
+.c-cup .cup { left: 31%; bottom: 4%; width: 38%; z-index: 1; }
+.c-cup .m { bottom: 38%; left: 31%; width: 38%; z-index: 2; }
+.c-cup .crown { left: 22%; top: -30%; width: 56%; z-index: 3; }
+.c-cup .cf { top: -10%; width: 4%; height: 6%; border-radius: 2px; }
+@media (prefers-reduced-motion: no-preference) {
+  @keyframes k-dance { 0%, 100% { transform: translateY(0) rotate(-11deg); } 25%, 75% { transform: translateY(-14%) rotate(0); } 50% { transform: translateY(0) rotate(11deg); } }
+  @keyframes k-pulse { 50% { opacity: .9; transform: scale(1.25); } }
+  @keyframes k-swing { 0%, 100% { transform: rotate(14deg); } 50% { transform: rotate(-14deg); } }
+  @keyframes k-rshake { 0%, 100% { transform: translate(-2px, 0) rotate(-1.5deg); } 50% { transform: translate(2px, -6px) rotate(1.5deg); } }
+  @keyframes k-flame { 50% { transform: scale(.9, 1.35); } }
+  @keyframes k-streak { from { transform: translateY(0); } to { transform: translateY(520%); } }
+  @keyframes k-jump { 0%, 100% { transform: translateY(0) scale(1.12, .88); animation-timing-function: cubic-bezier(.2, .7, .4, 1); } 12% { transform: translateY(-20%) scale(.94, 1.08); } 50% { transform: translateY(-120%) rotate(360deg); animation-timing-function: cubic-bezier(.6, 0, .8, .3); } 88% { transform: translateY(-20%) rotate(360deg) scale(.94, 1.08); } }
+  @keyframes k-bed { 0%, 100% { transform: scaleY(1.7) translateY(18%); } 14%, 86% { transform: none; } }
+  @keyframes k-jx { from { transform: translateX(-300%); } to { transform: translateX(300%); } }
+  @keyframes k-jy { 0% { transform: translateY(0); animation-timing-function: cubic-bezier(.2, .7, .4, 1); } 50% { transform: translateY(-380%); animation-timing-function: cubic-bezier(.6, 0, .8, .3); } 100% { transform: translateY(0); } }
+  @keyframes k-squash { 50% { transform: scale(1.06, .94); } }
+  @keyframes k-roll { 0% { transform: translateX(-110%); } 100% { transform: translateX(110%); } }
+  @keyframes k-ollie { 0%, 30%, 70%, 100% { transform: translateY(0) rotate(0); } 50% { transform: translateY(-70%) rotate(360deg); } }
+  @keyframes k-float { 0%, 100% { transform: translate(-8%, 6%) rotate(-4deg); } 50% { transform: translate(8%, -8%) rotate(4deg); } }
+  @keyframes k-sway { 0%, 100% { transform: rotate(-7deg); } 50% { transform: rotate(7deg); } }
+  @keyframes k-cloud { from { transform: translateX(160%); } to { transform: translateX(-460%); } }
+  @keyframes k-fly { 0%, 100% { transform: translate(-28%, 6%) rotate(-12deg); } 50% { transform: translate(28%, -10%) rotate(-4deg); } }
+  @keyframes k-flap { 50% { transform: scaleY(.7) skewY(8deg); } }
+  @keyframes k-pow { 50% { transform: rotate(8deg) scale(1.3); } }
+  @keyframes k-eq { 0%, 100% { transform: scaleY(.25); } 50% { transform: scaleY(1); } }
+  @keyframes k-spin { to { transform: rotate(360deg); } }
+  @keyframes k-bob { 50% { transform: translateY(-9%) rotate(5deg); } }
+  @keyframes k-slide { 0% { transform: rotate(-48deg); } 100% { transform: rotate(48deg); } }
+  @keyframes k-burst { 0% { transform: scale(.1); opacity: 1; } 70% { opacity: 1; } 100% { transform: scale(1.25); opacity: 0; } }
+  @keyframes k-fall { 0% { transform: translateY(0) rotate(0); } 100% { transform: translateY(760%) rotate(540deg); } }
+  @keyframes k-stroll { 0%, 100% { transform: translateX(-70%); } 50% { transform: translateX(70%); } }
+  @keyframes k-chew { 50% { transform: scale(1.1, .9); } }
+  @keyframes k-hop { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-16%); } }
+  @keyframes k-cf { 0% { transform: translateY(0) rotate(0); } 100% { transform: translateY(1900%) rotate(720deg); } }
+  .c-dance .m { animation: k-dance .8s ease-in-out infinite; }
+  .c-dance .lt { animation: k-pulse .8s ease-in-out infinite alternate; } .c-dance .l2 { animation-delay: -.3s; } .c-dance .l3 { animation-delay: -.6s; }
+  .c-dance .disco { animation: k-swing 1.6s ease-in-out infinite; }
+  .c-rocket .rk { animation: k-rshake .35s ease-in-out infinite; } .c-rocket .fl { animation: k-flame .18s ease-in-out infinite; } .c-rocket .sk { animation: k-streak .9s linear infinite; }
+  .c-tramp .m { animation: k-jump 1.3s linear infinite; } .c-tramp .bed { animation: k-bed 1.3s linear infinite; }
+  .c-juggle .jx { animation: k-jx 1.2s linear infinite alternate; } .c-juggle .jy { animation: k-jy 1.2s linear infinite; } .c-juggle .m { animation: k-squash .6s ease-in-out infinite; transform-origin: 50% 100%; }
+  .c-skate .rd { animation: k-roll 2.2s linear infinite alternate; } .c-skate .rd > span { display: block; animation: k-ollie 2.2s ease-in-out infinite; }
+  .c-balloon .fl { animation: k-float 3s ease-in-out infinite; } .c-balloon .bl { animation: k-sway 1.4s ease-in-out infinite; } .c-balloon .b2 { animation-delay: -.5s; } .c-balloon .b3 { animation-delay: -.9s; }
+  .c-balloon .c1, .c-hero .c1 { animation: k-cloud 5s linear infinite; } .c-balloon .c2, .c-hero .c2 { animation: k-cloud 7s linear infinite -2s; } .c-balloon .c3, .c-hero .c3 { animation: k-cloud 6s linear infinite -4s; }
+  .c-hero .fly { animation: k-fly 2.4s ease-in-out infinite; } .c-hero .cape { animation: k-flap .3s ease-in-out infinite; } .c-hero .pow { animation: k-pow .6s ease-in-out infinite; }
+  .c-dj .eq { animation: k-eq .5s ease-in-out infinite; } .c-dj .disc { animation: k-spin 1s linear infinite; } .c-dj .m { animation: k-bob .5s ease-in-out infinite; }
+  .c-rainbow .orb { animation: k-slide 2s cubic-bezier(.5, 0, .5, 1) infinite alternate; }
+  .c-fire .fw { animation: k-burst 1.4s ease-out infinite; } .c-fire .f2 { animation-delay: -.4s; } .c-fire .f3 { animation-delay: -.8s; } .c-fire .f4 { animation-delay: -1.1s; } .c-fire .m { animation: k-hop .7s ease-in-out infinite; }
+  .c-pizza .pz { animation: k-fall 2.2s linear infinite; } .c-pizza .m { animation: k-stroll 1.8s ease-in-out infinite; } .c-pizza .m svg { animation: k-chew .3s ease-in-out infinite; transform-origin: 50% 100%; }
+  .c-cup .rays { animation: k-spin 9s linear infinite; } .c-cup .m { animation: k-hop .6s ease-in-out infinite; } .c-cup .cf { animation: k-cf 2.4s linear infinite; }
+}
