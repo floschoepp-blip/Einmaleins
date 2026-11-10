@@ -21,8 +21,11 @@ def num(n):
     return str(n)
 def norm(t):
     t=t.replace('▢',' Lücke ').replace('„','').replace('“','').replace('”','').replace('→',', dann ').replace('↔',' und ').replace('×',' mal ').replace('−',' minus ').replace('–',', ').replace('…',' ').replace('•',', ').replace('✓','').replace('🔊','den Lautsprecher')
+    L={'A':'Ah','B':'Beh','C':'Zeh','D':'Deh','E':'Eh','F':'Eff','G':'Geh','H':'Hah','I':'Ih','J':'Jott','K':'Kah','L':'Ell','M':'Emm','N':'Enn','O':'Oh','P':'Peh','Q':'Kuh','R':'Err','S':'Ess','T':'Teh','U':'Uh','V':'Vau','W':'Weh','X':'Iks','Y':'Üpsilon','Z':'Zett'}
+    t=t.replace('ABC','Ah Beh Zeh')
+    t=re.sub(r'(?<=(?:vor|ach) )([A-Z])(?=\?)',lambda m:L[m.group(1)],t)
     t=re.sub(r'(\d),(\d)',r'\1 Komma \2',t); t=re.sub(r'(\d) : (\d)',r'\1 geteilt durch \2',t); t=t.replace(' + ',' plus ').replace(' = ',' ist gleich ').replace(' < ',' kleiner als ').replace(' > ',' größer als ')
-    for a,b in [('z. B.','zum Beispiel'),(' km',' Kilometer'),(' cm',' Zentimeter'),(' mm',' Millimeter'),(' kg',' Kilogramm'),(' ml',' Milliliter'),(' min',' Minuten'),(' ct',' Cent'),('€','Euro'),('°C','Grad Celsius'),('½','ein halb'),('¼','ein viertel'),('¾','drei viertel'),('%',' Prozent'),('ABC','A B C'),(' H,',' Hunderter,'),(' Z,',' Zehner,'),(' E ',' Einer ')]: t=t.replace(a,b)
+    for a,b in [('z. B.','zum Beispiel'),(' km',' Kilometer'),(' cm',' Zentimeter'),(' mm',' Millimeter'),(' kg',' Kilogramm'),(' ml',' Milliliter'),(' min',' Minuten'),(' ct',' Cent'),('€','Euro'),('°C','Grad Celsius'),('½','ein halb'),('¼','ein viertel'),('¾','drei viertel'),('%',' Prozent'),(' H,',' Hunderter,'),(' Z,',' Zehner,'),(' E ',' Einer ')]: t=t.replace(a,b)
     t=re.sub(r'(\d+) m\b',r'\1 Meter',t); t=re.sub(r'(\d+) g\b',r'\1 Gramm',t); t=re.sub(r'(\d+) l\b',r'\1 Liter',t); t=re.sub(r'(\d+) t\b',r'\1 Tonnen',t)
     t=re.sub(r'(\d+)\. ',lambda m:num(m.group(1))+'tens, ' if int(m.group(1))<13 else m.group(0),t)
     t=re.sub(r'\d+',lambda m:num(m.group(0)),t)
