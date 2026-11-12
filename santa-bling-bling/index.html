@@ -2079,6 +2079,7 @@ function update(dt){
  G.t+=dt;for(const sp of W.spots)sp.cd=Math.max(0,sp.cd-dt);G.calm=Math.max(0,G.calm-dt);G.turbo=Math.max(0,G.turbo-dt);
  if(G.toastT>0){G.toastT-=dt;if(G.toastT<=0)$('toast').hidden=true;}
  if(G.sayT>0){G.sayT-=dt;if(G.sayT<=0)$('say').hidden=true;}
+ eventsUpdate(dt);
  // Sturm
  const S=G.storm;
  if(!S.on){S.next-=dt;if(S.next<=0){S.on=true;S.t=9;const a=Math.random()*6.283;S.wx=Math.cos(a);S.wy=Math.sin(a);toast('❄️ Schneesturm! Du wirst langsamer und vom Wind geschoben!',3000);sfx('storm');}}
@@ -2100,7 +2101,7 @@ function update(dt){
  let hit=false;
  if(P.fly){P.x=clamp(P.x+P.vx*dt,20,W.W-20);P.y=clamp(P.y+P.vy*dt,20,W.H-20);}else hit=moveBy(P,P.vx*dt,P.vy*dt,P.r);
  P.bump-=dt;
- if(hit){const spd=Math.hypot(P.vx,P.vy);if(P.bump<=0&&spd>120){sfx('thud');P.bump=.35;if(isMotor(P.veh))dmgVeh(spd*.07);}P.vx*=.8;P.vy*=.8;}
+ if(hit){const spd=Math.hypot(P.vx,P.vy);if(P.bump<=0&&spd>120){sfx('thud');P.bump=.35;if(isMotor(P.veh))dmgVeh(spd*.07);else if(spd>200)heroSay('crash');}P.vx*=.8;P.vy*=.8;}
  if(isMotor(P.veh)&&P.hp<55){P.smk-=dt;if(P.smk<=0){P.smk=.12;burst(P.x-Math.cos(P.ang)*10,P.y-Math.sin(P.ang)*10-8,1,P.hp<25?['#ff8a3f','#555']:['#8a8a8a']);}}
  P.bump-=dt;
  const sp2=Math.hypot(P.vx,P.vy);
@@ -2116,7 +2117,7 @@ function update(dt){
   if(Math.hypot(h.door.x-P.x,h.door.y-P.y)<44+P.r*.6){
    h.done=true;G.got++;let pts=100;
    if(G.lk>0){G.lk--;pts+=50;floatT(h.door.x,h.door.y-34,'+50 🍪');}
-   G.score+=pts;floatT(h.door.x,h.door.y-14,'+100 🎁');burst(h.door.x,h.door.y-20,26,['#ffd54a','#ff5a5a','#5ad1ff','#7dff7a']);sfx('bling');
+   G.score+=pts;if(Math.random()<.6)heroSay('gift');floatT(h.door.x,h.door.y-14,'+100 🎁');burst(h.door.x,h.door.y-20,26,['#ffd54a','#ff5a5a','#5ad1ff','#7dff7a']);sfx('bling');
    toast('🎁 '+h.name+': '+(T().thanks||'Danke!')+' ('+G.got+'/'+G.total+')',2600);
   }
  }
@@ -2192,7 +2193,7 @@ function toggleFly(){
  if(!G||G.mode!=='play'||(P.veh!=='sled'&&P.veh!=='gsled'))return;auInit();
  if(P.fly){landSled();return;}
  if(G.fuel<1){toast('🦌 Die Rentiere müssen sich erst ausruhen …',1500);sfx('deny');return;}
- P.fly=true;sfx('bell');sfx('hoho');toast('🛷✨ Abflug! '+(G.helpers.some(h=>h.t==='deer')?'Mit mehr Rentieren fliegst du höher und länger.':'Sammle Rentiere, dann fliegst du höher und länger!'),2400);
+ P.fly=true;sfx('bell');heroSay('fly');toast('🛷✨ Abflug! '+(G.helpers.some(h=>h.t==='deer')?'Mit mehr Rentieren fliegst du höher und länger.':'Sammle Rentiere, dann fliegst du höher und länger!'),2400);
 }
 function honk(){
  if(!G||G.mode!=='play')return;auInit();
@@ -2898,6 +2899,52 @@ function rwFrame(){
  requestAnimationFrame(rwFrame);
 }
 
+/* ===================== Sprüche des Helden & Zufallsereignisse ===================== */
+const HSAY={
+ santa:{idle:['Hohoho!','Ho ho ho! Frohe Weihnachten!','Hohoho, die Geschenke kommen!','Ho ho ho – weiter geht’s!','Hohoho, was für ein Wetter!'],gift:['Hohoho! Zugestellt!','Ho ho ho, die Kinder freuen sich!'],crash:['Autsch! Ho ho … au!','Hoppla, ho ho!'],fly:['Hohoho, wir fliegen!','Hui, ho ho ho!'],eat:['Hmmm, hohoho, lecker!']},
+ snow:{idle:['Brrr … mir ist gar nicht kalt!','Hoffentlich schmelze ich nicht!','Karotte vorn, Gas geben!','Ich bin ein Schnee-Express!','Schnee ist mein Element!'],gift:['Frostig gut geliefert!','Ein Geschenk – schneeweiß und sicher!'],crash:['Autsch, mein Bauch!','Mein Kopf wackelt!'],fly:['Ich fliege! Juhu!','Schneeflocke im Wind!'],eat:['Mhm, Eis-Punsch!']},
+ ginger:{idle:['Ich bin ein zäher Lebkuchen!','Nicht anknabbern, bitte!','Mmh, es duftet nach Zimt!','Knusper, knusper – weiter!','Zuckerguss hält alles zusammen!'],gift:['Lebkuchen-Lieferdienst!','Ein Geschenk, süß und frisch!'],crash:['Ich krümele!','Autsch, meine Zuckerkruste!'],fly:['Ich backe nicht an!','Hui, ich krümele nicht!'],eat:['Mmh, ein Kollege!']}
+};
+function heroSay(kind){
+ if(!G||!P)return;const h=HSAY[sel.ch]||HSAY.santa,L=h[kind]||h.idle;if(P.say&&P.say.ttl>0&&kind==='idle')return;
+ P.say={t:L[Math.floor(Math.random()*L.length)],ttl:2.8};
+ if(sel.ch==='santa')sfx('hoho');else sfx('ding');
+}
+function drawHeroSay(tm,z){
+ if(!P.say||P.say.ttl<=0)return;
+ const t=P.say.t,a=Math.min(1,P.say.ttl*2),s=1/z,x=P.x,y=P.y-P.z-46*s;
+ ctx.save();ctx.globalAlpha=a;ctx.font='bold '+(13*s)+'px system-ui,sans-serif';
+ const w=ctx.measureText(t).width+16*s,h=22*s;
+ ctx.fillStyle='#fff';ctx.strokeStyle='#d62828';ctx.lineWidth=2*s;ctx.beginPath();if(ctx.roundRect)ctx.roundRect(x-w/2,y-h/2,w,h,9*s);else ctx.rect(x-w/2,y-h/2,w,h);ctx.fill();ctx.stroke();
+ ctx.beginPath();ctx.moveTo(x-5*s,y+h/2-1);ctx.lineTo(x,y+h/2+8*s);ctx.lineTo(x+5*s,y+h/2-1);ctx.fillStyle='#fff';ctx.fill();
+ ctx.fillStyle='#222';ctx.textAlign='center';ctx.textBaseline='middle';ctx.fillText(t,x,y+.5*s);ctx.restore();
+}
+function eventsUpdate(dt){
+ const E=G.ev=G.ev||{next:30+Math.random()*20,cur:null,t:0,fogK:0,blk:0,star:null,talk:20+Math.random()*10};
+ if(P.say)P.say.ttl-=dt;
+ E.talk-=dt;if(E.talk<=0){E.talk=18+Math.random()*16;if(G.mode==='play'&&!P.fly)heroSay('idle');}
+ E.fogK+=((E.cur==='fog'?.55:0)-E.fogK)*Math.min(1,dt*1.2);
+ E.blk+=((E.cur==='blk'?1:0)-E.blk)*Math.min(1,dt*1.5);
+ if(E.cur){E.t-=dt;if(E.t<=0){if(E.cur==='fog')toast('☀️ Der Nebel lichtet sich.',1800);if(E.cur==='blk')toast('💡 Der Strom ist wieder da!',1800);E.cur=null;E.next=28+Math.random()*30;}}
+ else if(!G.storm.on){E.next-=dt;if(E.next<=0){
+  const r=Math.random();
+  if(r<.34){E.cur='fog';E.t=14;toast('🌫️ Dichter Nebel zieht auf! Du siehst kaum etwas.',3000);}
+  else if(r<.62){E.cur='blk';E.t=12;toast('🔌 Stromausfall! Es wird dunkel – deine Laterne leuchtet noch.',3200);sfx('deny');}
+  else{spawnStar();E.next=35+Math.random()*20;}
+ }}
+ if(E.star){const s=E.star;s.ttl-=dt;if(s.ttl<=0){E.star=null;toast('⭐ Die Sternschnuppe ist verglüht.',1600);}
+  else if(Math.hypot(P.x-s.x,P.y-s.y)<34+P.r*.5&&P.z<8){G.score+=60;G.turbo=Math.max(G.turbo,6);E.star=null;floatT(s.x,s.y-20,'+60 ⭐');toast('🌟 Sternschnuppe gefangen! Turbo für 6 Sekunden!',2600);sfx('win');burst(s.x,s.y,30,['#ffd54a','#fff','#9be7ff']);heroSay('eat');}}
+}
+function spawnStar(){
+ const p=roadPointNear(P.x,P.y,520,240);G.ev.star={x:p.x,y:p.y,ttl:26};toast('🌠 Eine Sternschnuppe ist gefallen! Schnapp sie dir – sie bringt Turbo!',3400);sfx('bell');
+}
+function drawStar(tm){
+ const s=G.ev&&G.ev.star;if(!s)return;
+ const g=ctx.createRadialGradient(s.x,s.y-20,2,s.x,s.y-20,46);g.addColorStop(0,'rgba(255,240,160,.9)');g.addColorStop(1,'rgba(255,213,74,0)');ctx.fillStyle=g;ctx.fillRect(s.x-50,s.y-70,100,100);
+ const bg=ctx.createLinearGradient(0,s.y,0,s.y-160);bg.addColorStop(0,'rgba(255,226,122,.5)');bg.addColorStop(1,'rgba(255,226,122,0)');ctx.fillStyle=bg;ctx.fillRect(s.x-6,s.y-160,12,160);
+ ctx.save();ctx.translate(s.x,s.y-22+Math.sin(tm*3)*3);ctx.rotate(tm*.8);ctx.fillStyle='#ffd54a';ctx.strokeStyle='#fff';ctx.lineWidth=1.6;ctx.beginPath();for(let k=0;k<10;k++){const a=k/10*6.283-1.57,r=k%2?6:14;ctx.lineTo(Math.cos(a)*r,Math.sin(a)*r);}ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();
+}
+
 /* ===== game_b.js: Zeichnen, HUD, Menü, Schleife ===== */
 /* ---------- Muster / Lichter ---------- */
 const PATS={};
@@ -3065,6 +3112,7 @@ function drawPlayer(tm){
 }
 function drawOverlays(v,z,tm){
  const sp=W.sp;
+ drawStar(tm);
  // Auftrags-Häuser: Leuchtturm + Geschenk
  for(const h of W.houses){
   if(!h.target)continue;
@@ -3088,6 +3136,8 @@ function drawOverlays(v,z,tm){
  // Partikel & Texte
  for(const p of particles){ctx.globalAlpha=clamp(p.life*1.6,0,1);ctx.fillStyle=p.c;ctx.beginPath();ctx.arc(p.x,p.y,2.4,0,6.283);ctx.fill();}ctx.globalAlpha=1;
  for(const f of floats){ctx.globalAlpha=clamp(f.life,0,1);label(f.t,f.x,f.y,Math.max(13,14/z));}ctx.globalAlpha=1;
+ drawHeroSay(tm,z);
+ if(G.ev&&G.ev.star){const st=G.ev.star;const a=Math.atan2(st.y-P.y,st.x-P.x),d=Math.hypot(st.x-P.x,st.y-P.y);if(d>120/z){const R=88/z;ctx.save();ctx.translate(P.x+Math.cos(a)*R,P.y+Math.sin(a)*R);ctx.rotate(a);ctx.scale(1/z,1/z);ctx.fillStyle='#9be7ff';ctx.strokeStyle='#0a1830';ctx.lineWidth=2;ctx.beginPath();ctx.moveTo(11,0);ctx.lineTo(-6,-7.5);ctx.lineTo(-2.5,0);ctx.lineTo(-6,7.5);ctx.closePath();ctx.fill();ctx.stroke();ctx.restore();label('🌠',P.x+Math.cos(a)*(R+22/z),P.y+Math.sin(a)*(R+22/z),12/z);}}
  // Pfeil zum nächsten Geschenk (und zum Markt bei Hunger)
  const nt=nearestTarget();
  const arrow=(tx,ty,col,txt)=>{const a=Math.atan2(ty-P.y,tx-P.x),d=Math.hypot(tx-P.x,ty-P.y);if(d<110/z)return;const R=(P.veh==='foot'?58:70)/z,ax=P.x+Math.cos(a)*R,ay=P.y+Math.sin(a)*R;ctx.save();ctx.translate(ax,ay);ctx.rotate(a);ctx.scale(1/z,1/z);ctx.fillStyle='rgba(10,24,52,.6)';ctx.beginPath();ctx.moveTo(13,0);ctx.lineTo(-7,-9);ctx.lineTo(-3,0);ctx.lineTo(-7,9);ctx.closePath();ctx.fill();ctx.fillStyle=col;ctx.beginPath();ctx.moveTo(11,0);ctx.lineTo(-6,-7.5);ctx.lineTo(-2.5,0);ctx.lineTo(-6,7.5);ctx.closePath();ctx.fill();ctx.restore();if(txt)label(txt,P.x+Math.cos(a)*(R+22/z),P.y+Math.sin(a)*(R+22/z),11/z);};
@@ -3096,8 +3146,8 @@ function drawOverlays(v,z,tm){
 }
 
 function nightPass(v,z,tm){
- const sp=W.sp,dark0=sp.mood.dark||0;if(dark0<.02)return;
- const dark=dark0*(1-G.storm.k*.15);
+ const sp=W.sp,blk=(G.ev&&G.ev.blk)||0,dark0=(sp.mood.dark||0)+blk*.62;if(dark0<.02)return;
+ const dark=Math.min(.92,dark0*(1-G.storm.k*.15));
  const sw=Math.ceil(cw*dpr*.5),sh=Math.ceil(chh*dpr*.5);if(lc.width!==sw||lc.height!==sh){lc.width=sw;lc.height=sh;}
  lg.setTransform(1,0,0,1,0,0);lg.globalCompositeOperation='source-over';lg.globalAlpha=1;lg.clearRect(0,0,sw,sh);
  lg.fillStyle=sp.mood.tint?sp.mood.tint:'#0a1030';lg.globalAlpha=dark;lg.fillRect(0,0,sw,sh);lg.globalAlpha=1;
@@ -3133,9 +3183,10 @@ function screenFx(z,tm,dt){
    const g=ctx.createLinearGradient(0,0,0,h);const hue=130+60*Math.sin(i*.17+tm*.25);g.addColorStop(0,'hsla('+hue+',90%,60%,0)');g.addColorStop(.5,'hsla('+hue+',90%,60%,'+(.14+.1*wv)+')');g.addColorStop(1,'hsla('+(hue+40)+',90%,60%,0)');ctx.fillStyle=g;ctx.fillRect(x,0,cw/n+1,h);}
  }
  // Nebel
- if(sp.mood.fog){
+ const fogT=(sp.mood.fog||0)+((G.ev&&G.ev.fogK)||0);
+ if(fogT>.01){
   const px=(cw/2+(P.x-cam.x)*z),py=(chh/2+(P.y-cam.y)*z),g=ctx.createRadialGradient(px,py,90*z,px,py,Math.max(cw,chh)*.62);
-  const fa=sp.mood.fog;g.addColorStop(0,'rgba(205,210,222,0)');g.addColorStop(.35,'rgba(205,210,222,'+(fa*.35)+')');g.addColorStop(1,'rgba(200,206,220,'+(fa*.8)+')');ctx.fillStyle=g;ctx.fillRect(0,0,cw,chh);
+  const fa=Math.min(1,fogT);g.addColorStop(0,'rgba(205,210,222,0)');g.addColorStop(.35,'rgba(205,210,222,'+(fa*.35)+')');g.addColorStop(1,'rgba(200,206,220,'+(fa*.8)+')');ctx.fillStyle=g;ctx.fillRect(0,0,cw,chh);
   for(let i=0;i<5;i++){const x=((tm*8*(1+i*.3)+i*400)%(cw+500))-250,y=chh*(.15+i*.18);const gg=ctx.createRadialGradient(x,y,10,x,y,210);gg.addColorStop(0,'rgba(215,220,230,'+(fa*.28)+')');gg.addColorStop(1,'rgba(215,220,230,0)');ctx.fillStyle=gg;ctx.fillRect(x-210,y-210,420,420);}
  }
  // Schnee
