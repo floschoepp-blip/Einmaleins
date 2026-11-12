@@ -13,7 +13,7 @@ canvas#c{position:fixed;inset:0;width:100%;height:100%;display:block}
 button{font:inherit;color:inherit;border:0;cursor:pointer}
 .sa{padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left)}
 /* Menü */
-#menu,#end{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;background:linear-gradient(#0b1d3a,#1b3a6b 60%,#2c5a8f);overflow:auto;touch-action:pan-y}
+#menu,#end{position:fixed;inset:0;display:flex;align-items:safe center;justify-content:center;background:linear-gradient(#0b1d3a,#1b3a6b 60%,#2c5a8f);overflow:auto;touch-action:pan-y}
 #end{background:rgba(8,20,46,.88)}
 .card{width:min(94vw,520px);background:rgba(255,255,255,.1);border:1px solid rgba(255,255,255,.22);border-radius:22px;padding:18px 18px 20px;text-align:center;margin:auto}
 h1{margin:0 0 2px;font-size:30px}.logo{background:linear-gradient(90deg,#ffd54a,#fff3b0,#ffb703);-webkit-background-clip:text;background-clip:text;color:transparent;letter-spacing:1px}
@@ -65,10 +65,11 @@ input{width:100%;max-width:280px;padding:10px 12px;border-radius:12px;border:0;f
 <div id="menu" class="sa">
  <div class="card">
   <h1><span class="logo">Santa Bling Bling</span> ✨</h1>
-  <div class="sub">v0.3 · 7 Städte · bring alle Geschenke zu den Kindern!</div>
+  <div class="sub">v1.0 · 7 Städte · bring alle Geschenke zu den Kindern!</div>
   <input id="name" maxlength="12" placeholder="Dein Name" autocomplete="off">
   <div class="row" id="chars"></div>
   <div class="row" id="levels"></div>
+  <div id="diff" style="display:flex;gap:6px;justify-content:center;margin:4px 0"></div>
   <div id="sel"></div>
   <button class="big" id="start">Los geht's! 🛷</button>
   <div class="hs" id="hs"></div>
@@ -1868,7 +1869,9 @@ function floatT(x,y,t){floats.push({x,y,t,life:1.4});}
 const T=()=>W.sp.texts||{};
 
 /* ---------- Start ---------- */
+let DIFF=1;
 function startGame(idx){
+ DIFF=store.get('sbb-diff',1);
  if(idx==null)idx=sel.lv;sel.lv=idx;
  const lv=CITIES[idx];
  W=buildWorld(lv);const sp=W.sp;
@@ -1902,7 +1905,7 @@ function startGame(idx){
  for(let i=0;i<4;i++){const p=roadPointNear(sx,sy,500,60);G.wichtel.push({x:p.x,y:p.y,vx:0,vy:0,t:Math.random()*3,ang:0,mv:false});}
  {const kv2=['cap','knit','beret','cowboy','ushanka','bub','madl'],nw=7+lvI*2;for(let i=0;i<nw;i++){const p=roadPointNear(sx,sy,1500,160);G.walkers.push({x:p.x,y:p.y,vx:0,vy:0,t:Math.random()*3,ang:Math.random()*6,mv:false,v:(sp.kids||kv2)[i%(sp.kids||kv2).length]});}}
  const kv=sp.kids||['bub'],nk=3+Math.min(2,Math.floor(lvI/2));
- for(let i=0;i<nk;i++){const p=roadPointNear(sx,sy,1300,320);G.kids.push({x:p.x,y:p.y,vx:0,vy:0,t:Math.random()*3,cd:0,v:kv[i%kv.length],ang:0,mv:false,done:false,busy:false,game:i%2?'eis':'snow'});}
+ for(let i=0;i<nk;i++){const p=roadPointNear(sx,sy,1300,320);G.kids.push({x:p.x,y:p.y,vx:0,vy:0,t:Math.random()*3,cd:0,v:kv[i%kv.length],ang:0,mv:false,done:false,busy:false,game:['snow','eis','ziel'][i%3]});}
  for(let i=0;i<7;i++){const p=roadPointNear(sx,sy,1100,90),h=HELPERS[i%4];G.pick.push({x:p.x+(Math.random()-.5)*20,y:p.y+(Math.random()-.5)*20,h,bob:Math.random()*6});}
  cam.x=P.x;cam.y=P.y;particles=[];floats=[];W.spots.forEach(s=>s.cd=0);
  // Minikarte
@@ -2079,12 +2082,12 @@ function update(dt){
  // Sturm
  const S=G.storm;
  if(!S.on){S.next-=dt;if(S.next<=0){S.on=true;S.t=9;const a=Math.random()*6.283;S.wx=Math.cos(a);S.wy=Math.sin(a);toast('❄️ Schneesturm! Du wirst langsamer und vom Wind geschoben!',3000);sfx('storm');}}
- else{S.t-=dt;if(S.t<=0){S.on=false;S.next=25+Math.random()*15;toast('Der Sturm ist vorbei ☀️',1800);}}
+ else{S.t-=dt;if(S.t<=0){S.on=false;S.next=(25+Math.random()*15)*[1.6,1,.7][DIFF];toast('Der Sturm ist vorbei ☀️',1800);}}
  S.k+=((S.on?1:0)-S.k)*Math.min(1,dt*1.5);
  // Spieler
  const V=VEH[P.veh];let[ix,iy]=steer();
  if(P.stun>0){P.stun-=dt;ix=iy=0;}
- G.en=Math.max(0,G.en-dt*.9);if(G.en<30&&!G.hungry){G.hungry=true;toast('🍴 Du hast Hunger – ab zum '+(T().market||'Markt')+'!',3200);}if(G.en>55)G.hungry=false;
+ G.en=Math.max(0,G.en-dt*[.6,.9,1.2][DIFF]);if(G.en<30&&!G.hungry){G.hungry=true;toast('🍴 Du hast Hunger – ab zum '+(T().market||'Markt')+'!',3200);}if(G.en>55)G.hungry=false;
  const mult=(1+.08*G.helpers.length)*(G.turbo>0?1.4:1)*(S.on?.78:1)*(.62+.38*G.en/100);
  const nDeer=G.helpers.filter(h=>h.t==='deer').length,maxF=2.5+2.5*nDeer;
  let fm=1;
@@ -2217,8 +2220,8 @@ function startFP(kid,kind){
  fpc.hidden=false;fpui.hidden=false;fpSize();$('fpT').hidden=false;$('fpX').hidden=false;$('rmui').hidden=true;
  const R=mulberry(Math.floor(Math.random()*1e6));
  FP={kid,kind:kind||'snow',t:0,yaw:0,pitch:0,cx:0,hearts:3,balls:[],parts:[],msg:'',msgT:0,end:0,res:0,d:Math.min(2,window.devicePixelRatio||1),lvI,R,flash:0,shake:0,drag:null,shots:0,hits:0};
- if(FP.kind==='snow')snowInit(); else eisInit();
- fpHint(FP.kind==='snow'?'❄️ Schneeballschlacht! Ziehe zum Umschauen, tippe zum Werfen. Weiche den Bällen aus!':'🥌 Eisstockschießen! Zieh nach hinten, lass los – Ziel ist der grüne Strich auf dem Kraftbalken.',3800);
+ if(FP.kind==='snow')snowInit(); else if(FP.kind==='ziel')zielInit(); else eisInit();
+ fpHint(FP.kind==='snow'?'❄️ Schneeballschlacht! Ziehe zum Umschauen, tippe zum Werfen. Weiche den Bällen aus!':FP.kind==='ziel'?'🎯 Zielwerfen! Triff '+FP.need+' Christbaumkugeln, bevor die Zeit abläuft.':'🥌 Eisstockschießen! Zieh nach hinten, lass los – Ziel ist der grüne Strich auf dem Kraftbalken.',3800);
  sfx('hoho');
 }
 function fpHint(t,s){FP.msg=t;FP.msgT=s||2;}
@@ -2340,18 +2343,18 @@ function fpSplat(x,y,z,n,c){for(let i=0;i<n;i++)FP.parts.push({x,y,z,vx:(Math.ra
 /* ================== Schneeballschlacht ================== */
 function snowInit(){
  const F=FP,n=F.lvI>=3?2:1;F.foes=[];
- for(let i=0;i<n;i++){F.foes.push({x:n===1?0:(i?2.4:-2.4),z:-7.5-i*1.2,hp:3+(F.lvI>=5?1:0),st:'hide',t:1+i*1.1,lift:1.15,v:i?(F.kid.v==='bub'?'madl':'bub'):F.kid.v,hit:0,ox:0,dir:i?-1:1,main:i===0});}
+ for(let i=0;i<n;i++){F.foes.push({x:n===1?0:(i?2.4:-2.4),z:-7.5-i*1.2,hp:[2,3,4][DIFF]+(F.lvI>=5?1:0),st:'hide',t:1+i*1.1,lift:1.15,v:i?(F.kid.v==='bub'?'madl':'bub'):F.kid.v,hit:0,ox:0,dir:i?-1:1,main:i===0});}
  F.walls=[];for(const fo of F.foes)F.walls.push({x:fo.x,z:fo.z+1.4,w:2.6,h:.95,d:.9});
  F.walls.push({x:-4.4,z:-6.5,w:1.6,h:.7,d:.7},{x:4.2,z:-5,w:1.8,h:.6,d:.7});
  F.trees=[];const R=F.R;for(let i=0;i<14;i++){const a=(i/14)*6.283+R()*.3,d=24+R()*10;F.trees.push({x:Math.sin(a)*d,z:-Math.cos(a)*d,h:4+R()*2.2});}
- F.cd=0;
+ F.cd=0;F.hearts=[4,3,3][DIFF];
 }
 function snowThrow(){
  const F=FP;if(F.cd>0||F.end)return;F.cd=.42;F.shots++;
  const sy=Math.sin(F.yaw),cy=Math.cos(F.yaw),cp=Math.cos(F.pitch),sp_=Math.sin(F.pitch);
  let dir=[sy*cp,sp_,-cy*cp];const o=[F.cx+.25,1.3,-.3],sp=20,g=3;
  let best=null,bd=.14;
- for(const fo of F.foes){if(fo.st==='hide'||fo.st==='down'||fo.hp<=0)continue;if(fo.lift>.5)continue;const tx=fo.x-o[0],ty=Math.min(1.25,(.95+1.4-fo.lift)/2)-o[1],tz=fo.z-o[2];const L=Math.hypot(tx,ty,tz),dv=[tx/L,ty/L,tz/L],ang=Math.acos(Math.max(-1,Math.min(1,dir[0]*dv[0]+dir[1]*dv[1]+dir[2]*dv[2])));if(ang<bd){bd=ang;best={fo,L};}}
+ for(const fo of (F.foes||[])){if(fo.st==='hide'||fo.st==='down'||fo.hp<=0)continue;if(fo.lift>.5)continue;const tx=fo.x-o[0],ty=Math.min(1.25,(.95+1.4-fo.lift)/2)-o[1],tz=fo.z-o[2];const L=Math.hypot(tx,ty,tz),dv=[tx/L,ty/L,tz/L],ang=Math.acos(Math.max(-1,Math.min(1,dir[0]*dv[0]+dir[1]*dv[1]+dir[2]*dv[2])));if(ang<bd){bd=ang;best={fo,L};}}
  let v;
  if(best){const fo=best.fo,t=Math.hypot(fo.x-o[0],fo.z-o[2])/sp;v=[(fo.x-o[0])/t,((Math.min(1.25,(.95+1.4-fo.lift)/2)-o[1])/t)+.5*g*t,(fo.z-o[2])/t];}
  else v=[dir[0]*sp,dir[1]*sp+1.1,dir[2]*sp];
@@ -2408,7 +2411,7 @@ function snowDraw(tm){
 function eisInit(){
  const F=FP;F.cx=0;F.yaw=0;F.pitch=0;
  F.daube={x:(Math.random()-.5)*2.2,z:-18-Math.random()*5};
- F.stock=null;F.tries=5;F.dist=99;F.best=99;F.pull=0;F.power=0;F.aim=0;F.state='aim';F.need=2;F.ideal=(Math.sqrt(2*2.4*Math.hypot(F.daube.x,F.daube.z+1.2))-6)/7.5;
+ F.stock=null;F.tries=5;F.dist=99;F.need=[2.6,2,1.5][DIFF];F.best=99;F.pull=0;F.power=0;F.aim=0;F.state='aim';F.need=[2.6,2,1.5][DIFF];F.ideal=(Math.sqrt(2*2.4*Math.hypot(F.daube.x,F.daube.z+1.2))-6)/7.5;
  F.foeStock=[];
 }
 function eisRelease(){
@@ -2463,12 +2466,12 @@ function fpUpdate(dt){
   if(F.bub){F.bub.ttl-=dt;if(F.bub.ttl<=0)F.bub=null;}
   fpDraw(F.t);return;
  }
- if(F.kind==='snow'){
+ if(F.kind==='snow'||F.kind==='ziel'){
   // Eingabe
   const strafe=(FPK.r-FPK.l)+((keys.right?1:0)-(keys.left?1:0));F.cx=Math.max(-3,Math.min(3,F.cx+strafe*3.2*dt));
   if(keys.up)F.pitch=Math.min(.3,F.pitch+dt);if(keys.down)F.pitch=Math.max(-.2,F.pitch-dt);
   if(FPK.t||keys.act){if(!F.tg){snowThrow();F.tg=true;}}else F.tg=false;
-  if(F.t>1.2)snowUpdate(dt);
+  if(F.t>1.2){if(F.kind==='snow')snowUpdate(dt);else zielUpdate(dt);}
   F.yaw=Math.max(-1.1,Math.min(1.1,F.yaw));F.pitch=Math.max(-.2,Math.min(.3,F.pitch));
  }else{
   const turn=(FPK.r-FPK.l)+((keys.right?1:0)-(keys.left?1:0));if(F.state==='aim'){F.yaw+=turn*.5*dt;}
@@ -2485,7 +2488,7 @@ function fpDraw(tm){
  fx.save();if(F.shake>0)fx.translate((Math.random()-.5)*F.shake*30,(Math.random()-.5)*F.shake*20);
  if(F.kind==='room'){roomDraw(tm);fx.restore();roomHUD();return;}
  fpBackground();
- if(F.kind==='snow')snowDraw(tm);else eisDraw(tm);
+ if(F.kind==='snow')snowDraw(tm);else if(F.kind==='ziel')zielDraw(tm);else eisDraw(tm);
  // Schneefall
  fx.fillStyle='rgba(255,255,255,.85)';for(let i=0;i<70;i++){const x=((i*131+tm*30*(1+i%3)*.6)%W_),y=((i*71+tm*(60+i%5*20))%H_);fx.beginPath();fx.arc(x,y,1+i%3,0,6.283);fx.fill();}
  fx.restore();
@@ -2500,6 +2503,9 @@ function fpDraw(tm){
   // Fadenkreuz
   fx.strokeStyle='rgba(10,24,52,.85)';fx.lineWidth=3*u;fx.beginPath();fx.arc(W_/2,H_*.46+F.pitch*H_*.95*0,14*u,0,6.283);fx.moveTo(W_/2-22*u,H_*.46);fx.lineTo(W_/2-8*u,H_*.46);fx.moveTo(W_/2+8*u,H_*.46);fx.lineTo(W_/2+22*u,H_*.46);fx.stroke();
   fx.strokeStyle='#fff';fx.lineWidth=1.6*u;fx.beginPath();fx.arc(W_/2,H_*.46,14*u,0,6.283);fx.stroke();
+ }else if(F.kind==='ziel'){
+  fx.fillStyle='#fff';fx.strokeStyle='rgba(10,24,52,.7)';fx.lineWidth=4*u;fx.textAlign='left';const t='🎯 '+F.hits+'/'+F.need+'   ⏱ '+Math.max(0,Math.ceil(F.time))+' s';fx.strokeText(t,16*u,14*u);fx.fillText(t,16*u,14*u);
+  fx.strokeStyle='rgba(10,24,52,.85)';fx.lineWidth=3*u;fx.beginPath();fx.arc(W_/2,H_*.46,14*u,0,6.283);fx.stroke();fx.strokeStyle='#fff';fx.lineWidth=1.6*u;fx.beginPath();fx.arc(W_/2,H_*.46,14*u,0,6.283);fx.stroke();
  }else{
   fx.fillStyle='#fff';fx.strokeStyle='rgba(10,24,52,.7)';fx.lineWidth=4*u;fx.textAlign='left';const t='🥌 '+Math.max(0,F.tries)+' · Ziel < '+F.need+' m';fx.strokeText(t,16*u,14*u);fx.fillText(t,16*u,14*u);
  }
@@ -2513,15 +2519,48 @@ let fpDrag=null;
 fpc.addEventListener('pointerdown',e=>{if(!FP)return;e.preventDefault();fpc.setPointerCapture&&fpc.setPointerCapture(e.pointerId);fpDrag={x:e.clientX,y:e.clientY,t:performance.now(),yaw:FP.yaw,pitch:FP.pitch,moved:0};if(FP.kind==='eis'&&FP.state==='aim'){FP.held=true;}});
 fpc.addEventListener('pointermove',e=>{if(!FP||!fpDrag)return;const dx=e.clientX-fpDrag.x,dy=e.clientY-fpDrag.y;fpDrag.moved=Math.max(fpDrag.moved,Math.hypot(dx,dy));
  if(FP.kind==='room'){FP.yaw=Math.max(-.95,Math.min(.95,fpDrag.yaw-dx/innerHeight*1.6));FP.pitch=Math.max(-.35,Math.min(.35,fpDrag.pitch-dy/innerHeight*1.0));}
- else if(FP.kind==='snow'){FP.yaw=fpDrag.yaw+dx/innerHeight*1.6;FP.pitch=Math.max(-.2,Math.min(.3,fpDrag.pitch-dy/innerHeight*1.2));}
+ else if(FP.kind==='snow'||FP.kind==='ziel'){FP.yaw=fpDrag.yaw+dx/innerHeight*1.6;FP.pitch=Math.max(-.2,Math.min(.3,fpDrag.pitch-dy/innerHeight*1.2));}
  else if(FP.state==='aim'){FP.yaw=Math.max(-.35,Math.min(.35,fpDrag.yaw+dx/innerHeight*.9));FP.dragPull=Math.max(0,Math.min(1,dy/(innerHeight*.5)));FP.pull=FP.dragPull;}});
 const fpUp=e=>{if(!FP||!fpDrag)return;const d=fpDrag;fpDrag=null;
  if(FP.kind==='room'){}
- else if(FP.kind==='snow'){if(d.moved<12&&performance.now()-d.t<350)snowThrow();}
+ else if(FP.kind==='snow'||FP.kind==='ziel'){if(d.moved<12&&performance.now()-d.t<350)snowThrow();}
  else{if(FP.state==='aim'&&FP.dragPull!=null){FP.held=false;eisRelease();FP.dragPull=null;}}};
 fpc.addEventListener('pointerup',fpUp);fpc.addEventListener('pointercancel',fpUp);
 addEventListener('keydown',e=>{if(!FP)return;if(e.code==='Space'||e.code==='Enter'||e.code==='KeyE'){keys.act=true;e.preventDefault();}});
 addEventListener('keyup',e=>{if(!FP)return;if(e.code==='Space'||e.code==='Enter'||e.code==='KeyE')keys.act=false;});
+
+/* ================== Zielwerfen (Christbaumkugeln) ================== */
+function zielInit(){
+ const F=FP,R=F.R;F.need=[5,6,8][DIFF];F.time=[40,35,30][DIFF];F.cd=0;F.balls=[];F.hearts=9;
+ F.targets=[];const cols=['#e23b3b','#ffd54a','#3d9be0','#4cc16a','#b36bff','#ff8a3f'];
+ for(let i=0;i<10;i++)F.targets.push({x:-3.2+R()*6.4,y:1.1+R()*1.6,z:-7-R()*5,c:cols[i%6],ph:R()*6,sp:.6+R()*.8,amp:.3+R()*.8,hit:0});
+ F.trees=[];for(let i=0;i<14;i++){const a=(i/14)*6.283+R()*.3,d=24+R()*10;F.trees.push({x:Math.sin(a)*d,z:-Math.cos(a)*d,h:4+R()*2.2});}
+ F.walls=[];F.foes=[];
+}
+function zielUpdate(dt){
+ const F=FP;F.cd=Math.max(0,F.cd-dt);
+ for(const t of F.targets){t.hit=Math.max(0,t.hit-dt);t.cx=t.x+Math.sin(F.t*t.sp+t.ph)*t.amp;}
+ for(let i=F.balls.length-1;i>=0;i--){const b=F.balls[i];b.x+=b.vx*dt;b.y+=b.vy*dt;b.z+=b.vz*dt;b.vy-=b.g*dt;
+  let gone=false;
+  for(const t of F.targets){if(t.hit>0)continue;if(Math.abs(b.z-t.z)<.7&&Math.hypot(b.x-t.cx,b.y-t.y)<.42){t.hit=1.2;F.hits++;fpSplat(t.cx,t.y,t.z,16,t.c);sfx('ding');F.shake=.1;gone=true;break;}}
+  if(gone||b.y<0||b.z<-45){if(!gone)fpSplat(b.x,Math.max(0,b.y),b.z,5);F.balls.splice(i,1);}}
+ if(!F.end){F.time-=dt;
+  if(F.hits>=F.need){F.end=1;F.endT=1.6;F.res=1;fpHint('🎉 Gewonnen!',2);}
+  else if(F.time<=0){F.end=1;F.endT=1.6;F.res=0;fpHint('Zeit um! Zu wenige Treffer.',2);}}
+}
+function zielDraw(tm){
+ const F=FP;for(const t of F.trees)fpTree(t.x,t.z,t.h);
+ // Gestell: zwei Pfosten und Balken
+ fpBox(-4.2,-6.5,.3,3.8,.3,'#8a5a2e','#6b3f1d','#a77a45');fpBox(4.2,-6.5,.3,3.8,.3,'#8a5a2e','#6b3f1d','#a77a45');
+ const items=[];
+ items.push({z:-6.5,f:()=>{const a=pj(-4.2,3.7,-6.5),b=pj(4.2,3.7,-6.5);if(a&&b){fx.strokeStyle='#6b3f1d';fx.lineWidth=Math.max(3,a.s*.16);fx.beginPath();fx.moveTo(a.X,a.Y);fx.lineTo(b.X,b.Y);fx.stroke();}}});
+ for(const t of F.targets)items.push({z:t.z,f:()=>{const p=pj(t.cx==null?t.x:t.cx,t.y,t.z),top=pj(t.cx==null?t.x:t.cx,3.7,t.z);if(!p)return;if(t.hit>0&&t.hit<1){fx.globalAlpha=t.hit;}
+  fx.strokeStyle='#d9c7a0';fx.lineWidth=1.3;fx.beginPath();fx.moveTo(p.X,top.Y);fx.lineTo(p.X,p.Y-p.s*.3);fx.stroke();
+  const r=p.s*.3*(t.hit>0?1+(1.2-t.hit)*1.2:1);fx.fillStyle=t.c;fx.beginPath();fx.arc(p.X,p.Y,r,0,6.283);fx.fill();fx.fillStyle='rgba(255,255,255,.6)';fx.beginPath();fx.arc(p.X-r*.3,p.Y-r*.3,r*.3,0,6.283);fx.fill();fx.fillStyle='#ffd54a';fx.fillRect(p.X-r*.2,p.Y-r*1.15,r*.4,r*.3);fx.globalAlpha=1;}});
+ for(const b of F.balls)items.push({z:b.z,f:()=>fpBall(b.x,b.y,b.z,.14,'#fff')});
+ for(const p of F.parts)items.push({z:p.z,f:()=>{const q=pj(p.x,p.y,p.z);if(q){fx.globalAlpha=Math.max(0,p.l*1.4);fx.fillStyle=p.c;fx.beginPath();fx.arc(q.X,q.Y,Math.max(1.5,q.s*.05),0,6.283);fx.fill();fx.globalAlpha=1;}}});
+ items.sort((a,b)=>a.z-b.z);for(const it of items)it.f();
+}
 
 /* ===== room.js: Häuser betreten (1st-Person-3D-Innenräume) ===== */
 const ENTER={meal:1,talk:1,turbo:1,bells:1,bake:1,home:1,pack:1,feed:1,post:1,slot:1};
@@ -2549,11 +2588,11 @@ const ROOMS={
 };
 let RM=null;
 function startRoom(s){
- const th=ROOMS[s.act]||ROOMS.talk;
+ const rk=(s.paint==='bigben'||s.paint==='dome')&&s.act==='bells'?'talk':(ROOMS[s.act]?s.act:'talk'),th=ROOMS[rk];
  G.mode='fp';stick.x=stick.y=0;for(const k in keys)keys[k]=false;
  $('zone').hidden=true;$('act').hidden=true;$('fly').hidden=true;$('horn').hidden=true;
  fpc.hidden=false;fpui.hidden=false;fpSize();$('fpT').hidden=true;$('fpX').hidden=true;$('rmui').hidden=false;
- FP={kind:'room',spot:s,th,t:0,yaw:0,pitch:0,cx:0,parts:[],msg:'',msgT:0,end:0,res:0,d:Math.min(2,window.devicePixelRatio||1),R:mulberry(Math.floor(Math.random()*1e6)),bub:null,flash:0,shake:0,drag:null,li:0};
+ FP={kind:'room',rk,spot:s,th,t:0,yaw:0,pitch:0,cx:0,parts:[],msg:'',msgT:0,end:0,res:0,d:Math.min(2,window.devicePixelRatio||1),R:mulberry(Math.floor(Math.random()*1e6)),bub:null,flash:0,shake:0,drag:null,li:0};
  $('rmAct').textContent=(ACT_LABEL[s.act]||'Los');
  sfx('pick');roomBubble((th.lines[0]),7);
  setTimeout(()=>{if(FP&&FP.kind==='room')sfx('ding');},300);
@@ -2663,7 +2702,7 @@ function roomDraw(tm){
  // Tür (hinter dir) angedeutet nicht sichtbar
  // Raum-spezifische Deko & Möbel
  const items=[];const it=(z,f)=>items.push({z,f});
- const kind=F.spot.act;
+ const kind=F.rk;
  const counter=(z,w,cf,cs,ct)=>it(z,()=>box3(0,0,z,w,1,.9,cf,cs,ct));
  if(kind==='meal'){
   for(const [x,z] of [[-2.6,-2.4],[2.6,-2.4],[-2.4,-5],[2.4,-5.2]])it(z,()=>{box3(x,.7,z,1.3,.08,1.3,'#a26a38','#7a4a22','#c58a52');box3(x-.55,0,z-.1,.1,.7,.1,'#6b3f1d','#5a3412');box3(x+.55,0,z-.1,.1,.7,.1,'#6b3f1d','#5a3412');box3(x-1.1,0,z+.1,.5,.5,.5,'#8a5a2e','#6b3f1d','#a77a45');box3(x+1.1,0,z+.1,.5,.5,.5,'#8a5a2e','#6b3f1d','#a77a45');box3(x,.78,z-.2,.25,.25,.25,'#e8e0d0','#bbb','#fff');});
@@ -2734,7 +2773,7 @@ function roomHUD(){
 /* ===== extras.js: Hindernisse (Verwehungen, Rohrbrüche) und Belohnungssequenz ===== */
 function genHazards(){
  const lvI=G.idx,R=mulberry(G.idx*977+Math.floor(Math.random()*1e5)),hz=[];
- const nD=3+lvI,nP=lvI===0?1:1+Math.floor(lvI/2)+1;
+ const dm=[.5,1,1.5][DIFF],nD=Math.max(1,Math.round((3+lvI)*dm)),nP=Math.max(1,Math.round((lvI===0?1:1+Math.floor(lvI/2)+1)*dm));
  const rp=()=>{const r=W.roads[Math.floor(R()*W.roads.length)];if(!r||!r.smp||!r.smp.length)return null;const s=r.smp[Math.floor(R()*r.smp.length)];return{x:s.x+s.nx*(R()-.5)*r.w*.5,y:s.y+s.ny*(R()-.5)*r.w*.5,w:r.w};};
  const ok=(p,rad)=>{if(!p)return false;if(Math.hypot(p.x-P.x,p.y-P.y)<260)return false;if(solidWater(p.x,p.y))return false;for(const h of hz)if(Math.hypot(h.x-p.x,h.y-p.y)<160)return false;for(const t of W.houses)if(t.target&&Math.hypot(t.door.x-p.x,t.door.y-p.y)<90)return false;return true;};
  let guard=0;
@@ -3172,6 +3211,7 @@ function renderMenu(){
  $('sel').innerHTML=ok?'<b>'+esc(c.name)+'</b> · '+esc(c.blurb)+' · 🎁 '+c.gifts:'🔒 Schließe zuerst '+esc(CITIES[sel.lv-1].name)+' ab.';
  $('start').disabled=!ok;$('start').style.opacity=ok?1:.5;
  renderHS('hs');
+ const dd=$('diff');dd.innerHTML='';['Leicht 😊','Normal 🙂','Schwer 😤'].forEach((n,i)=>{const b=document.createElement('button');b.className='chip'+(store.get('sbb-diff',1)===i?' sel':'');b.style.minWidth='0';b.style.padding='6px 12px';b.textContent=n;b.onclick=()=>{store.set('sbb-diff',i);renderMenu();};dd.appendChild(b);});
 }
 function drawPreviews(tm){
  const save=ctx;
