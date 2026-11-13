@@ -20,7 +20,8 @@ const srv = http.createServer((q, r) => {
   await p.check(`input[value="${process.env.LEVEL || 'profi'}"]`, { force: true });
   await p.setInputFiles('#in-pick', photo);   // simuliert: Foto aus Galerie
   await p.waitForSelector('#s-crop:not([hidden])'); await p.waitForTimeout(400); await p.screenshot({ path: outDir + '/01b-crop.png' });
-  await p.fill('#crop-zoom', '2'); await p.dispatchEvent('#crop-zoom', 'input'); await p.waitForTimeout(200); await p.screenshot({ path: outDir + '/01c-crop-zoom.png' });
+  await p.click('#view-lines'); await p.waitForFunction(() => /Gesicht/.test(document.getElementById('prev-status').textContent), null, {timeout: 20000}); await p.waitForTimeout(300); await p.screenshot({ path: outDir + '/01c-crop-zoom.png' });
+  await p.fill('#opt-detail', '1.4'); await p.dispatchEvent('#opt-detail', 'input'); await p.waitForTimeout(1500); await p.screenshot({ path: outDir + '/01d-more.png' });
   await p.click('#btn-crop-ok');
   await p.waitForSelector('#s-guide:not([hidden])', { timeout: 30000 });
   const steps = { leicht: 4, mittel: 5, profi: 6 }[process.env.LEVEL || 'profi'];

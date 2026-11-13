@@ -166,12 +166,93 @@
     return out;
   }
 
-  /* Gewicht: Bildmitte (dort ist meist das Motiv) zählt mehr als der Rand */
-  function centerWeight(w, h) {
-    var out = new Float32Array(w * h), x, y, nx, ny;
-    for (y = 0; y < h; y++) { ny = (y + 0.5) / h - 0.5;
-      for (x = 0; x < w; x++) { nx = (x + 0.5) / w - 0.5; out[y * w + x] = 0.25 + 0.75 * Math.exp(-(nx * nx + ny * ny) / (2 * 0.28 * 0.28)); } }
+  /* Kleines Bild (Gleitkomma) auf Zielgröße hochskalieren */
+  function resizeF(src, sw, sh, w, h) {
+    var out = new Float32Array(w * h), x, y;
+    for (y = 0; y < h; y++) {
+      var v = (y + 0.5) * sh / h - 0.5, vi = Math.floor(v), fy = v - vi, r0 = clamp(vi, 0, sh - 1) * sw, r1 = clamp(vi + 1, 0, sh - 1) * sw;
+      for (x = 0; x < w; x++) {
+        var u = (x + 0.5) * sw / w - 0.5, ui = Math.floor(u), fx = u - ui, x0 = clamp(ui, 0, sw - 1), x1 = clamp(ui + 1, 0, sw - 1);
+        out[y * w + x] = (src[r0 + x0] * (1 - fx) + src[r0 + x1] * fx) * (1 - fy) + (src[r1 + x0] * (1 - fx) + src[r1 + x1] * fx) * fy;
+      }
+    }
     return out;
+  }
+
+  /* Hautfarbe (YCbCr, ohne stark gesättigte Töne wie Orange) */
+  function isSkin(r, g, b) {
+    var Y = 0.299 * r + 0.587 * g + 0.114 * b, Cr = 128 + 0.5 * r - 0.4187 * g - 0.0813 * b, Cb = 128 - 0.1687 * r - 0.3313 * g + 0.5 * b;
+    var mx = Math.max(r, g, b), mn = Math.min(r, g, b), sat = mx ? (mx - mn) / mx : 0;
+    return Y > 45 && Y < 248 && Cr >= 135 && Cr <= 172 && Cb >= 80 && Cb <= 126 && r > g && r > b && sat > 0.12 && sat < 0.55;
+  }
+
+  function morph(m, w, h, grow) {
+    var out = new Uint8Array(w * h), x, y, dx, dy, hit, xx, yy;
+    for (y = 0; y < h; y++) for (x = 0; x < w; x++) {
+      hit = grow ? 0 : 1;
+      for (dy = -1; dy <= 1; dy++) for (dx = -1; dx <= 1; dx++) {
+        xx = x + dx; yy = y + dy;
+        var v = (xx < 0 || yy < 0 || xx >= w || yy >= h) ? 0 : m[yy * w + xx];
+        if (grow) { if (v) hit = 1; } else if (!v) hit = 0;
+      }
+      out[y * w + x] = hit;
+    }
+    return out;
+  }
+
+  /* Findet das Hauptmotiv: Gesicht über Hautfarbe (größter, mittigster Fleck). Liefert weiche Masken (0..1) für
+   * "Motiv" (Kopf, Haare, Oberkörper) und "Gesicht". Ohne Gesicht: ovale Bildmitte. */
+  function findSubject(rgb, w, h) {
+    var f = Math.max(1, Math.round(Math.max(w, h) / 160)), sw = Math.max(8, Math.floor(w / f)), sh = Math.max(8, Math.floor(h / f)), x, y, i;
+    var skin = new Uint8Array(sw * sh);
+    for (y = 0; y < sh; y++) for (x = 0; x < sw; x++) {
+      i = (Math.min(h - 1, y * f + (f >> 1)) * w + Math.min(w - 1, x * f + (f >> 1))) * 4;
+      skin[y * sw + x] = isSkin(rgb[i], rgb[i + 1], rgb[i + 2]) ? 1 : 0;
+    }
+    skin = morph(morph(skin, sw, sh, false), sw, sh, true);
+    var sg = new Float32Array(sw * sh);   // Helligkeit des kleinen Bildes für die Glattheits-Prüfung
+    for (y = 0; y < sh; y++) for (x = 0; x < sw; x++) {
+      i = (Math.min(h - 1, y * f + (f >> 1)) * w + Math.min(w - 1, x * f + (f >> 1))) * 4;
+      sg[y * sw + x] = 0.299 * rgb[i] + 0.587 * rgb[i + 1] + 0.114 * rgb[i + 2];
+    }
+    var seen = new Uint8Array(sw * sh), stack = new Int32Array(sw * sh), best = null, bestScore = 0, sp, j, k, dx, dy, c;
+    for (i = 0; i < sw * sh; i++) {
+      if (!skin[i] || seen[i]) continue;
+      c = { area: 0, x0: sw, x1: 0, y0: sh, y1: 0, sx: 0, sy: 0, tex: 0 }; sp = 0; stack[sp++] = i; seen[i] = 1;
+      while (sp) {
+        j = stack[--sp]; x = j % sw; y = (j - x) / sw; c.area++; c.sx += x; c.sy += y;
+        if (x < sw - 1) c.tex += Math.abs(sg[j] - sg[j + 1]);
+        if (x < c.x0) c.x0 = x; if (x > c.x1) c.x1 = x; if (y < c.y0) c.y0 = y; if (y > c.y1) c.y1 = y;
+        for (dy = -1; dy <= 1; dy++) for (dx = -1; dx <= 1; dx++) {
+          if (x + dx < 0 || y + dy < 0 || x + dx >= sw || y + dy >= sh) continue;
+          k = j + dy * sw + dx; if (skin[k] && !seen[k]) { seen[k] = 1; stack[sp++] = k; }
+        }
+      }
+      var cx = c.sx / c.area / sw - 0.5, cy = c.sy / c.area / sh - 0.5, fill = c.area / ((c.x1 - c.x0 + 1) * (c.y1 - c.y0 + 1));
+      var tex = c.tex / c.area, asp = (c.y1 - c.y0 + 1) / (c.x1 - c.x0 + 1);
+      var score = c.area * Math.exp(-(cx * cx + cy * cy) / (2 * 0.35 * 0.35)) * (fill > 0.4 ? 1 : 0.5) * (asp > 0.7 && asp < 2.6 ? 1 : 0.5) / (1 + tex * tex / 40);
+      if (score > bestScore) { bestScore = score; best = c; }
+    }
+    var mask = new Float32Array(sw * sh), fmask = new Float32Array(sw * sh), face = null;
+    if (best && best.area >= 0.004 * sw * sh) {
+      var fw = best.x1 - best.x0 + 1, fh = Math.min(best.y1 - best.y0 + 1, 1.45 * fw), fcx = (best.x0 + best.x1 + 1) / 2, y0 = best.y0;
+      face = { cx: fcx / sw, cy: (y0 + fh / 2) / sh, w: fw / sw, h: fh / sh };
+      for (y = 0; y < sh; y++) for (x = 0; x < sw; x++) {
+        var hx = (x - fcx) / (0.95 * fw), hy = (y - (y0 + 0.4 * fh)) / (0.95 * fh);
+        var head = hx * hx + hy * hy < 1 ? 1 : 0;
+        var body = (y > y0 + 0.9 * fh && Math.abs(x - fcx) < 1.8 * fw) ? 1 : 0;
+        mask[y * sw + x] = Math.max(head, body);
+        var ex = (x - fcx) / (0.62 * fw), ey = (y - (y0 + 0.5 * fh)) / (0.68 * fh);
+        fmask[y * sw + x] = ex * ex + ey * ey < 1 ? 1 : 0;
+      }
+      mask = gaussian(mask, sw, sh, Math.max(1.5, 0.2 * fw)); fmask = gaussian(fmask, sw, sh, Math.max(1, 0.1 * fw));
+    } else {
+      for (y = 0; y < sh; y++) for (x = 0; x < sw; x++) {
+        var ox = (x / sw - 0.5) / 0.4, oy = (y / sh - 0.5) / 0.46; mask[y * sw + x] = ox * ox + oy * oy < 1 ? 1 : 0;
+      }
+      mask = gaussian(mask, sw, sh, Math.max(2, 0.1 * sw));
+    }
+    return { mask: mask, fmask: fmask, sw: sw, sh: sh, face: face };
   }
 
   /* Dunkle Linien per Differenz zweier Weichzeichnungen (DoG), dann auf 1 Pixel ausgedünnt.
@@ -222,20 +303,32 @@
     return Math.max(1, Math.floor(v * 2) / 2);
   }
 
-  function analyze(rgba, w, h, levelName) {
+  /* opts: detail (0.5-1.6, Linienmenge), bg (0-1, Hintergrund unterdrücken) */
+  function analyze(rgba, w, h, levelName, opts) {
+    opts = opts || {};
+    var detail = opts.detail == null ? 1 : opts.detail, bg = opts.bg == null ? 0.6 : opts.bg;
     var cfg = LEVELS[levelName] || LEVELS.mittel;
     var gd = gridFor(w, h, cfg.grid), aspect = gd.cols / gd.rows, cw = w, ch = h;
     if (w / h > aspect) { cw = Math.round(h * aspect); } else { ch = Math.round(w / aspect); }
     var rgb = (cw === w && ch === h) ? new Uint8ClampedArray(rgba) : cropRGBA(rgba, w, h, cw, ch);
-    var n = cw * ch, g = lumaStretch(rgb, n), i, k;
+    var n = cw * ch, g = lumaStretch(rgb, n), i, k, sc = Math.max(cw, ch) / 640;
     /* lokaler Kontrast: Gesichtszüge im Schatten werden sichtbar */
-    var loc = blurBig(g, cw, ch, 22), gn = new Float32Array(n);
+    var loc = blurBig(g, cw, ch, 22 * sc), gn = new Float32Array(n);
     for (i = 0; i < n; i++) gn[i] = clamp(0.5 * g[i] + 0.5 * (128 + (g[i] - loc[i]) * 1.7), 0, 255);
-    var wgt = centerWeight(cw, ch);
+    /* Motiv finden: Hintergrund wird ruhiger gemacht und bekommt weniger Linien, das Gesicht mehr */
+    var sub = findSubject(rgb, cw, ch), m = resizeF(sub.mask, sub.sw, sub.sh, cw, ch), fm = resizeF(sub.fmask, sub.sw, sub.sh, cw, ch);
+    var soft = blurBig(gn, cw, ch, 5 * sc), wgt = new Float32Array(n), kf;
+    for (i = 0; i < n; i++) {
+      kf = (1 - m[i]) * bg * 0.75;
+      gn[i] = (1 - kf) * gn[i] + kf * soft[i];
+      wgt[i] = (1 - bg * 0.75 * (1 - m[i])) * (1 + 0.6 * fm[i]);
+    }
     var layers = [], union = new Uint8Array(n), spec, e;
     for (k = 0; k < cfg.layers.length; k++) {
-      spec = cfg.layers[k];
-      e = inkLayer(gn, wgt, cw, ch, spec);
+      var wk = new Float32Array(n), pw = 1 + 0.7 * k;
+      for (i = 0; i < n; i++) wk[i] = Math.pow(wgt[i], pw);
+      spec = { sigma: cfg.layers[k].sigma * sc, frac: cfg.layers[k].frac * detail, minLen: Math.max(6, Math.round(cfg.layers[k].minLen * sc * sc)) };
+      e = inkLayer(gn, wk, cw, ch, spec);
       if (k > 0) {
         var near = dilateSquare(union, cw, ch, 2);
         for (i = 0; i < n; i++) if (near[i]) e[i] = 0;
@@ -246,7 +339,7 @@
     }
     return {
       w: cw, h: ch, cols: gd.cols, rows: gd.rows, level: levelName, cellCm: cellCm(gd.cols, gd.rows),
-      rgb: rgb, layers: layers, tones: cfg.shade ? toneMap(gn, cw, ch) : null
+      rgb: rgb, layers: layers, tones: cfg.shade ? toneMap(gn, cw, ch) : null, face: sub.face
     };
   }
 
@@ -373,5 +466,5 @@
     return { w: W, h: H, data: res };
   }
 
-  root.MS = { LEVELS: LEVELS, analyze: analyze, renderStep: renderStep, gridFor: gridFor, cellCm: cellCm };
+  root.MS = { LEVELS: LEVELS, analyze: analyze, renderStep: renderStep, gridFor: gridFor, cellCm: cellCm, findSubject: findSubject };
 })(typeof self !== 'undefined' ? self : globalThis);

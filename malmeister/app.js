@@ -2,7 +2,7 @@
 (function () {
   'use strict';
 
-  var VERSION = '1.1.0';
+  var VERSION = '1.2.0';
   var PROC = 640;        // Rechengröße der Bildanalyse (längste Seite)
   var PHOTO_MAX = 1280;  // gespeicherte Vorlage
   var DRAWING_MAX = 1600; // Foto vom gemalten Bild
@@ -43,7 +43,7 @@
   };
   var CHEERS = ['🎉 Super gemalt!', '🌟 Wow, das sieht toll aus!', '👏 Richtig gut geworden!', '🏆 Echter Malmeister!'];
 
-  var state = { level: 'mittel', big: null, model: null, plan: [], idx: 0, peek: false, cache: new Map(), pending: 'photo',
+  var state = { level: 'mittel', opts: { detail: 1, bg: 0.8 }, big: null, model: null, plan: [], idx: 0, peek: false, cache: new Map(), pending: 'photo',
                 cell: { c: 0, r: 0 }, result: null, urls: [], viewId: null };
 
   /* ---------- Hilfen ---------- */
@@ -82,12 +82,17 @@
 
   /* ---------- Bildanalyse (Worker mit Rückfall) ---------- */
 
-  var worker = null, workerBroken = false;
-  function analyze(imgData, level) {
+  var worker = null, workerBroken = false, chain = Promise.resolve();
+  function analyze(imgData, level, opts) {   // Aufträge laufen nacheinander (Vorschau und Endergebnis stören sich nicht)
+    var p = chain.then(function () { return analyzeNow(imgData, level, opts); });
+    chain = p.catch(function () {});
+    return p;
+  }
+  function analyzeNow(imgData, level, opts) {
     return new Promise(function (resolve, reject) {
       function inline() {
         setTimeout(function () {
-          try { resolve(window.MS.analyze(new Uint8ClampedArray(imgData.data), imgData.width, imgData.height, level)); } catch (e) { reject(e); }
+          try { resolve(window.MS.analyze(new Uint8ClampedArray(imgData.data), imgData.width, imgData.height, level, opts)); } catch (e) { reject(e); }
         }, 30);
       }
       if (workerBroken || !window.Worker) return inline();
@@ -96,7 +101,7 @@
         worker.onmessage = function (e) { if (e.data.ok) resolve(e.data.model); else { workerBroken = true; inline(); } };
         worker.onerror = function () { workerBroken = true; inline(); };
         var buf = imgData.data.buffer.slice(0);
-        worker.postMessage({ buf: buf, w: imgData.width, h: imgData.height, level: level }, [buf]);
+        worker.postMessage({ buf: buf, w: imgData.width, h: imgData.height, level: level, opts: opts }, [buf]);
       } catch (e) { workerBroken = true; inline(); }
     });
   }
@@ -166,7 +171,7 @@
       if (i !== state.idx) state.peek = false;
       state.idx = i; renderGuide();
     }
-    if (name === 'crop') setupCrop();
+    if (name === 'crop') { setupCrop(); if (view === 'lines') schedulePreview(0); }
     if (name === 'result') renderResult();
     if (name === 'gallery') renderGallery();
     if (name === 'home') refreshCount();
@@ -185,7 +190,7 @@
     showScreen('busy');
     try {
       state.big = await fileToCanvas(file, PHOTO_MAX);
-      crop.z = 1; crop.cx = 0.5; crop.cy = 0.5;
+      autoFrame(); setView('photo');
       navigate('#/crop');
     } catch (e) {
       toast('Dieses Bild konnte ich nicht lesen. Versuch bitte ein anderes.');
@@ -200,7 +205,7 @@
       sc.width = Math.max(8, Math.round(r.vw * s)); sc.height = Math.max(8, Math.round(r.vh * s));
       var sctx = sc.getContext('2d', { willReadFrequently: true });
       sctx.drawImage(state.big, r.sx, r.sy, r.vw, r.vh, 0, 0, sc.width, sc.height);
-      var model = await analyze(sctx.getImageData(0, 0, sc.width, sc.height), state.level);
+      var model = await analyze(sctx.getImageData(0, 0, sc.width, sc.height), state.level, state.opts);
       state.model = model; state.plan = PLAN[state.level]; state.idx = 0; state.peek = false; state.cache.clear(); state.result = null;
       navigate('#/guide/0');
     } catch (e) {
@@ -212,6 +217,47 @@
   /* ---------- Bildausschnitt wählen (ziehen und zoomen) ---------- */
 
   var crop = { z: 1, cx: 0.5, cy: 0.5 };
+
+  /* Gesicht suchen und den Ausschnitt gleich darauf setzen (Kopf und Schultern) */
+  function autoFrame() {
+    crop.z = 1; crop.cx = 0.5; crop.cy = 0.5;
+    try {
+      var b = state.big, s = 200 / Math.max(b.width, b.height), c = document.createElement('canvas');
+      c.width = Math.max(8, Math.round(b.width * s)); c.height = Math.max(8, Math.round(b.height * s));
+      var ctx = c.getContext('2d', { willReadFrequently: true }); ctx.drawImage(b, 0, 0, c.width, c.height);
+      var sub = window.MS.findSubject(ctx.getImageData(0, 0, c.width, c.height).data, c.width, c.height), f = sub.face;
+      if (f) {
+        crop.z = Math.min(4, Math.max(1, 1 / (3.2 * f.w)));
+        crop.cx = f.cx; crop.cy = f.cy + 0.2 / crop.z;
+      }
+    } catch (e) { /* ohne Auto-Ausschnitt weiter */ }
+  }
+
+  /* Ansicht: Ausschnitt wählen oder Linien-Vorschau */
+  var view = 'photo', prevTok = 0, prevTimer = 0;
+  function setView(v) {
+    view = v;
+    $('pane-photo').hidden = v !== 'photo'; $('pane-lines').hidden = v !== 'lines';
+    $('view-photo').setAttribute('aria-pressed', String(v === 'photo')); $('view-lines').setAttribute('aria-pressed', String(v === 'lines'));
+    if (v === 'lines') { sizeCrop(); schedulePreview(0); } else { prevTok++; clearTimeout(prevTimer); }
+  }
+  function schedulePreview(delay) {
+    clearTimeout(prevTimer); $('prev-status').textContent = 'Ich rechne …';
+    prevTimer = setTimeout(runPreview, delay == null ? 350 : delay);
+  }
+  async function runPreview() {
+    var tok = ++prevTok, r = cropRect(), s = 360 / Math.max(r.vw, r.vh), c = document.createElement('canvas');
+    c.width = Math.max(8, Math.round(r.vw * s)); c.height = Math.max(8, Math.round(r.vh * s));
+    var ctx = c.getContext('2d', { willReadFrequently: true });
+    ctx.drawImage(state.big, r.sx, r.sy, r.vw, r.vh, 0, 0, c.width, c.height);
+    try {
+      var m = await analyze(ctx.getImageData(0, 0, c.width, c.height), state.level, state.opts);
+      if (tok !== prevTok) return;
+      var out = window.MS.renderStep(m, { mode: 'final', grid: false }, 2), cv = $('prev-canvas');
+      cv.width = out.w; cv.height = out.h; putRGBA(cv.getContext('2d'), out);
+      $('prev-status').textContent = m.face ? 'Gesicht gefunden 🙂' : 'Kein Gesicht gefunden – die Bildmitte zählt mehr.';
+    } catch (e) { if (tok === prevTok) $('prev-status').textContent = 'Vorschau geht gerade nicht.'; }
+  }
   function cropRect() {
     var b = state.big, vw = b.width / crop.z, vh = b.height / crop.z;
     crop.cx = Math.min(Math.max(crop.cx, vw / (2 * b.width)), 1 - vw / (2 * b.width));
@@ -232,7 +278,7 @@
   function sizeCrop() {
     var b = state.big, cv = $('crop-canvas'), maxH = window.innerHeight * 0.55, maxW = Math.min(window.innerWidth - 60, 500);
     var w = Math.min(maxW, maxH * b.width / b.height);
-    cv.style.width = Math.round(w) + 'px';
+    cv.style.width = Math.round(w) + 'px'; $('prev-canvas').style.maxWidth = Math.round(w) + 'px';
   }
   function setupCrop() {
     var b = state.big, cv = $('crop-canvas');
@@ -240,6 +286,12 @@
     sizeCrop(); drawCrop();
   }
   function initCrop() {
+    var saved = lsGet('malmeister.opts'); try { var o = JSON.parse(saved); if (o && o.detail) state.opts = { detail: +o.detail, bg: +o.bg }; } catch (e) { /* Standard */ }
+    $('opt-detail').value = state.opts.detail; $('opt-bg').value = state.opts.bg;
+    function onOpt() { state.opts = { detail: parseFloat($('opt-detail').value), bg: parseFloat($('opt-bg').value) }; lsSet('malmeister.opts', JSON.stringify(state.opts)); schedulePreview(); }
+    $('opt-detail').addEventListener('input', onOpt); $('opt-bg').addEventListener('input', onOpt);
+    $('view-photo').addEventListener('click', function () { setView('photo'); drawCrop(); });
+    $('view-lines').addEventListener('click', function () { setView('lines'); });
     var cv = $('crop-canvas'), ptrs = new Map(), last = null;
     function dist() { var p = Array.from(ptrs.values()); return Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y); }
     cv.addEventListener('pointerdown', function (e) { cv.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY }); last = ptrs.size === 2 ? dist() : null; });

@@ -5,7 +5,7 @@ importScripts('imaging.js');
 self.onmessage = function (e) {
   var d = e.data;
   try {
-    var m = self.MS.analyze(new Uint8ClampedArray(d.buf), d.w, d.h, d.level);
+    var m = self.MS.analyze(new Uint8ClampedArray(d.buf), d.w, d.h, d.level, d.opts);
     var transfer = [m.rgb.buffer];
     m.layers.forEach(function (l) { transfer.push(l.buffer); });
     if (m.tones) transfer.push(m.tones.buffer);
