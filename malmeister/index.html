@@ -1,0 +1,191 @@
+<!doctype html>
+<html lang="de">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>Malmeister – Zeichnen Schritt für Schritt</title>
+  <meta name="description" content="Foto machen, Schritt für Schritt nachmalen, Ergebnis abfotografieren und speichern. Alles bleibt auf dem Gerät.">
+  <meta name="theme-color" content="#4f6bff">
+  <meta name="color-scheme" content="light">
+  <meta name="format-detection" content="telephone=no">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-title" content="Malmeister">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="referrer" content="no-referrer">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' blob: data:; worker-src 'self'; connect-src 'self'; manifest-src 'self'; object-src 'none'; base-uri 'none'; form-action 'none'">
+  <link rel="manifest" href="manifest.webmanifest">
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
+  <link rel="icon" href="icons/favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+  <noscript><p class="noscript">Malmeister braucht JavaScript. Bitte öffne die Seite in Safari oder Chrome (nicht in der Vorschau).</p></noscript>
+
+  <main id="app">
+
+    <!-- Startseite -->
+    <section id="s-home" class="screen" aria-labelledby="h-home" hidden>
+      <header class="hero">
+        <svg class="mascot" viewBox="0 0 120 124" role="img" aria-label="Stiftie, der lächelnde Bleistift">
+          <rect x="40" y="8" width="40" height="14" rx="7" fill="#ff7a8a"/>
+          <rect x="40" y="20" width="40" height="12" fill="#c9ced9"/>
+          <rect x="40" y="32" width="40" height="58" fill="#ffc93c"/>
+          <rect x="52" y="32" width="8" height="58" fill="#f2aa10"/>
+          <polygon points="40,90 80,90 60,116" fill="#f4d6a8"/>
+          <polygon points="53,106 67,106 60,116" fill="#3a3a4f"/>
+          <circle cx="50" cy="58" r="5" fill="#23233a"/><circle cx="70" cy="58" r="5" fill="#23233a"/>
+          <circle cx="51.8" cy="56.2" r="1.7" fill="#fff"/><circle cx="71.8" cy="56.2" r="1.7" fill="#fff"/>
+          <path d="M51 70 Q60 80 69 70" fill="none" stroke="#23233a" stroke-width="3" stroke-linecap="round"/>
+          <circle cx="44" cy="68" r="4" fill="#ff9aa8" opacity=".7"/><circle cx="76" cy="68" r="4" fill="#ff9aa8" opacity=".7"/>
+          <path d="M40 62 Q26 56 22 44" fill="none" stroke="#ffc93c" stroke-width="5" stroke-linecap="round"/>
+          <path d="M80 62 Q94 56 98 44" fill="none" stroke="#ffc93c" stroke-width="5" stroke-linecap="round"/>
+        </svg>
+        <h1 id="h-home" tabindex="-1">Malmeister</h1>
+        <p class="lead">Mach ein Foto. Ich zeige dir Schritt für Schritt, wie du es nachmalst.</p>
+      </header>
+
+      <fieldset class="levels">
+        <legend>Wie schwer soll es sein?</legend>
+        <label class="level"><input type="radio" name="level" value="leicht"><span><b>🌱 Leicht</b><small>4 Schritte</small></span></label>
+        <label class="level"><input type="radio" name="level" value="mittel"><span><b>⭐ Mittel</b><small>5 Schritte</small></span></label>
+        <label class="level"><input type="radio" name="level" value="profi"><span><b>🚀 Profi</b><small>6 Schritte</small></span></label>
+      </fieldset>
+
+      <div class="actions">
+        <button type="button" class="btn btn-primary btn-xl" id="btn-camera">📷 Foto machen</button>
+        <button type="button" class="btn btn-secondary" id="btn-pick">🖼️ Bild aus der Galerie</button>
+        <button type="button" class="btn btn-ghost" id="btn-gallery">🎨 Meine Bilder <span id="gallery-count" class="badge" hidden>0</span></button>
+      </div>
+
+      <aside id="install-box" class="note" hidden>
+        <p id="install-ios" hidden>📲 Als App auf den Home-Bildschirm: Tippe unten auf <b>Teilen</b> (Quadrat mit Pfeil) und dann auf <b>„Zum Home-Bildschirm“</b>.</p>
+        <button type="button" class="btn btn-secondary" id="btn-install" hidden>📲 Als App installieren</button>
+      </aside>
+
+      <footer class="foot">
+        <p>🔒 Deine Fotos bleiben auf diesem Gerät. Nichts wird hochgeladen.</p>
+        <p class="ver">Version <span id="ver"></span></p>
+      </footer>
+    </section>
+
+    <!-- Rechnen -->
+    <section id="s-busy" class="screen center" aria-live="polite" hidden>
+      <div class="spinner" aria-hidden="true"></div>
+      <h2 id="h-busy" tabindex="-1">Ich suche die Linien …</h2>
+      <p>Das dauert nur einen kleinen Moment.</p>
+    </section>
+
+    <!-- Anleitung -->
+    <section id="s-guide" class="screen" aria-labelledby="h-step" hidden>
+      <header class="topbar">
+        <button type="button" class="icon-btn" id="btn-back-home" aria-label="Zurück zum Start">✕</button>
+        <ol class="dots" id="dots" aria-label="Fortschritt"></ol>
+        <button type="button" class="icon-btn" id="btn-peek" aria-pressed="false" aria-label="Vorlagenfoto zeigen">🖼️</button>
+      </header>
+
+      <h2 id="h-step" class="step-title" tabindex="-1" aria-live="polite"><span id="step-emoji" aria-hidden="true"></span> <span id="step-name"></span></h2>
+      <p class="step-count" id="step-count"></p>
+
+      <p class="card" id="step-text"></p>
+      <div class="stage-wrap">
+        <canvas id="stage" role="img" aria-label="Bild zum aktuellen Schritt"></canvas>
+      </div>
+      <p class="legend" id="legend">
+        <span><i class="chip chip-old"></i>schon gemalt</span>
+        <span><i class="chip chip-new"></i>neu in diesem Schritt</span>
+      </p>
+      <div class="tools">
+        <button type="button" class="btn btn-secondary btn-sm" id="btn-lupe">🔍 Feld-Lupe</button>
+        <button type="button" class="btn btn-secondary btn-sm" id="btn-big">⤢ Vergrößern</button>
+        <button type="button" class="btn btn-secondary btn-sm" id="btn-pick-drawing" hidden>🖼️ Foto aus Galerie</button>
+      </div>
+
+      <p class="tip" id="step-tip"></p>
+
+      <nav class="bottom" aria-label="Schritte">
+        <button type="button" class="btn btn-secondary" id="btn-prev">← Zurück</button>
+        <button type="button" class="btn btn-primary" id="btn-next">Weiter →</button>
+      </nav>
+    </section>
+
+    <!-- Ergebnis -->
+    <section id="s-result" class="screen" aria-labelledby="h-result" hidden>
+      <header class="topbar">
+        <button type="button" class="icon-btn" id="btn-result-back" aria-label="Zurück zur Anleitung">←</button>
+        <h2 id="h-result" tabindex="-1" class="bar-title">Dein Kunstwerk</h2>
+        <span class="spacer"></span>
+      </header>
+      <figure class="pair">
+        <div><canvas id="res-drawing" role="img" aria-label="Dein gemaltes Bild"></canvas><figcaption>Mein Bild</figcaption></div>
+        <div><canvas id="res-photo" role="img" aria-label="Das Vorlagenfoto"></canvas><figcaption>Vorlage</figcaption></div>
+      </figure>
+      <p class="cheer" id="cheer">🎉 Super gemalt!</p>
+      <div class="actions">
+        <button type="button" class="btn btn-primary btn-xl" id="btn-save-app">⭐ In „Meine Bilder“ speichern</button>
+        <button type="button" class="btn btn-secondary" id="btn-save-phone">💾 Im Handy sichern</button>
+        <p class="hint" id="save-hint">Auf dem iPhone: danach auf <b>„Bild sichern“</b> tippen, dann liegt es in Fotos.</p>
+        <button type="button" class="btn btn-ghost" id="btn-retake">📷 Nochmal fotografieren</button>
+        <button type="button" class="btn btn-ghost" id="btn-new">🏠 Neues Bild malen</button>
+      </div>
+    </section>
+
+    <!-- Galerie -->
+    <section id="s-gallery" class="screen" aria-labelledby="h-gallery" hidden>
+      <header class="topbar">
+        <button type="button" class="icon-btn" id="btn-gallery-back" aria-label="Zurück zum Start">←</button>
+        <h2 id="h-gallery" tabindex="-1" class="bar-title">Meine Bilder</h2>
+        <span class="spacer"></span>
+      </header>
+      <p class="empty" id="gallery-empty" hidden>Hier ist noch nichts. Male dein erstes Bild! 🎨</p>
+      <ul class="tiles" id="tiles"></ul>
+    </section>
+  </main>
+
+  <p id="toast" class="toast" role="status" aria-live="polite" hidden></p>
+
+  <!-- Feld-Lupe -->
+  <dialog id="dlg-cell" aria-labelledby="cell-title">
+    <div class="dlg-head"><h3 id="cell-title">Feld</h3><button type="button" class="icon-btn" data-close aria-label="Schließen">✕</button></div>
+    <canvas id="cell-canvas" role="img" aria-label="Vergrößertes Feld"></canvas>
+    <p class="dlg-text">Male genau das, was in der blauen Box ist. Die Linien außen helfen dir beim Anschließen.</p>
+    <div class="dlg-nav">
+      <button type="button" class="btn btn-secondary" id="cell-prev">← Voriges Feld</button>
+      <button type="button" class="btn btn-primary" id="cell-next">Nächstes Feld →</button>
+    </div>
+  </dialog>
+
+  <!-- Vergrößern -->
+  <dialog id="dlg-zoom" class="full" aria-label="Vergrößerte Ansicht">
+    <button type="button" class="icon-btn close-float" data-close aria-label="Schließen">✕</button>
+    <div class="zoom-scroll" id="zoom-scroll" tabindex="0"><canvas id="zoom-canvas" role="img" aria-label="Vergrößerte Ansicht des Schritts"></canvas></div>
+  </dialog>
+
+  <!-- Gespeichertes Bild ansehen -->
+  <dialog id="dlg-view" aria-labelledby="view-title">
+    <div class="dlg-head"><h3 id="view-title">Mein Bild</h3><button type="button" class="icon-btn" data-close aria-label="Schließen">✕</button></div>
+    <figure class="pair"><div><img id="view-drawing" alt="Mein gemaltes Bild"><figcaption>Mein Bild</figcaption></div><div><img id="view-photo" alt="Vorlagenfoto"><figcaption>Vorlage</figcaption></div></figure>
+    <div class="dlg-nav">
+      <button type="button" class="btn btn-secondary" id="view-save">💾 Im Handy sichern</button>
+      <button type="button" class="btn btn-danger" id="view-delete">🗑️ Löschen</button>
+    </div>
+  </dialog>
+
+  <!-- Löschen bestätigen -->
+  <dialog id="dlg-confirm" aria-labelledby="confirm-title">
+    <h3 id="confirm-title">Bild wirklich löschen?</h3>
+    <p class="dlg-text">Das Bild ist danach aus „Meine Bilder“ weg. Eine Kopie in deinen Fotos bleibt.</p>
+    <div class="dlg-nav">
+      <button type="button" class="btn btn-secondary" data-close>Abbrechen</button>
+      <button type="button" class="btn btn-danger" id="confirm-yes">Ja, löschen</button>
+    </div>
+  </dialog>
+
+  <input type="file" id="in-cam" accept="image/*" capture="environment" hidden>
+  <input type="file" id="in-pick" accept="image/*" hidden>
+
+  <script src="imaging.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>
