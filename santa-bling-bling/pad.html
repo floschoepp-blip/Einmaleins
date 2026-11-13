@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="de"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="theme-color" content="#0b1b3a">
+<title>Santa Bling Bling – Controller</title>
+<style>
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent;-webkit-user-select:none;user-select:none;-webkit-touch-callout:none}
+html,body{margin:0;height:100%;overflow:hidden;background:#0b1b3a;color:#fff;font-family:-apple-system,system-ui,Segoe UI,Roboto,sans-serif;touch-action:none}
+input,button{font:inherit}input{-webkit-user-select:text;user-select:text}
+.scr{position:fixed;inset:0;padding:env(safe-area-inset-top) env(safe-area-inset-right) env(safe-area-inset-bottom) env(safe-area-inset-left);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px}
+[hidden]{display:none!important}
+h1{margin:0;font-size:26px}
+#conn input{width:min(260px,80vw);height:52px;border-radius:14px;border:2px solid #3a5a9a;background:#12285a;color:#fff;font-size:22px;text-align:center;padding:0 10px;font-size:max(16px,22px)}
+#code{letter-spacing:8px;text-transform:uppercase;font-weight:800;font-size:30px!important}
+.btn{min-width:200px;height:56px;border-radius:28px;border:0;background:#d62828;color:#fff;font-weight:800;font-size:19px;padding:0 24px}
+.btn.alt{background:#27407a}.btn:active,.rb:active,.rb.on{transform:scale(.94);filter:brightness(1.25)}
+#err{color:#ff9a9a;min-height:20px;font-size:14px;text-align:center;max-width:80vw}
+#top{position:fixed;top:max(8px,env(safe-area-inset-top));left:max(10px,env(safe-area-inset-left));right:max(10px,env(safe-area-inset-right));display:flex;align-items:center;gap:8px;font-size:14px;z-index:3}
+#dot{width:12px;height:12px;border-radius:50%;background:#e33}#dot.ok{background:#3c3}
+#stat{flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+#x{background:none;border:2px solid #3a5a9a;color:#fff;border-radius:16px;height:32px;padding:0 12px}
+#stz{position:fixed;left:0;top:0;bottom:0;width:55%;touch-action:none}
+#base,#knob{position:fixed;border-radius:50%;pointer-events:none;display:none}
+#base{width:130px;height:130px;margin:-65px 0 0 -65px;background:rgba(255,255,255,.12);border:3px solid rgba(255,255,255,.35)}
+#knob{width:60px;height:60px;margin:-30px 0 0 -30px;background:rgba(255,213,74,.85);border:3px solid #fff}
+#hint{position:fixed;left:8%;bottom:20%;opacity:.5;font-size:15px;pointer-events:none}
+#btns{position:fixed;right:max(14px,env(safe-area-inset-right));bottom:max(18px,env(safe-area-inset-bottom));display:flex;gap:14px;align-items:flex-end}
+.rb{width:96px;height:96px;border-radius:50%;border:3px solid #fff;background:#d62828;color:#fff;font-weight:800;font-size:15px;line-height:1.2;touch-action:none}
+#bA{width:118px;height:118px;font-size:17px}#bB{background:#2a6bd6}#bC{background:#2f9e5a}
+.col{display:flex;gap:10px;align-items:center;flex-wrap:wrap;justify-content:center}
+.sm{min-width:70px;height:56px;font-size:24px;padding:0 14px}
+#lbl{font-size:18px;font-weight:700;min-width:150px;text-align:center}
+</style></head><body>
+<div class="scr" id="conn">
+ <h1>🎅 Controller</h1>
+ <div>Santa Bling Bling am Fernseher</div>
+ <input id="code" maxlength="4" placeholder="CODE" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false">
+ <input id="nm" maxlength="12" placeholder="Dein Name" autocomplete="off">
+ <button class="btn" id="go">Verbinden</button>
+ <div id="err"></div>
+ <div style="opacity:.6;font-size:13px;max-width:80vw;text-align:center">Den Code siehst du auf dem Fernseher.</div>
+</div>
+<div id="pad" hidden>
+ <div id="top"><span id="dot"></span><span id="stat">verbinde …</span><button id="x">Trennen</button></div>
+ <div class="scr" id="menuP" hidden>
+  <div class="col"><button class="btn alt sm" data-mk="L">◀</button><div id="lbl">Stadt</div><button class="btn alt sm" data-mk="R">▶</button></div>
+  <div class="col"><button class="btn alt sm" data-mk="CL">◀</button><div id="lbl2" style="font-size:18px;font-weight:700;min-width:150px;text-align:center">Figur</div><button class="btn alt sm" data-mk="CR">▶</button></div>
+  <button class="btn" data-mk="S" style="height:72px;font-size:24px">Los geht's! 🛷</button>
+ </div>
+ <div class="scr" id="endP" hidden>
+  <button class="btn" data-mk="N">Nächste Stadt ➡</button>
+  <button class="btn alt" data-mk="AG">Nochmal spielen</button>
+  <button class="btn alt" data-mk="M">Zum Menü</button>
+ </div>
+ <div id="playP" hidden>
+  <div id="stz"></div><div id="base"></div><div id="knob"></div><div id="hint">Daumen hier ziehen</div>
+  <div id="btns"><button class="rb" id="bC"></button><button class="rb" id="bB"></button><button class="rb" id="bA"></button></div>
+ </div>
+</div>
+<script>
+(function(){
+var FBC={apiKey:'AIzaSyCoBlKKHyzsb7zadEyDQQ7BB6V5dStJ1os',db:'https://klasse3a-5ef03-default-rtdb.europe-west1.firebasedatabase.app'};
+var Q=new URLSearchParams(location.search),MK=Q.get('fbmock')||'';
+var DB=MK||FBC.db,UID=MK?MK+'/id':'https://identitytoolkit.googleapis.com',UST=MK?MK+'/st':'https://securetoken.googleapis.com';
+var $=function(i){return document.getElementById(i)};
+function ls(k,d){try{var v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}}
+function ss(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+var auth=ls('sbb-auth',null),pid=ls('sbb-pid',''),code='',sock=null,H={};
+if(!pid){pid=Math.random().toString(36).slice(2,8);ss('sbb-pid',pid);}
+function jf(url,o){return fetch(url,o).then(function(r){return r.json().then(function(j){if(!r.ok)throw new Error((j&&j.error&&(j.error.message||j.error))||r.status);return j})})}
+function token(){
+ if(auth&&auth.exp>Date.now()+60000)return Promise.resolve(auth);
+ if(auth&&auth.refresh)return jf(UST+'/v1/token?key='+FBC.apiKey,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'grant_type=refresh_token&refresh_token='+encodeURIComponent(auth.refresh)}).then(function(j){auth={uid:j.user_id,tok:j.id_token,refresh:j.refresh_token,exp:Date.now()+(+j.expires_in)*1000};ss('sbb-auth',auth);return auth});
+ return jf(UID+'/v1/accounts:signUp?key='+FBC.apiKey,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({returnSecureToken:true})}).then(function(j){auth={uid:j.localId,tok:j.idToken,refresh:j.refreshToken,exp:Date.now()+(+j.expiresIn)*1000};ss('sbb-auth',auth);return auth});
+}
+// Zustand senden
+var S={n:'',sid:Math.random().toString(36).slice(2,8),x:0,y:0,a:Math.floor(Math.random()*1e6),ah:0,b:0,c:0,mk:'',mn:0,t:0};
+var busy=false,dirty=false,last=0,live=false;
+function send(){dirty=true;pump();}
+function pump(){
+ if(!live||busy||!dirty)return;
+ var w=Math.max(0,70-(Date.now()-last));if(w){setTimeout(pump,w);return;}
+ busy=true;dirty=false;last=Date.now();S.t=last;
+ token().then(function(a){return fetch(DB+'/rooms/'+code+'/inputs/'+a.uid+'_'+pid+'.json?auth='+a.tok,{method:'PUT',body:JSON.stringify(S)})})
+ .then(function(r){$('dot').className=r.ok?'ok':'';if(!r.ok)dirty=true;}).catch(function(){$('dot').className='';dirty=true;})
+ .then(function(){busy=false;if(dirty)setTimeout(pump,dirty&&!$('dot').className?800:0);});
+}
+setInterval(function(){if(live)send();},2000);
+// Zustand vom Fernseher lesen
+function applyEv(root,m,patch){
+ var parts=(m.path||'/').split('/').filter(Boolean),d=m.data,o=root,i;
+ for(i=0;i<parts.length;i++){if(o[parts[i]]==null||typeof o[parts[i]]!=='object')o[parts[i]]={};o=o[parts[i]];}
+ if(patch){if(d&&typeof d==='object')for(var k in d){if(d[k]===null)delete o[k];else o[k]=d[k];}return;}
+ if(!parts.length){for(var k2 in o)delete o[k2];if(d&&typeof d==='object')Object.assign(o,d);return;}
+ var par=root;for(i=0;i<parts.length-1;i++)par=par[parts[i]];
+ if(d===null)delete par[parts[parts.length-1]];else par[parts[parts.length-1]]=d;
+}
+function openState(){
+ if(sock){try{sock.close()}catch(e){}sock=null;}
+ token().then(function(a){
+  sock=new EventSource(DB+'/rooms/'+code+'/host.json?auth='+a.tok);
+  sock.addEventListener('put',function(e){try{applyEv(H,JSON.parse(e.data),false);show();}catch(x){}});
+  sock.addEventListener('patch',function(e){try{applyEv(H,JSON.parse(e.data),true);show();}catch(x){}});
+  sock.addEventListener('auth_revoked',function(){setTimeout(openState,400)});
+  sock.addEventListener('cancel',function(){setTimeout(openState,2000)});
+  sock.onerror=function(){if(sock&&sock.readyState===2)setTimeout(openState,2000)};
+ }).catch(function(){setTimeout(openState,3000)});
+}
+var LB={play:['🎁<br>Aktion','📯<br>Hupe','🛷<br>Fliegen'],room:['👉<br>Los','💬<br>Reden','🚪<br>Raus'],fp:['❄️<br>Werfen','','✕<br>Zurück'],bake:['🍪<br>Backen!','','Abbrechen']};
+function show(){
+ var st=H.st||{},m=st.m||'menu';
+ $('stat').textContent=(st.i||'')+' '+(st.c||'Warte auf den Fernseher …')+(st.ch?' · '+st.ch:'');
+ $('menuP').hidden=m!=='menu';$('endP').hidden=m!=='end';
+ var pl=(m==='play'||m==='room'||m==='fp'||m==='bake');$('playP').hidden=!pl;
+ $('lbl').textContent=(st.i||'')+' '+(st.c||'Stadt');$('lbl2').textContent=st.ch||'Figur';
+ if(pl){var l=LB[m];$('bA').innerHTML=l[0];$('bB').innerHTML=l[1];$('bC').innerHTML=l[2];$('bB').hidden=!l[1];$('stz').style.display=m==='bake'?'none':'block';$('hint').hidden=m==='bake';}
+}
+// Joystick
+var R=60,pidT=null,ox=0,oy=0;
+var stz=$('stz'),bs=$('base'),kn=$('knob');
+function mv(e){var dx=e.clientX-ox,dy=e.clientY-oy,l=Math.hypot(dx,dy);if(l>R){dx=dx/l*R;dy=dy/l*R;l=R;}
+ kn.style.left=(ox+dx)+'px';kn.style.top=(oy+dy)+'px';
+ var x=dx/R,y=dy/R;if(Math.hypot(x,y)<.12){x=0;y=0;}
+ S.x=Math.round(x*100)/100;S.y=Math.round(y*100)/100;send();}
+stz.addEventListener('pointerdown',function(e){e.preventDefault();pidT=e.pointerId;try{stz.setPointerCapture(e.pointerId)}catch(x){}
+ ox=e.clientX;oy=e.clientY;bs.style.left=ox+'px';bs.style.top=oy+'px';bs.style.display='block';kn.style.display='block';$('hint').style.display='none';mv(e);});
+stz.addEventListener('pointermove',function(e){if(e.pointerId===pidT)mv(e);});
+function up(e){if(e.pointerId!==pidT)return;pidT=null;bs.style.display='none';kn.style.display='none';S.x=0;S.y=0;send();}
+stz.addEventListener('pointerup',up);stz.addEventListener('pointercancel',up);
+// Tasten
+function btn(id,f,g){var b=$(id);b.addEventListener('pointerdown',function(e){e.preventDefault();b.classList.add('on');try{navigator.vibrate&&navigator.vibrate(12)}catch(x){}f();send();});
+ var r=function(e){b.classList.remove('on');if(g){g();send();}};b.addEventListener('pointerup',r);b.addEventListener('pointercancel',r);b.addEventListener('pointerleave',r);}
+btn('bA',function(){S.a++;S.ah=1;},function(){S.ah=0;});
+btn('bB',function(){S.b++;});
+btn('bC',function(){S.c++;});
+Array.prototype.forEach.call(document.querySelectorAll('[data-mk]'),function(b){b.addEventListener('click',function(){S.mk=b.getAttribute('data-mk');S.mn++;send();try{navigator.vibrate&&navigator.vibrate(12)}catch(x){}});});
+// Verbinden
+$('code').value=(Q.get('c')||ls('sbb-pc','')||'').toUpperCase().slice(0,4);
+$('nm').value=ls('sbb-pn','');
+function err(t){$('err').textContent=t||'';}
+$('go').addEventListener('click',function(){
+ var c=$('code').value.toUpperCase().replace(/[^A-Z]/g,''),n=$('nm').value.trim().slice(0,12);
+ if(c.length!==4)return err('Bitte den 4-stelligen Code vom Fernseher eingeben.');
+ if(!n)return err('Bitte gib deinen Namen ein.');
+ err('Verbinde …');
+ token().then(function(a){return fetch(DB+'/rooms/'+c+'/host.json?auth='+a.tok)}).then(function(r){return r.json()}).then(function(h){
+  if(!h||!h.uid)return err('Diesen Code gibt es nicht. Stimmt der Code auf dem Fernseher?');
+  code=c;S.n=n;ss('sbb-pn',n);ss('sbb-pc',c);H={};live=true;
+  $('conn').hidden=true;$('pad').hidden=false;show();openState();send();
+  try{navigator.wakeLock&&navigator.wakeLock.request('screen').catch(function(){})}catch(x){}
+ }).catch(function(e){err('Keine Verbindung: '+(e.message||e));});
+});
+$('x').addEventListener('click',function(){live=false;if(sock){try{sock.close()}catch(e){}}
+ token().then(function(a){return fetch(DB+'/rooms/'+code+'/inputs/'+a.uid+'_'+pid+'.json?auth='+a.tok,{method:'DELETE'})}).catch(function(){});
+ $('pad').hidden=true;$('conn').hidden=false;err('');});
+if(Q.get('c')&&$('nm').value)$('go').focus();
+})();
+</script></body></html>
