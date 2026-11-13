@@ -125,3 +125,10 @@ dialog.full { width: 100vw; max-width: none; height: 100vh; height: 100dvh; max-
   *, *::before, *::after { animation-duration: .001ms !important; animation-iteration-count: 1 !important; transition: none !important; }
   .spinner { animation: none; border-top-color: var(--blue); border-right-color: var(--blue); }
 }
+
+/* Bildausschnitt */
+.crop-wrap { display: flex; justify-content: center; background: #2a2a3a; border-color: #2a2a3a; }
+#crop-canvas { height: auto; border-radius: 12px; touch-action: none; cursor: grab; user-select: none; -webkit-user-select: none; }
+.zoom-row { display: flex; align-items: center; gap: 12px; font-size: 1.4rem; }
+.zoom-row input { flex: 1; height: 44px; accent-color: var(--blue); }
+.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }

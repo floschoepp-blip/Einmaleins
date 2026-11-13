@@ -5,10 +5,11 @@
 (function (root) {
   'use strict';
 
+  /* Skizzen-Ebenen: dunkle Linien in drei Größen (grob -> fein). sigma = Linienbreite/Detailgröße, frac = Anteil Linien-Pixel */
   var LEVELS = {
-    leicht: { grid: 3, frac: [0.009, 0.017],        sigma: [3.4, 2.0],      minLen: [36, 22],     shade: false },
-    mittel: { grid: 4, frac: [0.011, 0.020, 0.032], sigma: [3.4, 2.0, 1.1], minLen: [36, 22, 14], shade: false },
-    profi:  { grid: 6, frac: [0.012, 0.022, 0.040], sigma: [3.4, 2.0, 1.1], minLen: [36, 22, 14], shade: true }
+    leicht: { grid: 3, layers: [{ sigma: 3.0, frac: 0.028, minLen: 45 }, { sigma: 1.9, frac: 0.040, minLen: 30 }], shade: false },
+    mittel: { grid: 4, layers: [{ sigma: 3.0, frac: 0.028, minLen: 45 }, { sigma: 1.9, frac: 0.042, minLen: 28 }, { sigma: 1.15, frac: 0.050, minLen: 18 }], shade: false },
+    profi:  { grid: 6, layers: [{ sigma: 3.0, frac: 0.030, minLen: 45 }, { sigma: 1.9, frac: 0.046, minLen: 26 }, { sigma: 1.15, frac: 0.058, minLen: 16 }], shade: true }
   };
 
   var COL = {
@@ -114,51 +115,25 @@
     return mask;
   }
 
-  /* ---------- Kantenerkennung (Canny) ---------- */
-
-  function canny(g, w, h, sigma, frac, minLen) {
-    var n = w * h, b = gaussian(g, w, h, sigma);
-    var mag = new Float32Array(n), dir = new Uint8Array(n), maxM = 0;
-    var x, y, i, gx, gy, ax, ay, m;
-    for (y = 1; y < h - 1; y++) for (x = 1; x < w - 1; x++) {
-      i = y * w + x;
-      gx = (b[i - w + 1] + 2 * b[i + 1] + b[i + w + 1]) - (b[i - w - 1] + 2 * b[i - 1] + b[i + w - 1]);
-      gy = (b[i + w - 1] + 2 * b[i + w] + b[i + w + 1]) - (b[i - w - 1] + 2 * b[i - w] + b[i - w + 1]);
-      m = Math.sqrt(gx * gx + gy * gy); mag[i] = m; if (m > maxM) maxM = m;
-      ax = gx < 0 ? -gx : gx; ay = gy < 0 ? -gy : gy;
-      dir[i] = ay <= ax * 0.4142 ? 0 : ay >= ax * 2.4142 ? 2 : ((gx > 0) === (gy > 0) ? 1 : 3);
-    }
-    var FLOOR = 15, nms = new Float32Array(n), a, c;
-    for (y = 1; y < h - 1; y++) for (x = 1; x < w - 1; x++) {
-      i = y * w + x; m = mag[i];
-      if (m < FLOOR) continue;
-      switch (dir[i]) {
-        case 0: a = mag[i - 1];     c = mag[i + 1];     break;
-        case 1: a = mag[i - w - 1]; c = mag[i + w + 1]; break;
-        case 2: a = mag[i - w];     c = mag[i + w];     break;
-        default: a = mag[i - w + 1]; c = mag[i + w - 1];
-      }
-      if (m >= a && m > c) nms[i] = m;
-    }
-    /* Obere Schwelle so wählen, dass etwa "frac" aller Pixel als starke Kante übrig bleiben */
-    var BINS = 1024, hist = new Uint32Array(BINS), bw = (maxM || 1) / BINS, bi;
-    for (i = 0; i < n; i++) if (nms[i] > 0) { bi = (nms[i] / bw) | 0; if (bi >= BINS) bi = BINS - 1; hist[bi]++; }
-    var target = frac * n, acc = 0, hi = FLOOR * 1.5;
-    for (bi = BINS - 1; bi >= 0; bi--) { acc += hist[bi]; if (acc >= target) { hi = Math.max(hi, bi * bw); break; } }
-    var lo = hi * 0.45;
-    var out = new Uint8Array(n), stack = new Int32Array(n), sp, j, k, dx, dy;
-    for (i = 0; i < n; i++) {
-      if (nms[i] < hi || out[i]) continue;
-      sp = 0; stack[sp++] = i; out[i] = 1;
-      while (sp) {
-        j = stack[--sp];
-        for (dy = -1; dy <= 1; dy++) for (dx = -1; dx <= 1; dx++) {
-          k = j + dy * w + dx;
-          if (k >= 0 && k < n && !out[k] && nms[k] >= lo) { out[k] = 1; stack[sp++] = k; }
+  /* Linien auf 1 Pixel Breite ausdünnen (Zhang-Suen) */
+  function thin(mask, w, h) {
+    var img = new Uint8Array(mask), changed = true, it = 0, step, x, y, i, k, list, p2, p3, p4, p5, p6, p7, p8, p9, B, A;
+    while (changed && it++ < 30) {
+      changed = false;
+      for (step = 0; step < 2; step++) {
+        list = [];
+        for (y = 1; y < h - 1; y++) for (x = 1; x < w - 1; x++) {
+          i = y * w + x; if (!img[i]) continue;
+          p2 = img[i - w]; p3 = img[i - w + 1]; p4 = img[i + 1]; p5 = img[i + w + 1]; p6 = img[i + w]; p7 = img[i + w - 1]; p8 = img[i - 1]; p9 = img[i - w - 1];
+          B = p2 + p3 + p4 + p5 + p6 + p7 + p8 + p9; if (B < 2 || B > 6) continue;
+          A = (!p2 && p3) + (!p3 && p4) + (!p4 && p5) + (!p5 && p6) + (!p6 && p7) + (!p7 && p8) + (!p8 && p9) + (!p9 && p2); if (A !== 1) continue;
+          if (step === 0) { if (p2 * p4 * p6 || p4 * p6 * p8) continue; } else { if (p2 * p4 * p8 || p2 * p6 * p8) continue; }
+          list.push(i);
         }
+        if (list.length) { changed = true; for (k = 0; k < list.length; k++) img[list[k]] = 0; }
       }
     }
-    return removeSmall(out, w, h, minLen);
+    return img;
   }
 
   /* Drei Helligkeitsstufen (0 dunkel, 1 mittel, 2 hell) fürs Schraffieren */
@@ -168,6 +143,63 @@
     var t1 = percentile(hist, n, 0.22), t2 = percentile(hist, n, 0.48), out = new Uint8Array(n);
     for (i = 0; i < n; i++) out[i] = b[i] < t1 ? 0 : b[i] < t2 ? 1 : 2;
     return out;
+  }
+
+  /* ---------- Vorverarbeitung für Gesichter und Motive ---------- */
+
+  /* Weichzeichnen mit großem Radius auf verkleinertem Bild (schnell) */
+  function blurBig(src, w, h, sigma) {
+    var f = Math.max(1, Math.floor(sigma / 3));
+    if (f === 1) return gaussian(src, w, h, sigma);
+    var sw = Math.ceil(w / f), sh = Math.ceil(h / f), small = new Float32Array(sw * sh), cnt = new Float32Array(sw * sh), x, y, i;
+    for (y = 0; y < h; y++) for (x = 0; x < w; x++) { i = ((y / f) | 0) * sw + ((x / f) | 0); small[i] += src[y * w + x]; cnt[i]++; }
+    for (i = 0; i < small.length; i++) small[i] /= cnt[i];
+    small = gaussian(small, sw, sh, sigma / f);
+    var out = new Float32Array(w * h);
+    for (y = 0; y < h; y++) {
+      var v = (y + 0.5) / f - 0.5, vi = Math.floor(v), fy = v - vi, r0 = clamp(vi, 0, sh - 1) * sw, r1 = clamp(vi + 1, 0, sh - 1) * sw;
+      for (x = 0; x < w; x++) {
+        var u = (x + 0.5) / f - 0.5, ui = Math.floor(u), fx = u - ui, x0 = clamp(ui, 0, sw - 1), x1 = clamp(ui + 1, 0, sw - 1);
+        out[y * w + x] = (small[r0 + x0] * (1 - fx) + small[r0 + x1] * fx) * (1 - fy) + (small[r1 + x0] * (1 - fx) + small[r1 + x1] * fx) * fy;
+      }
+    }
+    return out;
+  }
+
+  /* Gewicht: Bildmitte (dort ist meist das Motiv) zählt mehr als der Rand */
+  function centerWeight(w, h) {
+    var out = new Float32Array(w * h), x, y, nx, ny;
+    for (y = 0; y < h; y++) { ny = (y + 0.5) / h - 0.5;
+      for (x = 0; x < w; x++) { nx = (x + 0.5) / w - 0.5; out[y * w + x] = 0.25 + 0.75 * Math.exp(-(nx * nx + ny * ny) / (2 * 0.28 * 0.28)); } }
+    return out;
+  }
+
+  /* Dunkle Linien per Differenz zweier Weichzeichnungen (DoG), dann auf 1 Pixel ausgedünnt.
+   * Das ergibt eine Skizze wie mit dem Bleistift: Augen, Brauen, Nase, Mund, Haarkante, Kleidungsfalten. */
+  function inkLayer(gn, wgt, w, h, spec) {
+    var n = w * h, a = gaussian(gn, w, h, spec.sigma), b = gaussian(gn, w, h, spec.sigma * 1.6), d = new Float32Array(n), i;
+    for (i = 0; i < n; i++) d[i] = (b[i] - a[i]) * wgt[i];   // positiv = dunkler als die Umgebung
+    var mx = 0; for (i = 0; i < n; i++) if (d[i] > mx) mx = d[i];
+    var BINS = 512, hist = new Uint32Array(BINS), bw = (mx || 1) / BINS, bi;
+    for (i = 0; i < n; i++) if (d[i] > 0) { bi = (d[i] / bw) | 0; hist[bi >= BINS ? BINS - 1 : bi]++; }
+    var target = spec.frac * n, acc = 0, t = 2.5;
+    for (bi = BINS - 1; bi >= 0; bi--) { acc += hist[bi]; if (acc >= target) { t = Math.max(2.5, bi * bw); break; } }
+    /* Hysterese: schwache Linienteile bleiben, wenn sie an starke anschließen -> durchgehende Linien */
+    var ink = new Uint8Array(n), lo = t * 0.45, stack = new Int32Array(n), sp, j, k, dx, dy;
+    for (i = 0; i < n; i++) {
+      if (d[i] < t || ink[i]) continue;
+      sp = 0; stack[sp++] = i; ink[i] = 1;
+      while (sp) {
+        j = stack[--sp];
+        for (dy = -1; dy <= 1; dy++) for (dx = -1; dx <= 1; dx++) {
+          k = j + dy * w + dx;
+          if (k >= 0 && k < n && !ink[k] && d[k] >= lo) { ink[k] = 1; stack[sp++] = k; }
+        }
+      }
+    }
+    removeSmall(ink, w, h, spec.minLen);
+    var sk = thin(ink, w, h);
+    return removeSmall(sk, w, h, Math.max(8, spec.minLen >> 1));
   }
 
   /* ---------- Hauptfunktion ---------- */
@@ -195,11 +227,17 @@
     var gd = gridFor(w, h, cfg.grid), aspect = gd.cols / gd.rows, cw = w, ch = h;
     if (w / h > aspect) { cw = Math.round(h * aspect); } else { ch = Math.round(w / aspect); }
     var rgb = (cw === w && ch === h) ? new Uint8ClampedArray(rgba) : cropRGBA(rgba, w, h, cw, ch);
-    var n = cw * ch, g = lumaStretch(rgb, n), layers = [], union = new Uint8Array(n), k, i;
-    for (k = 0; k < cfg.frac.length; k++) {
-      var e = canny(g, cw, ch, cfg.sigma[k], cfg.frac[k], cfg.minLen[k]);
+    var n = cw * ch, g = lumaStretch(rgb, n), i, k;
+    /* lokaler Kontrast: Gesichtszüge im Schatten werden sichtbar */
+    var loc = blurBig(g, cw, ch, 22), gn = new Float32Array(n);
+    for (i = 0; i < n; i++) gn[i] = clamp(0.5 * g[i] + 0.5 * (128 + (g[i] - loc[i]) * 1.7), 0, 255);
+    var wgt = centerWeight(cw, ch);
+    var layers = [], union = new Uint8Array(n), spec, e;
+    for (k = 0; k < cfg.layers.length; k++) {
+      spec = cfg.layers[k];
+      e = inkLayer(gn, wgt, cw, ch, spec);
       if (k > 0) {
-        var near = dilateSquare(union, cw, ch, 3);
+        var near = dilateSquare(union, cw, ch, 2);
         for (i = 0; i < n; i++) if (near[i]) e[i] = 0;
         removeSmall(e, cw, ch, 10);
       }
@@ -208,7 +246,7 @@
     }
     return {
       w: cw, h: ch, cols: gd.cols, rows: gd.rows, level: levelName, cellCm: cellCm(gd.cols, gd.rows),
-      rgb: rgb, layers: layers, tones: cfg.shade ? toneMap(g, cw, ch) : null
+      rgb: rgb, layers: layers, tones: cfg.shade ? toneMap(gn, cw, ch) : null
     };
   }
 
@@ -335,5 +373,5 @@
     return { w: W, h: H, data: res };
   }
 
-  root.MS = { LEVELS: LEVELS, analyze: analyze, renderStep: renderStep, canny: canny, gridFor: gridFor, cellCm: cellCm };
+  root.MS = { LEVELS: LEVELS, analyze: analyze, renderStep: renderStep, gridFor: gridFor, cellCm: cellCm };
 })(typeof self !== 'undefined' ? self : globalThis);

@@ -70,6 +70,22 @@
       </footer>
     </section>
 
+    <!-- Bildausschnitt -->
+    <section id="s-crop" class="screen" aria-labelledby="h-crop" hidden>
+      <header class="topbar">
+        <button type="button" class="icon-btn" id="btn-crop-back" aria-label="Zurück zum Start">✕</button>
+        <h2 id="h-crop" tabindex="-1" class="bar-title">Bildausschnitt</h2>
+        <span class="spacer"></span>
+      </header>
+      <p class="card">Zieh das Bild mit dem Finger und zoome mit zwei Fingern (oder dem Regler), bis dein Motiv den Rahmen füllt. Bei Menschen: <b>das Gesicht groß machen</b>. Dann erkennt man später mehr.</p>
+      <div class="stage-wrap crop-wrap"><canvas id="crop-canvas" role="img" aria-label="Bildausschnitt wählen"></canvas></div>
+      <label class="zoom-row" for="crop-zoom"><span aria-hidden="true">🔍</span><span class="sr">Zoom</span>
+        <input type="range" id="crop-zoom" min="1" max="4" step="0.05" value="1"></label>
+      <div class="actions">
+        <button type="button" class="btn btn-primary btn-xl" id="btn-crop-ok">✓ Los geht's</button>
+      </div>
+    </section>
+
     <!-- Rechnen -->
     <section id="s-busy" class="screen center" aria-live="polite" hidden>
       <div class="spinner" aria-hidden="true"></div>

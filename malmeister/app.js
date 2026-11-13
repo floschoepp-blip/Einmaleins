@@ -2,7 +2,7 @@
 (function () {
   'use strict';
 
-  var VERSION = '1.0.0';
+  var VERSION = '1.1.0';
   var PROC = 640;        // Rechengröße der Bildanalyse (längste Seite)
   var PHOTO_MAX = 1280;  // gespeicherte Vorlage
   var DRAWING_MAX = 1600; // Foto vom gemalten Bild
@@ -21,13 +21,13 @@
       },
       tip: 'Zeichne ganz dünn und drücke nicht fest. Die Buchstaben (A, B, C …) stehen oben, die Zahlen (1, 2, 3 …) links. So findest du jedes Feld wieder.' },
     l1: { emoji: '✏️', name: 'Grobe Formen', spec: { mode: 'lines', upto: 1, grid: true }, legend: true,
-      text: function () { return 'Zuerst kommen nur die großen Umrisse. Die orangen Linien sind neu. Schau, in welchem Feld eine Linie beginnt und wo sie endet, und male sie in dein Gitter.'; },
+      text: function () { return 'Zuerst kommen nur die langen, wichtigen Linien: Umriss, Kinn, Haarrand, große Formen. Die orangen Linien sind neu. Schau, in welchem Feld eine Linie beginnt und wo sie endet, und male sie in dein Gitter.'; },
       tip: 'Tippe auf ein Feld im Bild – dann siehst du es riesig (Feld-Lupe).' },
     l2: { emoji: '🖍️', name: 'Wichtige Linien', spec: { mode: 'lines', upto: 2, grid: true }, legend: true,
-      text: function () { return 'Jetzt kommen die wichtigen Linien dazu. Die grauen Linien hast du schon gemalt, die orangen sind neu.'; },
+      text: function () { return 'Jetzt kommen Augen, Nase, Mund und weitere wichtige Linien dazu. Die grauen Linien hast du schon gemalt, die orangen sind neu.'; },
       tip: 'Arbeite Feld für Feld, von links oben nach rechts unten. Dann verwischst du nichts.' },
     l3: { emoji: '🔍', name: 'Kleine Details', spec: { mode: 'lines', upto: 3, grid: true }, legend: true,
-      text: function () { return 'Jetzt die kleinen Sachen: Augen, Muster und Kanten. Das braucht Geduld, aber du schaffst das!'; },
+      text: function () { return 'Jetzt die kleinen Sachen: Haarsträhnen, Falten, Muster. Das braucht Geduld, aber du schaffst das!'; },
       tip: 'Radieren ist erlaubt. Jeder Maler radiert mal.' },
     shade: { emoji: '🌗', name: 'Schatten schraffieren', spec: { mode: 'shade', grid: true }, legend: false,
       text: function () { return 'Male die dunklen Stellen mit vielen kleinen Strichen aus (schraffieren). Wenig Striche = hell. Kreuz und quer = ganz dunkel.'; },
@@ -43,7 +43,7 @@
   };
   var CHEERS = ['🎉 Super gemalt!', '🌟 Wow, das sieht toll aus!', '👏 Richtig gut geworden!', '🏆 Echter Malmeister!'];
 
-  var state = { level: 'mittel', model: null, plan: [], idx: 0, peek: false, cache: new Map(), pending: 'photo',
+  var state = { level: 'mittel', big: null, model: null, plan: [], idx: 0, peek: false, cache: new Map(), pending: 'photo',
                 cell: { c: 0, r: 0 }, result: null, urls: [], viewId: null };
 
   /* ---------- Hilfen ---------- */
@@ -147,17 +147,18 @@
 
   /* ---------- Navigation (Hash-Routen) ---------- */
 
-  var SCREENS = ['home', 'busy', 'guide', 'result', 'gallery'];
+  var SCREENS = ['home', 'crop', 'busy', 'guide', 'result', 'gallery'];
   function showScreen(name) {
     SCREENS.forEach(function (s) { $('s-' + s).hidden = s !== name; });
     window.scrollTo(0, 0);
-    var h = { home: 'h-home', busy: 'h-busy', guide: 'h-step', result: 'h-result', gallery: 'h-gallery' }[name];
+    var h = { home: 'h-home', crop: 'h-crop', busy: 'h-busy', guide: 'h-step', result: 'h-result', gallery: 'h-gallery' }[name];
     if (h) $(h).focus({ preventScroll: true });
   }
   function navigate(h) { if (location.hash === h) render(); else location.hash = h; }
   function render() {
     var parts = location.hash.replace(/^#\/?/, '').split('/'), name = parts[0] || 'home';
     if ((name === 'guide' || name === 'result') && !state.model) name = 'home';
+    if (name === 'crop' && !state.big) name = 'home';
     if (name === 'result' && !state.result) name = 'guide';
     if (SCREENS.indexOf(name) < 0 || name === 'busy') name = 'home';
     if (name === 'guide') {
@@ -165,6 +166,7 @@
       if (i !== state.idx) state.peek = false;
       state.idx = i; renderGuide();
     }
+    if (name === 'crop') setupCrop();
     if (name === 'result') renderResult();
     if (name === 'gallery') renderGallery();
     if (name === 'home') refreshCount();
@@ -182,18 +184,82 @@
     if (!file || (file.type && file.type.indexOf('image/') !== 0)) { toast('Das ist leider kein Bild.'); return; }
     showScreen('busy');
     try {
-      var big = await fileToCanvas(file, PHOTO_MAX);
-      var s = Math.min(1, PROC / Math.max(big.width, big.height)), sc = document.createElement('canvas');
-      sc.width = Math.max(8, Math.round(big.width * s)); sc.height = Math.max(8, Math.round(big.height * s));
-      var sctx = sc.getContext('2d', { willReadFrequently: true });
-      sctx.drawImage(big, 0, 0, sc.width, sc.height);
-      var model = await analyze(sctx.getImageData(0, 0, sc.width, sc.height), state.level);
-      state.model = model; state.plan = PLAN[state.level]; state.idx = 0; state.peek = false; state.cache.clear(); state.result = null;
-      navigate('#/guide/0');
+      state.big = await fileToCanvas(file, PHOTO_MAX);
+      crop.z = 1; crop.cx = 0.5; crop.cy = 0.5;
+      navigate('#/crop');
     } catch (e) {
       toast('Dieses Bild konnte ich nicht lesen. Versuch bitte ein anderes.');
       navigate('#/home'); showScreen('home');
     }
+  }
+
+  async function analyzeCrop() {
+    showScreen('busy');
+    try {
+      var r = cropRect(), s = PROC / Math.max(r.vw, r.vh), sc = document.createElement('canvas');
+      sc.width = Math.max(8, Math.round(r.vw * s)); sc.height = Math.max(8, Math.round(r.vh * s));
+      var sctx = sc.getContext('2d', { willReadFrequently: true });
+      sctx.drawImage(state.big, r.sx, r.sy, r.vw, r.vh, 0, 0, sc.width, sc.height);
+      var model = await analyze(sctx.getImageData(0, 0, sc.width, sc.height), state.level);
+      state.model = model; state.plan = PLAN[state.level]; state.idx = 0; state.peek = false; state.cache.clear(); state.result = null;
+      navigate('#/guide/0');
+    } catch (e) {
+      toast('Das hat nicht geklappt. Versuch es bitte nochmal.');
+      navigate('#/crop');
+    }
+  }
+
+  /* ---------- Bildausschnitt wählen (ziehen und zoomen) ---------- */
+
+  var crop = { z: 1, cx: 0.5, cy: 0.5 };
+  function cropRect() {
+    var b = state.big, vw = b.width / crop.z, vh = b.height / crop.z;
+    crop.cx = Math.min(Math.max(crop.cx, vw / (2 * b.width)), 1 - vw / (2 * b.width));
+    crop.cy = Math.min(Math.max(crop.cy, vh / (2 * b.height)), 1 - vh / (2 * b.height));
+    return { sx: crop.cx * b.width - vw / 2, sy: crop.cy * b.height - vh / 2, vw: vw, vh: vh };
+  }
+  function drawCrop() {
+    var b = state.big, cv = $('crop-canvas'), r = cropRect(), ctx = cv.getContext('2d');
+    ctx.drawImage(b, r.sx, r.sy, r.vw, r.vh, 0, 0, cv.width, cv.height);
+    /* Vorschau des Gitters für die gewählte Stufe */
+    var gd = window.MS.gridFor(cv.width, cv.height, window.MS.LEVELS[state.level].grid), i;
+    ctx.strokeStyle = 'rgba(255,255,255,.75)'; ctx.lineWidth = 2; ctx.beginPath();
+    for (i = 1; i < gd.cols; i++) { ctx.moveTo(i * cv.width / gd.cols, 0); ctx.lineTo(i * cv.width / gd.cols, cv.height); }
+    for (i = 1; i < gd.rows; i++) { ctx.moveTo(0, i * cv.height / gd.rows); ctx.lineTo(cv.width, i * cv.height / gd.rows); }
+    ctx.stroke();
+    $('crop-zoom').value = crop.z;
+  }
+  function sizeCrop() {
+    var b = state.big, cv = $('crop-canvas'), maxH = window.innerHeight * 0.55, maxW = Math.min(window.innerWidth - 60, 500);
+    var w = Math.min(maxW, maxH * b.width / b.height);
+    cv.style.width = Math.round(w) + 'px';
+  }
+  function setupCrop() {
+    var b = state.big, cv = $('crop-canvas');
+    cv.width = 800; cv.height = Math.round(800 * b.height / b.width);
+    sizeCrop(); drawCrop();
+  }
+  function initCrop() {
+    var cv = $('crop-canvas'), ptrs = new Map(), last = null;
+    function dist() { var p = Array.from(ptrs.values()); return Math.hypot(p[0].x - p[1].x, p[0].y - p[1].y); }
+    cv.addEventListener('pointerdown', function (e) { cv.setPointerCapture(e.pointerId); ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY }); last = ptrs.size === 2 ? dist() : null; });
+    cv.addEventListener('pointermove', function (e) {
+      if (!ptrs.has(e.pointerId)) return;
+      var old = ptrs.get(e.pointerId), b = state.big, shown = cv.clientWidth;
+      ptrs.set(e.pointerId, { x: e.clientX, y: e.clientY });
+      if (ptrs.size === 1) {
+        crop.cx -= (e.clientX - old.x) / shown / crop.z; crop.cy -= (e.clientY - old.y) / shown / crop.z * (b.width / b.height);
+      } else if (ptrs.size === 2) {
+        var d = dist(); if (last) crop.z = Math.min(4, Math.max(1, crop.z * d / last)); last = d;
+      }
+      drawCrop();
+    });
+    function up(e) { ptrs.delete(e.pointerId); last = ptrs.size === 2 ? dist() : null; }
+    cv.addEventListener('pointerup', up); cv.addEventListener('pointercancel', up);
+    $('crop-zoom').addEventListener('input', function (e) { crop.z = parseFloat(e.target.value); drawCrop(); });
+    $('btn-crop-ok').addEventListener('click', analyzeCrop);
+    $('btn-crop-back').addEventListener('click', function () { navigate('#/home'); });
+    window.addEventListener('resize', function () { if (!$('s-crop').hidden) sizeCrop(); });
   }
 
   async function refreshCount() {
@@ -399,6 +465,7 @@
 
     $('btn-camera').addEventListener('click', function () { chooseFile('photo', true); });
     $('btn-pick').addEventListener('click', function () { chooseFile('photo', false); });
+    initCrop();
     $('btn-gallery').addEventListener('click', function () { navigate('#/gallery'); });
     $('btn-gallery-back').addEventListener('click', function () { navigate('#/home'); });
     $('btn-back-home').addEventListener('click', function () { navigate('#/home'); });
