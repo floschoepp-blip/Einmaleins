@@ -23,7 +23,28 @@ h2{margin:0 0 8px;font-size:22px}
 .row{display:flex;gap:8px;justify-content:center;flex-wrap:wrap;margin:8px 0}
 .chip{background:rgba(255,255,255,.14);border:2px solid transparent;border-radius:16px;padding:8px 10px;min-width:84px;font-size:13px}
 #levels .chip{min-width:74px;padding:6px 8px}#levels .chip b{font-size:22px}
-#sel{font-size:13px;opacity:.9;min-height:34px;margin:2px 0 4px}
+
+.mcard{width:min(96vw,780px);padding:14px 16px 14px}
+.mhead h1{font-size:28px}.mhead .sub{margin-bottom:8px}
+.cols{display:grid;grid-template-columns:1fr;gap:10px;text-align:left}
+@media (min-width:700px){.cols{grid-template-columns:1fr 1.15fr;align-items:start}}
+.rcol{display:flex;flex-direction:column;gap:10px}
+.sec{background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.14);border-radius:16px;padding:10px 12px}
+.sec h3{margin:0 0 8px;font-size:15px;display:flex;align-items:center;gap:8px;font-weight:700}
+.sec h3 i{font-style:normal;background:#ffd54a;color:#1b2a4a;border-radius:50%;width:22px;height:22px;display:inline-flex;align-items:center;justify-content:center;font-size:13px}
+.sec input{max-width:none;margin-bottom:8px;padding:8px 10px;font-size:16px}
+.grid{display:grid;gap:6px}
+#chars{grid-template-columns:repeat(3,1fr)}
+#levels{grid-template-columns:repeat(4,1fr)}
+.grid .chip{min-width:0;padding:5px 4px;font-size:12px;text-align:center}
+#chars .pv{width:46px;height:46px}
+#diff{display:flex;gap:6px}#diff .chip{flex:1;min-width:0!important;padding:7px 4px!important;font-size:13px}
+#sel{font-size:12.5px;opacity:.92;min-height:30px;margin:6px 0 0;text-align:left}
+.mcard .big{width:100%;margin-top:10px;padding:12px}
+.more{margin-top:8px;text-align:left}.more summary{cursor:pointer;font-size:14px;opacity:.85;padding:4px 2px}
+.more .hs{margin:6px 0}
+@media (max-height:460px){.mhead h1{font-size:22px}.mhead .sub{display:none}.sec{padding:7px 9px}.sec h3{margin-bottom:5px}#chars .pv{width:34px;height:34px}.grid .chip b{font-size:18px}.mcard .big{padding:9px;margin-top:6px}.mcard{padding:8px 12px}}
+
 .chip b{display:block;font-size:30px;line-height:1.1}.pv{width:64px;height:64px;display:block;margin:0 auto 2px}
 .chip.sel{border-color:#ffd54a;background:rgba(255,213,74,.22)}
 .chip.lock{opacity:.45}
@@ -63,17 +84,29 @@ input{width:100%;max-width:280px;padding:10px 12px;border-radius:12px;border:0;f
 <canvas id="c"></canvas>
 
 <div id="menu" class="sa">
- <div class="card">
-  <h1><span class="logo">Santa Bling Bling</span> ✨</h1>
-  <div class="sub">v1.4 · 7 Städte · bring alle Geschenke zu den Kindern!</div>
-  <input id="name" maxlength="12" placeholder="Dein Name" autocomplete="off">
-  <div class="row" id="chars"></div>
-  <div class="row" id="levels"></div>
-  <div id="diff" style="display:flex;gap:6px;justify-content:center;margin:4px 0"></div>
-  <div id="sel"></div>
+ <div class="card mcard">
+  <div class="mhead"><h1><span class="logo">Santa Bling Bling</span> ✨</h1>
+  <div class="sub">v1.5 · 7 Städte · bring alle Geschenke zu den Kindern!</div></div>
+  <div class="cols">
+   <section class="sec"><h3><i>1</i> Wer bist du?</h3>
+    <input id="name" maxlength="12" placeholder="Dein Name" autocomplete="off">
+    <div class="grid" id="chars"></div>
+   </section>
+   <div class="rcol">
+    <section class="sec"><h3><i>2</i> Wohin geht's?</h3>
+     <div class="grid" id="levels"></div>
+     <div id="sel"></div>
+    </section>
+    <section class="sec"><h3><i>3</i> Wie schwer?</h3>
+     <div id="diff"></div>
+    </section>
+   </div>
+  </div>
   <button class="big" id="start">Los geht's! 🛷</button>
-  <div class="hs" id="hs"></div>
-  <div class="hint">Steuerung: links Finger ziehen (am PC: Pfeile/WASD oder Maus ziehen) · Aktions-Knopf (am PC: E oder Leertaste) · Zoom: Plus/Minus, zwei Finger oder Mausrad · Ton: 🔊 oben rechts</div>
+  <details class="more"><summary>🏆 Bestenliste &amp; Steuerung</summary>
+   <div class="hs" id="hs"></div>
+   <div class="hint">Steuerung: links Finger ziehen (am PC: Pfeile/WASD oder Maus ziehen) · Aktions-Knopf (am PC: E oder Leertaste) · Zoom: Plus/Minus, zwei Finger oder Mausrad · Ton: 🔊 oben rechts<br>Tipp: Sammle 3 Helfer für den Stern-Flug 🌟</div>
+  </details>
  </div>
 </div>
 
@@ -3683,7 +3716,7 @@ function renderMenu(){
  $('sel').innerHTML=ok?'<b>'+esc(c.name)+'</b> · '+esc(c.blurb)+' · 🎁 '+c.gifts:'🔒 Schließe zuerst '+esc(CITIES[sel.lv-1].name)+' ab.';
  $('start').disabled=!ok;$('start').style.opacity=ok?1:.5;
  renderHS('hs');
- const dd=$('diff');dd.innerHTML='';['Leicht 😊','Normal 🙂','Schwer 😤'].forEach((n,i)=>{const b=document.createElement('button');b.className='chip'+(store.get('sbb-diff',1)===i?' sel':'');b.style.minWidth='0';b.style.padding='6px 12px';b.textContent=n;b.onclick=()=>{store.set('sbb-diff',i);renderMenu();};dd.appendChild(b);});
+ const dd=$('diff');dd.innerHTML='';['Leicht 😊','Normal 🙂','Schwer 😤'].forEach((n,i)=>{const b=document.createElement('button');b.className='chip'+(store.get('sbb-diff',1)===i?' sel':'');b.textContent=n;b.onclick=()=>{store.set('sbb-diff',i);renderMenu();};dd.appendChild(b);});
 }
 function drawPreviews(tm){
  const save=ctx;
