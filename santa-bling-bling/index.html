@@ -65,7 +65,7 @@ input{width:100%;max-width:280px;padding:10px 12px;border-radius:12px;border:0;f
 <div id="menu" class="sa">
  <div class="card">
   <h1><span class="logo">Santa Bling Bling</span> ✨</h1>
-  <div class="sub">v1.3 · 7 Städte · bring alle Geschenke zu den Kindern!</div>
+  <div class="sub">v1.4 · 7 Städte · bring alle Geschenke zu den Kindern!</div>
   <input id="name" maxlength="12" placeholder="Dein Name" autocomplete="off">
   <div class="row" id="chars"></div>
   <div class="row" id="levels"></div>
@@ -2046,7 +2046,7 @@ function startGame(idx){
  }
  const lvI=idx;
  G={mode:'play',t:0,score:0,total:Tg.length,got:0,lk:0,photos:0,helpers:[],lvl:lv,idx,en:80,hungry:false,vehicles,traffic,
-    wichtel:[],walkers:[],kids:[],pick:[],storm:{on:false,t:0,next:24+Math.random()*10,wx:1,wy:0,k:0},kidsWon:0,fuel:2.5,hz:[],turbo:0,calm:0,toastT:0,sayT:0,sparks:[],noAuto:0,skateCd:0,scout:0,hwT:0};
+    wichtel:[],walkers:[],kids:[],pick:[],storm:{on:false,t:0,next:24+Math.random()*10,wx:1,wy:0,k:0},kidsWon:0,fuel:2.5,hz:[],turbo:0,calm:0,toastT:0,sayT:0,sparks:[],noAuto:0,flyT:0,skateCd:0,scout:0,hwT:0};
  for(let i=0;i<4;i++){const p=roadPointNear(sx,sy,500,60);G.wichtel.push({x:p.x,y:p.y,vx:0,vy:0,t:Math.random()*3,ang:0,mv:false});}
  {const kv2=['cap','knit','beret','cowboy','ushanka','bub','madl'],nw=7+lvI*2;for(let i=0;i<nw;i++){const p=roadPointNear(sx,sy,1500,160);G.walkers.push({x:p.x,y:p.y,vx:0,vy:0,t:Math.random()*3,ang:Math.random()*6,mv:false,v:(sp.kids||kv2)[i%(sp.kids||kv2).length]});}}
  const kv=sp.kids||['bub'],nk=3+Math.min(2,Math.floor(lvI/2));
@@ -2127,14 +2127,13 @@ $('menuBtn').addEventListener('click',()=>{toMenu();});
 /* ---------- Aktionen ---------- */
 function rectDist(px,py,b){const x=clamp(px,b.x,b.x+b.w),y=clamp(py,b.y,b.y+b.h);return Math.hypot(px-x,py-y);}
 function findAction(){
- if(P.fly)return{lab:'Landen 🛬',fn:landSled};
  let best=null,bd=1e9;
  const cand=(d,lab,fn)=>{if(d<bd){bd=d;best={lab,fn};}};
- if(P.veh==='foot')for(const v of G.vehicles){if(v.wreck)continue;const d=Math.hypot(v.x-P.x,v.y-P.y);if(d<55+VEH[v.type].r)cand(d,'Einsteigen '+VEH[v.type].icon,()=>enter(v));}
+ if(P.veh==='foot'&&!P.fly)for(const v of G.vehicles){if(v.wreck)continue;const d=Math.hypot(v.x-P.x,v.y-P.y);if(d<55+VEH[v.type].r)cand(d,'Einsteigen '+VEH[v.type].icon,()=>enter(v));}
  for(const w of G.wichtel){const d=Math.hypot(w.x-P.x,w.y-P.y);if(d<60)cand(d,'Sprechen 💬',()=>talk(w));}
  for(const s of W.spots){const lab=(ENTER[s.act]&&s.paint!=='stand'&&s.paint!=='rink')?'Eintreten 🚪':ACT_LABEL[s.act];if(!lab)continue;const d=s.paint==='rink'?(rectDist(P.x,P.y,s)<2?0:99):rectDist(P.x,P.y,s)-(s.paint==='stand'?10:0);if(d<46)cand(d,lab,()=>spotAct(s));}
  if(!P.fly&&G.skateCd<=0&&P.z<3&&onIce(P.x,P.y))cand(20,'Schlittschuhlaufen ⛸️',startSkate);
- if(!best&&P.veh!=='foot')best={lab:'Aussteigen',fn:exitVeh};
+ if(!best&&P.veh!=='foot'&&!P.fly)best={lab:'Aussteigen',fn:exitVeh};
  return best;
 }
 function doAction(){
@@ -2180,7 +2179,7 @@ function spotAct(s){
  else if(a==='ride'){s.cd=40;G.score+=25;G.en=Math.min(100,G.en+15);floatT(P.x,P.y-24,'+25 🎠');toast(s.msg||'Das macht Spaß!',2400);sfx('bling');}
  else if(a==='skate'){if(G.skateCd>0){toast('⛸️ Kurze Pause …',1200);return;}startSkate();}
  else if(a==='pack'){s.cd=30;G.score+=40;G.en=Math.min(100,G.en+10);floatT(P.x,P.y-24,'+40 🎁');toast('🎁 Du packst mit den Wichteln Geschenke! +40 Punkte',2600);sfx('bling');}
- else if(a==='feed'){s.cd=40;if(G.helpers.length<4){G.helpers.push(HELPERS[0]);toast('🥕 Ein Rentier folgt dir jetzt! +1 Helfer',2400);}else{G.score+=20;toast('Alle Rentiere satt. +20 Punkte',1800);}sfx('pick');}
+ else if(a==='feed'){s.cd=40;if(G.helpers.length<3){G.helpers.push(HELPERS[0]);toast('🥕 Ein Rentier folgt dir jetzt! ('+G.helpers.length+'/3)',2400);if(G.helpers.length>=3)startStarFly();}else{G.score+=20;toast('Alle Rentiere satt. +20 Punkte',1800);}sfx('pick');}
  else if(a==='post'){s.cd=15;say('💌','Der Wunschzettel verrät dir: '+hintText().replace(/^<br>/,''),7000);sfx('ding');}
  else if(a==='slot'){
   s.cd=25;sfx('slot');const r=Math.random();
@@ -2240,11 +2239,13 @@ function update(dt){
  G.en=Math.max(0,G.en-dt*[.6,.9,1.2][DIFF]);if(G.en<30&&!G.hungry){G.hungry=true;toast('🍴 Du hast Hunger – ab zum '+(T().market||'Markt')+'!',3200);}if(G.en>55)G.hungry=false;
  const hw=P.z<6&&onHighway(P.x,P.y);if(hw&&!G.hw){toast('🛣️ Autobahn! Volle Fahrt voraus!',1500);sfx('turbo');}G.hw=hw;
  const mult=(1+.08*G.helpers.length)*(G.turbo>0?1.4:1)*(S.on?.78:1)*(.62+.38*G.en/100)*(hw?1.75:1);
- const sup=G.helpers.length>3;
- if(sup&&!P.fly&&P.veh!=='foot'&&G.noAuto<=0&&G.mode==='play'){P.fly=true;sfx('bell');heroSay('fly');if(!G.supMsg){G.supMsg=1;toast('🦌✨ Rentier-Power! Mit 4 Helfern fliegst du automatisch und kommst über alles hinweg!',3600);}}
+ const sup=false;
  const nDeer=G.helpers.filter(h=>h.t==='deer').length,maxF=2.5+2.5*nDeer;
  let fm=1;
- if(P.fly){if(!sup)G.fuel-=dt;P.z+=((26+10*nDeer)-P.z)*Math.min(1,dt*3);fm=1.2+.08*nDeer;if(G.fuel<=0&&!sup)landSled();}else{P.z+=(0-P.z)*Math.min(1,dt*6);G.fuel=Math.min(maxF,G.fuel+dt*.7);}
+ if(P.fly){G.flyT-=dt;P.z+=(34-P.z)*Math.min(1,dt*3);fm=1.4;
+  if(Math.random()<.9)particles.push({x:P.x-Math.cos(P.ang)*14+(Math.random()-.5)*10,y:P.y-P.z+(Math.random()-.5)*8,vx:(Math.random()-.5)*30,vy:10+Math.random()*30,life:.7,c:'hsl('+Math.floor((G.t*400+Math.random()*90)%360)+',95%,62%)'});
+  if(G.flyT<3.2&&!G.flyWarn){G.flyWarn=true;toast('⚠️ Der Stern-Flug endet gleich!',1600);sfx('deny');}
+  if(G.flyT<=0){G.flyT=0;landSled();toast('🌟 Landung! Sammle 3 Helfer für den nächsten Stern-Flug.',2800);}}else{P.z+=(0-P.z)*Math.min(1,dt*6);G.fuel=Math.min(maxF,G.fuel+dt*.7);}
  const ice=!P.fly&&(onIce(P.x,P.y)||inPuddle(P.x,P.y)||(G.ev&&G.ev.glaze>0)),acc=V.acc*(ice?.32:1)*(P.fly?.8:1)*(hw?1.5:1),k=1-Math.exp(-acc*dt);
  const wetm=P.wet>0?.78:1;P.wet=Math.max(0,P.wet-dt);
  P.vx+=(ix*V.max*mult*fm*wetm-P.vx)*k;P.vy+=(iy*V.max*mult*fm*wetm-P.vy)*k;
@@ -2265,7 +2266,7 @@ function update(dt){
  if(P.veh==='sled'||P.veh==='gsled'){G.jt=(G.jt||0)-dt;if(sp2>90&&G.jt<=0){G.jt=.55;sfx('jingle');}}
  // Geschenke abliefern
  for(const h of W.houses){
-  if(!h.target||h.done||P.z>6)continue;
+  if(!h.target||h.done)continue;
   if(Math.hypot(h.door.x-P.x,h.door.y-P.y)<44+P.r*.6){
    h.done=true;G.got++;let pts=100;
    if(G.lk>0){G.lk--;pts+=50;floatT(h.door.x,h.door.y-34,'+50 🍪');}
@@ -2276,7 +2277,7 @@ function update(dt){
  if(G.got>=G.total){finish();return;}
  // Helfer einsammeln
  for(let i=G.pick.length-1;i>=0;i--){const p=G.pick[i];if(Math.hypot(p.x-P.x,p.y-P.y)<28+P.r){
-  G.pick.splice(i,1);if(G.helpers.length<4){G.helpers.push(p.h);G.score+=10;toast('+1 Helfer: '+p.h.e+' '+p.h.n+' – du bist schneller!',1800);}else{G.score+=20;toast('Genug Helfer, aber +20 Punkte!',1400);}
+  G.pick.splice(i,1);if(G.helpers.length<3){G.helpers.push(p.h);G.score+=10;toast('+1 Helfer: '+p.h.e+' '+p.h.n+' ('+G.helpers.length+'/3 für den Stern-Flug)',1800);if(G.helpers.length>=3)startStarFly();}else{G.score+=20;toast('Genug Helfer, aber +20 Punkte!',1400);}
   sfx('pick');}}
  // Wichtel
  for(const w of G.wichtel){w.t-=dt;if(w.t<=0){w.t=1+Math.random()*2;const a=Math.random()*6.283,s=Math.random()<.4?0:30;w.vx=Math.cos(a)*s;w.vy=Math.sin(a)*s;}
@@ -2289,7 +2290,7 @@ function update(dt){
   if(!c.done&&c.cd<=0&&d<200&&d>1&&G.calm<=0){c.vx=dx/d*70;c.vy=dy/d*70;}
   else{c.t-=dt;if(c.t<=0){c.t=1.5+Math.random()*2.5;const a=Math.random()*6.283,s=Math.random()<.55?0:24;c.vx=Math.cos(a)*s;c.vy=Math.sin(a)*s;}}
   moveBy(c,c.vx*dt,c.vy*dt,8);c.mv=Math.hypot(c.vx,c.vy)>3;if(c.mv)c.ang=Math.atan2(c.vy,c.vx);
-  if(!c.done&&!c.busy&&c.cd<=0&&P.stun<=0&&G.calm<=0&&d<P.r+26&&G.mode==='play'){
+  if(!c.done&&!c.busy&&c.cd<=0&&P.stun<=0&&G.calm<=0&&d<P.r+26&&!P.fly&&G.mode==='play'){
    c.busy=true;c.vx=c.vy=0;speak(c.game==='eis'?'Eisstockschießen!':c.game==='ziel'?'Zielwerfen!':'Schneeballschlacht!',{pitch:1.8,rate:1.15});startFP(c,c.game);return;
   }
  }
@@ -2340,12 +2341,17 @@ function dmgVeh(n){
  if(P.hp<=0){G.vehicles.push({type:P.veh,x:P.x,y:P.y,ang:P.ang,hp:0,wreck:true});P.veh='foot';P.r=VEH.foot.r;P.hp=100;P.vx=P.vy=0;sfx('thud');sfx('horn');burst(P.x,P.y,30,['#888','#555','#ff8a3f']);toast('💥 Dein Fahrzeug ist kaputt! Lauf zu Fuß weiter oder such ein anderes.',3400);}
  else if(P.hp<50&&n>0)toast('🔧 Vorsicht, '+VEH[P.veh].name+' qualmt schon!',1600);
 }
-function landSled(){if(!P.fly)return;P.fly=false;G.noAuto=4;voxSay('land');const q=P;pushOut(q,P.r);sfx('thud');burst(P.x,P.y,10,['#fff','#cfe8ff']);}
+function landSled(){if(!P.fly)return;P.fly=false;G.flyWarn=false;voxSay('land');const q=P;pushOut(q,P.r);sfx('thud');burst(P.x,P.y,10,['#fff','#cfe8ff']);}
 function toggleFly(){
- if(!G||G.mode!=='play'||(P.veh==='foot'))return;auInit();if(P.veh!=='sled'&&P.veh!=='gsled'&&G.helpers.length<=3){toast('✨ Nur Schlitten fliegen – oder sammle 4 Helfer, dann fliegt jedes Fahrzeug!',2400);return;}
- if(P.fly){landSled();return;}
- if(G.fuel<1){toast('🦌 Die Rentiere müssen sich erst ausruhen …',1500);sfx('deny');return;}
- P.fly=true;sfx('bell');heroSay('fly');toast('🛷✨ Abflug! '+(G.helpers.some(h=>h.t==='deer')?'Mit mehr Rentieren fliegst du höher und länger.':'Sammle Rentiere, dann fliegst du höher und länger!'),2400);
+ if(!G||G.mode!=='play')return;auInit();
+ if(P.fly)toast('🌟 Noch '+Math.ceil(G.flyT)+' s Stern-Flug – nutze die Zeit!',1400);else toast('🦌 Sammle 3 Helfer (Rentiere, Schneemänner …) – dann fliegst du eine Weile über alles hinweg!',2600);
+}
+function startStarFly(){
+ const nd=G.helpers.filter(h=>h.t==='deer').length,add=14+2*nd;
+ G.helpers.length=0;G.flyWarn=false;
+ if(P.fly){G.flyT+=add*.7;toast('🌟 Stern-Flug verlängert! +'+Math.round(add*.7)+' s',2200);}
+ else{P.fly=true;G.flyT=add;toast('🌟 STERN-FLUG! '+add+' Sekunden – du schwebst über alles und sammelst im Flug ein!',3600);heroSay('fly');}
+ sfx('win');sfx('bell');burst(P.x,P.y-20,36,['#ffd54a','#ff8ad8','#6bff7a','#4aa3ff','#fff']);
 }
 function honk(){
  if(!G||G.mode!=='play')return;auInit();
@@ -3316,7 +3322,7 @@ function eventsUpdate(dt){
    const dd=Math.hypot(d.x-P.x,d.y-P.y);if(dd<12+P.r&&P.z<8){const ux=(P.x-d.x)/(dd||1),uy=(P.y-d.y)/(dd||1);P.vx=ux*150;P.vy=uy*150;moveBy(P,ux*4,uy*4,P.r);if(P.bump<=0){sfx('thud');P.bump=.4;}}}
    if(H.t<=0){E.herd=null;toast('🦌 Die Herde ist weitergezogen.',1600);}}
  // Wichtel-Streich
- if(E.gift){const g=E.gift;g.ttl-=dt;if(Math.hypot(g.x-P.x,g.y-P.y)<34+P.r*.5&&P.z<8){G.score+=40;E.gift=null;floatT(g.x,g.y-20,'+40 🎁');heroSay('gift');sfx('bling');toast('🎁 Geschenk gerettet! +40 Punkte',2000);E.next=22+Math.random()*20;}
+ if(E.gift){const g=E.gift;g.ttl-=dt;if(Math.hypot(g.x-P.x,g.y-P.y)<34+P.r*.5){G.score+=40;E.gift=null;floatT(g.x,g.y-20,'+40 🎁');heroSay('gift');sfx('bling');toast('🎁 Geschenk gerettet! +40 Punkte',2000);E.next=22+Math.random()*20;}
   else if(g.ttl<=0){G.score=Math.max(0,G.score-20);E.gift=null;toast('🧝 Der Wichtel hat das Geschenk behalten … −20 Punkte',2400);sfx('deny');}}
  // Eiszapfen
  if(E.ic){let alive=0;for(const c of E.ic){if(c.d>0){c.d-=dt;alive++;continue;}if(c.t>0){c.t-=dt;alive++;if(c.t<=0){c.done=.5;burst(c.x,c.y,12,['#e8f6ff','#9bd3ee']);sfx('thud');if(Math.hypot(c.x-P.x,c.y-P.y)<24&&P.z<8){P.stun=.7;G.en=Math.max(0,G.en-5);P.vx*=.2;P.vy*=.2;toast('🧊 Aua! Ein Eiszapfen!',1500);heroSay('crash');}}}else if(c.done>0){c.done-=dt;alive++;}}
@@ -3324,12 +3330,12 @@ function eventsUpdate(dt){
  // Schneepflug aufräumen
  for(let i=G.traffic.length-1;i>=0;i--){const c=G.traffic[i];if(!c.plow)continue;c.ttl-=dt;if(Math.random()<.5)particles.push({x:c.x+Math.cos(c.ang)*18,y:c.y+Math.sin(c.ang)*18,vx:Math.cos(c.ang)*40+(Math.random()-.5)*50,vy:(Math.random()-.5)*50-20,life:.6,c:'#fff'});if(c.horn<=0&&Math.hypot(c.x-P.x,c.y-P.y)<260){c.horn=3;sfx('horn');}if(c.ttl<=0){G.traffic.splice(i,1);toast('🚜 Der Schneepflug ist abgebogen.',1500);}}
  // Gewinnspiel
- if(E.raffle){const R_=E.raffle;R_.t-=dt;const m=W.marketC;if(Math.hypot(P.x-m.x,P.y-m.y)<150&&P.z<8){const r=Math.random();E.raffle=null;sfx('win');burst(m.x,m.y,30,['#ffd54a','#ff5a5a','#7dff7a']);
+ if(E.raffle){const R_=E.raffle;R_.t-=dt;const m=W.marketC;if(Math.hypot(P.x-m.x,P.y-m.y)<150){const r=Math.random();E.raffle=null;sfx('win');burst(m.x,m.y,30,['#ffd54a','#ff5a5a','#7dff7a']);
    if(r<.3){G.score+=120;toast('🎟️ Hauptgewinn! +120 Punkte!',3000);}else if(r<.55){G.turbo=Math.max(G.turbo,12);toast('🎟️ Gewonnen: Turbo für 12 Sekunden!',3000);}else if(r<.8){G.en=100;toast('🎟️ Gewonnen: Ein Festessen! Hunger voll.',3000);}else if(G.helpers.length<4){G.helpers.push(HELPERS[0]);toast('🎟️ Gewonnen: Ein Rentier folgt dir!',3000);}else{G.score+=60;toast('🎟️ Gewonnen: +60 Punkte!',3000);}heroSay('eat');}
   else if(R_.t<=0){E.raffle=null;toast('🎟️ Das Gewinnspiel ist vorbei.',1800);}}
  // Sternschnuppe
  if(E.star){const s=E.star;s.ttl-=dt;if(s.ttl<=0){E.star=null;toast('⭐ Die Sternschnuppe ist verglüht.',1600);}
-  else if(Math.hypot(P.x-s.x,P.y-s.y)<34+P.r*.5&&P.z<8){G.score+=60;G.turbo=Math.max(G.turbo,6);E.star=null;floatT(s.x,s.y-20,'+60 ⭐');toast('🌟 Sternschnuppe gefangen! Turbo für 6 Sekunden!',2600);sfx('win');burst(s.x,s.y,30,['#ffd54a','#fff','#9be7ff']);heroSay('eat');}}
+  else if(Math.hypot(P.x-s.x,P.y-s.y)<34+P.r*.5){G.score+=60;G.turbo=Math.max(G.turbo,6);E.star=null;floatT(s.x,s.y-20,'+60 ⭐');toast('🌟 Sternschnuppe gefangen! Turbo für 6 Sekunden!',2600);sfx('win');burst(s.x,s.y,30,['#ffd54a','#fff','#9be7ff']);heroSay('eat');}}
 }
 function eventsDraw(tm,z){
  const E=G.ev;if(!E)return;
@@ -3657,8 +3663,8 @@ const HC={};
 function setT(id,t){if(HC[id]!==t){HC[id]=t;$(id).textContent=t;}}
 function hud(){
  setT('hg','🎁 '+G.got+'/'+G.total);setT('ht','⏱ '+fmt(G.t));setT('hs2','⭐ '+G.score);setT('hl','🍪 '+G.lk+' · 🧒 '+G.kidsWon+'/'+G.kids.length);
- {const sup=G.helpers.length>3,sl=P.veh!=='foot'&&(P.veh==='sled'||P.veh==='gsled'||sup),nd=G.helpers.filter(h=>h.t==='deer').length;setT('hv',VEH[P.veh].icon+(isMotor(P.veh)?' 🔧'+Math.round(P.hp)+'%':'')+(sl?(sup?' ✈∞':' ✈'+Math.round(G.fuel/(2.5+2.5*nd)*100)+'%'):'')+(G.helpers.length?' '+G.helpers.map(h=>h.e).join(''):''));
-  const fl=$('fly');fl.hidden=!(sl&&G.mode==='play');fl.style.opacity=(G.fuel>=1||P.fly)?1:.5;$('horn').hidden=G.mode!=='play';if(!fl.hidden){const t=P.fly?'🛬<br>Landen':'✨<br>Fliegen';if(HC.fl!==t){HC.fl=t;fl.innerHTML=t;}}}
+ {setT('hv',VEH[P.veh].icon+(isMotor(P.veh)?' 🔧'+Math.round(P.hp)+'%':'')+(P.fly?' 🌟✈ '+Math.ceil(G.flyT)+'s':(G.helpers.length?' ':''))+(G.helpers.length?G.helpers.map(h=>h.e).join('')+' '+G.helpers.length+'/3':''));
+  $('fly').hidden=true;$('horn').hidden=G.mode!=='play';}
  const e=Math.round(G.en);$('ebi').style.width=e+'%';$('ebi').style.background=e<30?'#e23b3b':'#ffb703';
  const a=G.mode==='play'?findAction():null,lab=a?a.lab:'–';
  if(HC.act!==lab){HC.act=lab;act.textContent=lab;act.classList.toggle('off',!a);}
