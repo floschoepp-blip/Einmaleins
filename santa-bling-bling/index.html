@@ -82,6 +82,9 @@ input{width:100%;max-width:280px;padding:10px 12px;border-radius:12px;border:0;f
 #bkstep{font-size:20px;font-weight:700;min-height:28px}
 .mhead{display:flex;align-items:center;gap:12px}.mhead .lg{height:88px;width:auto;flex:none;filter:drop-shadow(0 3px 6px rgba(0,0,0,.35))}.mhead .lt small{display:block;font-size:13px;letter-spacing:5px;color:#ffe9a0;font-weight:700}.mhead .lt h1{font-size:34px;line-height:1;margin:0}.mhead .lt .logo{background:linear-gradient(180deg,#fff3b0,#ffd54a 55%,#e09a00);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 2px 0 rgba(120,60,0,.6))}.mhead .tag{font-style:italic;color:#ffd9d9;font-size:13px;margin-top:3px}
 @media (max-height:460px){.mhead .lg{height:54px}.mhead .lt h1{font-size:24px}.mhead .lt small{font-size:10px;letter-spacing:3px}.mhead .tag{display:none}}
+ input,textarea{-webkit-user-select:text!important;user-select:text!important;-webkit-touch-callout:default;font-size:16px}
+@media (max-width:520px){#mm{width:92px;height:60px}.zb{width:38px;height:38px;font-size:20px}.zr{gap:5px}#toast{top:250px;max-width:88vw}#say{width:calc(100vw - 20px);bottom:150px}}
+@media (max-height:420px){.zb{width:40px;height:40px;font-size:22px}.zr{gap:6px}#toast{max-width:50vw}#say{left:8px;transform:none;width:min(44vw,300px);bottom:8px;font-size:12.5px}}
 .chip.lock .pv{filter:brightness(0) opacity(.55)}.stars{font-size:44px;letter-spacing:6px;color:#ffd54a;text-shadow:0 2px 0 #a86a00;margin-bottom:4px}.stars span{color:#fff3;text-shadow:none}.st{color:#ffd54a;font-size:11px}.st span{color:#fff4}.newc{margin:8px 0;padding:8px;border-radius:12px;background:#ffd54a;color:#4a2b00;font-size:16px}.sec h3 em{font-style:normal;float:right;font-size:13px;color:#ffd54a}#cmsg:not(:empty){font-size:12px;margin-top:8px;padding:6px 8px;border-radius:8px;background:#0006}.chip small{font-size:10px;opacity:.9}
 </style>
 </head>
@@ -135,7 +138,7 @@ input{width:100%;max-width:280px;padding:10px 12px;border-radius:12px;border:0;f
 <path d="M146 118 Q158 112 164 100" fill="none" stroke="#ffd54a" stroke-width="2" stroke-linecap="round"/>
 <path d="M164 100 l1.8 -4.6 l1.8 4.6 l4.6 1.8 l-4.6 1.8 l-1.8 4.6 l-1.8 -4.6 l-4.6 -1.8z" fill="url(#lg)"/>
 </svg>
-<div class="lt"><small>SANTA</small><h1><span class="logo">Bling Bling</span></h1><div class="tag">Die wilde Bescherung</div><div class="sub">v1.8.1 · 7 Städte · bring alle Geschenke zu den Kindern!</div></div></div>
+<div class="lt"><small>SANTA</small><h1><span class="logo">Bling Bling</span></h1><div class="tag">Die wilde Bescherung</div><div class="sub">v1.8.2 · 7 Städte · bring alle Geschenke zu den Kindern!</div></div></div>
   <div class="cols">
    <section class="sec"><h3><i>1</i> Wer bist du? <em id="stot"></em></h3>
     <input id="name" maxlength="12" placeholder="Dein Name" autocomplete="off">
@@ -255,7 +258,17 @@ let particles=[],floats=[];
 
 /* ---------- Ton (WebAudio, wird bei erster Berührung freigeschaltet) ---------- */
 let AC=null,master=null,musicG=null,sfxG=null,engO=null,engG=null,engF=null,windG=null,muted=store.get('sbb-mute',false);
+function silentLoop(){ // iOS: Stummschalter überbrücken (Web-Audio wird sonst bei „Ton aus“ lautlos)
+ if(window.__sil||(window.__silN=(window.__silN||0)+1)>10)return;
+ try{const n=4000,b=new Uint8Array(44+n),v=new DataView(b.buffer),w=(o,s)=>{for(let i=0;i<s.length;i++)b[o+i]=s.charCodeAt(i);};
+  w(0,'RIFF');v.setUint32(4,36+n,true);w(8,'WAVE');w(12,'fmt ');v.setUint32(16,16,true);v.setUint16(20,1,true);v.setUint16(22,1,true);v.setUint32(24,8000,true);v.setUint32(28,8000,true);v.setUint16(32,1,true);v.setUint16(34,8,true);w(36,'data');v.setUint32(40,n,true);for(let i=0;i<n;i++)b[44+i]=128;
+  const a=document.createElement('audio');a.src=URL.createObjectURL(new Blob([b],{type:'audio/wav'}));a.loop=true;a.setAttribute('playsinline','');a.volume=.02;
+  const p=a.play();if(p&&p.then)p.then(()=>{window.__sil=a;},()=>{});else window.__sil=a;
+ }catch(e){}
+ try{if(navigator.audioSession)navigator.audioSession.type='playback';}catch(e){}
+}
 function auInit(){
+ silentLoop();
  try{
   if(!AC){
    const C=window.AudioContext||window.webkitAudioContext;if(!C)return;
@@ -3986,7 +3999,7 @@ function drawPreviews(tm){
  document.querySelectorAll('canvas.pv').forEach(cn=>{const g=cn.getContext('2d');g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,128,128);g.translate(64,64);g.rotate(-1.57+Math.sin(tm*1.2)*.25);g.scale(3.1,3.1);ctx=g;drawHero(cn.dataset.k,1,tm,true);g.setTransform(1,0,0,1,0,0);});
  ctx=save;
 }
-$('start').addEventListener('click',()=>{auInit();if(!unlocked(sel.lv))return;store.set('sbb-name',$('name').value);startGame(sel.lv);});
+$('start').addEventListener('click',()=>{auInit();if(!unlocked(sel.lv))return;store.set('sbb-name',$('name').value);startGame(sel.lv);setTimeout(()=>{if(G&&!muted&&(!AC||AC.state!=='running'))toast('🔇 Kein Ton? Prüfe den Stummschalter seitlich am iPhone und tippe einmal auf 🔊.',5000);},1800);});
 $('again').addEventListener('click',()=>{startGame(sel.lv);});
 $('next').addEventListener('click',()=>{if(sel.lv+1<CITIES.length)startGame(sel.lv+1);});
 $('tomenu').addEventListener('click',toMenu);
