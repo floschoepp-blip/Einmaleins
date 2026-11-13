@@ -138,7 +138,7 @@ input{width:100%;max-width:280px;padding:10px 12px;border-radius:12px;border:0;f
 <path d="M146 118 Q158 112 164 100" fill="none" stroke="#ffd54a" stroke-width="2" stroke-linecap="round"/>
 <path d="M164 100 l1.8 -4.6 l1.8 4.6 l4.6 1.8 l-4.6 1.8 l-1.8 4.6 l-1.8 -4.6 l-4.6 -1.8z" fill="url(#lg)"/>
 </svg>
-<div class="lt"><small>SANTA</small><h1><span class="logo">Bling Bling</span></h1><div class="tag">Die wilde Bescherung</div><div class="sub">v1.9.1 · 7 Städte · bring alle Geschenke zu den Kindern!</div></div></div>
+<div class="lt"><small>SANTA</small><h1><span class="logo">Bling Bling</span></h1><div class="tag">Die wilde Bescherung</div><div class="sub">v1.10 · 7 Städte · bring alle Geschenke zu den Kindern!</div></div></div>
   <div class="cols">
    <section class="sec"><h3><i>1</i> Wer bist du? <em id="stot"></em></h3>
     <input id="name" maxlength="12" placeholder="Dein Name" autocomplete="off">
@@ -155,8 +155,9 @@ input{width:100%;max-width:280px;padding:10px 12px;border-radius:12px;border:0;f
    </div>
   </div>
   <button class="big" id="start">Los geht's! 🛷</button>
+  <button class="ghost" id="albumBtn" style="margin-top:8px">📒 Stickerbuch</button>
   <details class="more"><summary>🏆 Bestenliste &amp; Steuerung</summary>
-   <label style="display:block;margin:8px 0;font-size:14px"><input type="checkbox" id="tts" style="width:auto;margin-right:8px;vertical-align:middle">🗣️ Gesprochene Sätze (Systemstimme)</label>
+   <label style="display:block;margin:8px 0;font-size:14px"><input type="checkbox" id="tts" style="width:auto;margin-right:8px;vertical-align:middle">🗣️ Gesprochene Sätze</label>
    <div class="hs" id="hs"></div>
    <div class="hint">Steuerung: links Finger ziehen (am PC: Pfeile/WASD oder Maus ziehen) · Aktions-Knopf (am PC: E oder Leertaste) · Zoom: Plus/Minus, zwei Finger oder Mausrad · Ton: 🔊 oben rechts<br>Tipp: Sammle 3 Helfer für den Stern-Flug 🌟</div>
   </details>
@@ -196,6 +197,20 @@ input{width:100%;max-width:280px;padding:10px 12px;border-radius:12px;border:0;f
  <button id="rmTalk" class="rmb">💬 Reden</button><button id="rmAct" class="rmb" style="background:#d62828">Los</button><button id="rmOut" class="rmb">🚪 Raus</button>
 </div>
 <style>.rmb{pointer-events:auto;min-width:118px;height:62px;padding:0 16px;border-radius:31px;background:rgba(20,40,90,.85);border:3px solid #fff;color:#fff;font-size:17px;font-weight:700;touch-action:none;box-shadow:0 3px 10px rgba(0,0,0,.4)}.rmb:active{filter:brightness(1.3)}#bake{z-index:66!important;background:rgba(40,20,5,.55)!important}</style>
+<div id="spop" hidden></div>
+<div id="album" hidden><div class="acard"><h2>📒 Mein Stickerbuch</h2><div id="acount"></div><div id="agrid"></div><div id="ainfo"></div><button class="ghost" id="aclose">Schließen</button></div></div>
+<style>
+.sbadge{width:62px;height:62px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:34px;background:radial-gradient(circle at 32% 28%,#fff 0,var(--a) 55%,var(--b) 100%);border:3px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.45);margin:0 auto}
+#spop{position:fixed;left:50%;top:max(14px,env(safe-area-inset-top));transform:translateX(-50%);z-index:95;background:rgba(10,24,52,.94);border:2px solid #ffd54a;border-radius:18px;padding:8px 16px;display:flex;gap:12px;align-items:center;color:#fff;font-size:15px;pointer-events:none;max-width:90vw}
+#spop .sbadge{margin:0;flex:none}#spop small{color:#ffd54a;font-weight:700}
+#spop.go{animation:spin .6s ease-out}@keyframes spin{0%{transform:translateX(-50%) scale(.3) rotate(-20deg);opacity:0}70%{transform:translateX(-50%) scale(1.12)}100%{transform:translateX(-50%) scale(1);opacity:1}}
+#album{position:fixed;inset:0;z-index:96;background:rgba(8,20,46,.93);display:flex;align-items:safe center;justify-content:center;overflow:auto;padding:10px}
+.acard{width:min(560px,100%);text-align:center;color:#fff}.acard h2{margin:6px 0 2px}#acount{color:#ffd54a;font-weight:700;margin-bottom:8px}
+#agrid{display:grid;grid-template-columns:repeat(auto-fill,minmax(84px,1fr));gap:10px}
+.stk{background:none;border:0;color:#fff;font-size:11.5px;font-weight:600;padding:2px;transform:rotate(var(--r,0))}.stk span{display:block;margin-top:4px}
+.stk.lock .sbadge{filter:grayscale(1) brightness(.55);font-size:26px}.stk.lock span{opacity:.6}
+#ainfo{min-height:44px;margin:10px 0;font-size:14px}
+</style>
 <canvas id="rw" hidden style="position:fixed;inset:0;z-index:70;touch-action:none"></canvas>
 <button id="fly" hidden class="rb" style="right:max(14px,env(safe-area-inset-right));bottom:calc(max(18px,env(safe-area-inset-bottom)) + 124px)">🛷✨<br>Fliegen</button>
 <button id="horn" hidden class="rb" style="right:calc(max(14px,env(safe-area-inset-right)) + 126px);bottom:max(26px,env(safe-area-inset-bottom))">📯<br>Hupe</button>
@@ -2608,7 +2623,7 @@ function talk(w){const L=T().greet||['Hallo!'];say('🎄',L[Math.floor(Math.rand
 function spotAct(s){
  if(s.cd>0){toast(s.name+': gleich wieder ('+Math.ceil(s.cd)+' s)',1500);sfx('deny');return;}
  const a=s.act;
- if(a==='priv'&&!s.inRoom){startRoom(s);return;}
+ if(a==='priv'&&!s.inRoom){stk('priv');startRoom(s);return;}
  if(a==='priv'){const h=s.house;if(h.target&&!h.done){deliver(h);}else{s.cd=12;if(!h.knock){h.knock=1;G.score+=10;floatT(P.x,P.y-24,'+10 🍪');}roomBubble(['Möchtest du einen Lebkuchen? Hier, nimm!','Der Baum ist heuer besonders schön geworden, gell?','Bei uns knistert der Kamin schon seit Mittag.','Frohe Weihnachten! Komm gut heim!'][Math.floor(Math.random()*4)],6);sfx('ding');}return;}
  if(ENTER[a]&&!s.inRoom&&s.paint!=='stand'&&s.paint!=='rink'){startRoom(s);return;}
  if(a==='bake'){startBake();return;}
@@ -2621,11 +2636,11 @@ function spotAct(s){
  else if(a==='bells'){s.cd=40;G.calm=8;G.score+=s.photo?15:0;toast('🔔 '+(s.msg||'Die Glocken läuten')+' Die Kinder bleiben 8 Sekunden brav!',3000);sfx('bell');}
  else if(a==='home'){s.cd=9999;const big=W.sp.id==='nordpol'||W.sp.lands.some(l=>l.k==='santahaus');G.score+=big?100:50;G.en=100;floatT(P.x,P.y-24,'+'+(big?100:50)+' 🎄');
   say('🎄',big?'Ho ho ho! Schön, dass du da bist! Frohe Weihnachten, mein Freund! +100 Punkte und volle Kraft!':'Frische Christbäum aus Zenting! Do kriagst an Bonus und a Stärkung. +50 Punkte',6500);sfx(big?'hoho':'bling');}
- else if(a==='station'){s.cd=40;G.score+=30;G.en=Math.min(100,G.en+10);floatT(P.x,P.y-24,'+30 🎫');toast('🎫 Fahrkarte gekauft: Nächster Halt Weihnachten! +30',2600);sfx('bling');}
- else if(a==='airport'){s.cd=40;G.score+=40;floatT(P.x,P.y-24,'+40 🧳');toast('🧳 Ein Geschenk-Paket eingecheckt! +40',2600);sfx('bling');}
- else if(a==='veg'){s.cd=20;G.en=Math.min(100,G.en+18);G.score+=8;floatT(P.x,P.y-24,'+18 ⚡');toast('🥕 Frisches Gemüse vom Wochenmarkt! Hunger +18',2400);burst(P.x,P.y,10,['#ff8a1f','#4cc16a','#e23b3b']);sfx('eat');}
- else if(a==='stadium'){s.cd=9999;G.score+=150;G.en=100;G.stad=1;floatT(P.x,P.y-24,'+150 🏟️');burst(P.x,P.y-20,50,['#ffd54a','#ff5a5a','#5ad1ff','#7dff7a','#fff']);sfx('win');setTimeout(()=>sfx('hoho'),500);say('🏟️','Ho ho ho! Alle Kinder im Stadion jubeln: „Santa, Santa!“ Du verteilst Süßigkeiten. +150 Punkte, volle Kraft!',7000);}
- else if(a==='photo'){s.cd=60;G.photos++;G.score+=30;floatT(P.x,P.y-24,'+30 📸');toast((s.msg||'Foto!')+' +30',2600);sfx('bling');burst(P.x,P.y,12,['#fff','#ffe27a']);}
+ else if(a==='station'){stk('station');s.cd=40;G.score+=30;G.en=Math.min(100,G.en+10);floatT(P.x,P.y-24,'+30 🎫');toast('🎫 Fahrkarte gekauft: Nächster Halt Weihnachten! +30',2600);sfx('bling');}
+ else if(a==='airport'){stk('airport');s.cd=40;G.score+=40;floatT(P.x,P.y-24,'+40 🧳');toast('🧳 Ein Geschenk-Paket eingecheckt! +40',2600);sfx('bling');}
+ else if(a==='veg'){stk('veg');s.cd=20;G.en=Math.min(100,G.en+18);G.score+=8;floatT(P.x,P.y-24,'+18 ⚡');toast('🥕 Frisches Gemüse vom Wochenmarkt! Hunger +18',2400);burst(P.x,P.y,10,['#ff8a1f','#4cc16a','#e23b3b']);sfx('eat');}
+ else if(a==='stadium'){stk('stadium');s.cd=9999;G.score+=150;G.en=100;G.stad=1;floatT(P.x,P.y-24,'+150 🏟️');burst(P.x,P.y-20,50,['#ffd54a','#ff5a5a','#5ad1ff','#7dff7a','#fff']);sfx('win');setTimeout(()=>sfx('hoho'),500);say('🏟️','Ho ho ho! Alle Kinder im Stadion jubeln: „Santa, Santa!“ Du verteilst Süßigkeiten. +150 Punkte, volle Kraft!',7000);}
+ else if(a==='photo'){stk('photo');s.cd=60;G.photos++;G.score+=30;floatT(P.x,P.y-24,'+30 📸');toast((s.msg||'Foto!')+' +30',2600);sfx('bling');burst(P.x,P.y,12,['#fff','#ffe27a']);}
  else if(a==='slide'){startRide('slide',s);}
  else if(a==='ride'&&s.paint==='wheel'){startRide('wheel',s);}
  else if(a==='ride'){s.cd=40;G.score+=25;G.en=Math.min(100,G.en+15);floatT(P.x,P.y-24,'+25 🎠');toast(s.msg||'Das macht Spaß!',2400);sfx('bling');}
@@ -2657,7 +2672,7 @@ function bakeHit(){
  if(B.step>=3)finishBake();else newStep();
 }
 function finishBake(){
- const n=Math.max(1,B.hits);G.lk+=n;G.score+=25*n;W.lk.cd=25;G.mode=(typeof FP!=='undefined'&&FP&&FP.kind==='room')?'fp':'play';$('bake').hidden=true;
+ stk('cookie');const n=Math.max(1,B.hits);G.lk+=n;G.score+=25*n;W.lk.cd=25;G.mode=(typeof FP!=='undefined'&&FP&&FP.kind==='room')?'fp':'play';$('bake').hidden=true;
  toast('🍪 '+n+' Lebkuchen gebacken! +'+25*n+' Punkte',2600);burst(P.x,P.y,22,['#b5651d','#fff','#ffd54a']);sfx('bling');
 }
 $('bkhit').addEventListener('pointerdown',e=>{e.preventDefault();bakeHit();});
@@ -2773,7 +2788,7 @@ function finish(){
  hs[id].push({n:nm,s:G.score,c:sel.ch,t:Math.round(G.t)});hs[id].sort((a,b)=>b.s-a.s);hs[id]=hs[id].slice(0,8);store.set('sbb-hs-v1',hs);
  PROG0.done[id]=true;store.set('sbb-prog',PROG0);
  const rr=G.t/par,stars=rr<=.6?3:rr<=1?2:1,before=totalStars();
- STARS[id]=Math.max(STARS[id]||0,stars);store.set('sbb-stars',STARS);
+ STARS[id]=Math.max(STARS[id]||0,stars);store.set('sbb-stars',STARS);stkFinish(id,stars);
  G.stars=stars;G.newChars=Object.keys(CHAR_REQ).filter(k=>CHAR_REQ[k]>before&&CHAR_REQ[k]<=totalStars());
  const nxt=CITIES[G.idx+1];
  $('endtxt').innerHTML='<div class="stars">'+'★'.repeat(stars)+'<span>'+'★'.repeat(3-stars)+'</span></div>'+G.lvl.icon+' '+G.lvl.name+' geschafft!<br>Zeit: <b>'+fmt(G.t)+'</b> · Zeitbonus: <b>+'+tb+'</b><br>Fotos: <b>'+G.photos+'</b> · Gesamtpunkte: <b>⭐ '+G.score+'</b>'+(nxt?'<br>Nächste Stadt: <b>'+nxt.icon+' '+nxt.name+'</b>':'<br>🎅 Du hast ganz Weihnachten gerettet!')+G.newChars.map(k=>'<div class="newc">🎁 Neue Figur freigeschaltet: <b>'+CHARS[k].icon+' '+CHARS[k].name+'</b></div>').join('')+'<div class="hint">'+(stars<3?(stars<2?'⭐⭐ ab Zeit unter '+fmt(par)+' · ':'')+'⭐⭐⭐ ab Zeit unter '+fmt(Math.round(par*.6)):'Perfekt – mehr Sterne gibt es nicht!')+'</div>';
@@ -2790,7 +2805,7 @@ function dmgVeh(n){
  if(P.hp<=0){G.vehicles.push({type:P.veh,x:P.x,y:P.y,ang:P.ang,hp:0,wreck:true});P.veh='foot';P.r=VEH.foot.r;P.hp=100;P.vx=P.vy=0;sfx('thud');sfx('horn');burst(P.x,P.y,30,['#888','#555','#ff8a3f']);toast('💥 Dein Fahrzeug ist kaputt! Lauf zu Fuß weiter oder such ein anderes.',3400);}
  else if(P.hp<50&&n>0)toast('🔧 Vorsicht, '+VEH[P.veh].name+' qualmt schon!',1600);
 }
-function landSled(){if(!P.fly)return;P.fly=false;G.flyWarn=false;voxSay('land');const q=P;pushOut(q,P.r);sfx('thud');burst(P.x,P.y,10,['#fff','#cfe8ff']);}
+function landSled(){if(!P.fly)return;P.fly=false;G.flyWarn=false;voxSay('land');stk('fly');const q=P;pushOut(q,P.r);sfx('thud');burst(P.x,P.y,10,['#fff','#cfe8ff']);}
 function toggleFly(){
  if(!G||G.mode!=='play')return;auInit();
  if(P.fly)toast('🌟 Noch '+Math.ceil(G.flyT)+' s Stern-Flug – nutze die Zeit!',1400);else toast('🦌 Sammle 3 Helfer (Rentiere, Schneemänner …) – dann fliegst du eine Weile über alles hinweg!',2600);
@@ -2823,11 +2838,13 @@ function hitQuip(spd){
  let g='crash';
  for(const t of W.trees)if(t.solid&&Math.hypot(t.x-P.x,t.y-P.y)<P.r+t.r*.5+18){g='tree';break;}
  if(g==='crash')for(const h of W.houses)if(rectDist(P.x,P.y,h)<P.r+14){g='house';break;}
+ if(spd>200)stkCnt('crash');
  if(!voxSay(g)&&!isMotor(P.veh)&&spd>200)heroSay('crash');
 }
 function startRide(kind,s){
  if(!G||G.mode!=='play')return;if(P.veh!=='foot')exitVeh();
  s.cd=30;auInit();P.vx=P.vy=0;
+ if(kind==='wheel')stk('wheel');
  if(kind==='wheel'){
   const R=s.R||50;G.ride={k:'wheel',s,t:0,dur:10,z0:zoom,R,x:s.x+s.w/2,y:s.y+s.h,sc:false};
   P.x=G.ride.x;P.y=G.ride.y+6;sfx('bell');voxSay('wheel',{force:true,cd:1});
@@ -2858,14 +2875,14 @@ function rideUpdate(dt){
   if(t<1.4){const u=t/1.4;P.x=r.x0+(r.tx-r.x0)*u;P.y=r.y0+(r.ty-r.y0)*u;P.z=44*u;}
   else{const u=Math.min(1,(t-1.4)/2.4),p=slidePos(r,u);P.x=p.x;P.y=p.y;P.z=p.z;
    if(Math.random()<.7)particles.push({x:P.x-6,y:P.y-P.z+4,vx:-30-Math.random()*30,vy:(Math.random()-.5)*20,life:.45,c:'#fff'});
-   if(!r.v){r.v=1;voxSay('slide',{force:true,cd:.5});sfx('swoosh');}}
+   if(!r.v){r.v=1;stk('slide');voxSay('slide',{force:true,cd:.5});sfx('swoosh');}}
   P.ang=0;cam.x=P.x;cam.y=P.y;
   if(t>=r.dur)rideEnd();
  }
 }
 
 function deliver(h){
- if(h.done)return;h.done=true;G.got++;let pts=100;
+ if(h.done)return;h.done=true;G.got++;stkCnt('gifts');let pts=100;
  if(G.lk>0){G.lk--;pts+=50;floatT(P.x,P.y-34,'+50 🍪');}
  G.score+=pts;
  if(typeof FP!=='undefined'&&FP&&FP.kind==='room'){roomBubble('🎁 '+(T().thanks||'Danke!')+' Frohe Weihnachten! ('+G.got+'/'+G.total+')',7);roomSpeak('Frohe Weihnachten! Vielen Dank!');}
@@ -2890,6 +2907,7 @@ function startFP(kid,kind){
  if(FP.kind==='snow')snowInit(); else if(FP.kind==='ziel')zielInit(); else if(FP.kind==='skate')skateInit(); else eisInit();
  if(FP.kind!=='skate')fpSceneryInit();$('fpT').hidden=FP.kind==='skate';
  fpHint(FP.kind==='skate'?'⛸️ Schlittschuhlaufen! Zieh nach links oder rechts zum Lenken. Sammle ⭐ und weiche den Löchern aus!':FP.kind==='snow'?'❄️ Schneeballschlacht! Ziehe zum Umschauen, tippe zum Werfen. Weiche den Bällen aus!':FP.kind==='ziel'?'🎯 Zielwerfen! Triff '+FP.need+' Christbaumkugeln, bevor die Zeit abläuft.':'🥌 Eisstockschießen! Zieh nach hinten, lass los – Ziel ist der grüne Strich auf dem Kraftbalken.',3800);
+ if(FP.kind==='skate')stk('skate');
  if(FP.kind==='skate')voxSay('skate',{force:true,cd:.5});else sfx('hoho');
 }
 function fpHint(t,s){FP.msg=t;FP.msgT=s||2;}
@@ -3635,7 +3653,7 @@ function hazardFx(dt){
    if(d<h.r+P.r*.4){const m=Math.pow(.18,dt);P.vx*=m;P.vy*=m;if(Math.random()<.5)particles.push({x:P.x+(Math.random()-.5)*14,y:P.y,vx:(Math.random()-.5)*50,vy:-30-Math.random()*40,life:.6,c:'#fff'});if(!h.hint){h.hint=true;toast('🌨 Schneeverwehung! Fahr drumherum oder flieg drüber.',2200);}}
   }else{
    h.cd=Math.max(0,h.cd-dt);
-   if(pipeOn(h,G.t)===1&&d<h.r+P.r+10&&h.cd<=0){h.cd=3;const ux=(P.x-h.x)/(d||1),uy=(P.y-h.y)/(d||1);P.vx=ux*230;P.vy=uy*230;P.stun=.5;P.wet=5;voxSay('wet');burst(P.x,P.y,16,['#7ec8ff','#fff','#4a9de0']);sfx('splat');toast('💦 Wasserrohrbruch! Du wirst nass und langsam.',2200);if(isMotor(P.veh))dmgVeh(5);}
+   if(pipeOn(h,G.t)===1&&d<h.r+P.r+10&&h.cd<=0){h.cd=3;const ux=(P.x-h.x)/(d||1),uy=(P.y-h.y)/(d||1);P.vx=ux*230;P.vy=uy*230;P.stun=.5;P.wet=5;stk('wet');voxSay('wet');burst(P.x,P.y,16,['#7ec8ff','#fff','#4a9de0']);sfx('splat');toast('💦 Wasserrohrbruch! Du wirst nass und langsam.',2200);if(isMotor(P.veh))dmgVeh(5);}
   }
  }
 }
@@ -4242,13 +4260,88 @@ function copsUpdate(dt){
  if(w>=1&&G.wanted<w&&Math.floor(G.wanted)<1)toast('😮‍💨 Du hast die Polizei abgehängt!',2400);
 }
 function arrest(){
- const lost=Math.min(G.score,100);G.score-=lost;G.wanted=0;G.cops.length=0;
+ stk('police');const lost=Math.min(G.score,100);G.score-=lost;G.wanted=0;G.cops.length=0;
  if(P.veh!=='foot'){G.vehicles.push({type:P.veh,x:P.x,y:P.y,ang:P.ang,hp:P.hp});}
  P.veh='foot';P.r=VEH.foot.r;P.hp=100;P.fly=false;P.vx=P.vy=0;
  const q=W.park?{x:W.park.x-26,y:W.park.y+W.park.h/2}:{x:W.sp.start.x,y:W.sp.start.y};P.x=q.x;P.y=q.y;pushOut(P,P.r);cam.x=P.x;cam.y=P.y;P.stun=1.5;
  sfx('thud');sfx('siren');
  say('👮','Festgenommen! Der Polizist bringt dich zurück zum Parkplatz und sagt: „Santa, bitte immer langsam fahren!“ −'+lost+' Punkte. Dein Fahrzeug steht noch dort, wo es war.',7000);
 }
+
+/* ---------- Sticker-Sammlung ---------- */
+// t: 1 = Bronze, 2 = Silber, 3 = Gold (Seltenheit)
+const STK=[
+ {id:'gift1',e:'🎁',n:'Erstes Geschenk',h:'Liefere dein erstes Geschenk aus.',t:1},
+ {id:'g25',e:'🎀',n:'Schleifenmeister',h:'Liefere insgesamt 25 Geschenke aus.',t:1},
+ {id:'g100',e:'🎅',n:'Weihnachtsmann',h:'Liefere insgesamt 100 Geschenke aus.',t:2},
+ {id:'g250',e:'👼',n:'Weihnachtsengel',h:'Liefere insgesamt 250 Geschenke aus.',t:3},
+ {id:'c_zenting',e:'🎄',n:'Tannenbaum',h:'Schließe Zenting ab.',t:1},
+ {id:'c_berlin',e:'⛄',n:'Schneemann',h:'Schließe Berlin ab.',t:1},
+ {id:'c_london',e:'🧦',n:'Weihnachtssocke',h:'Schließe London ab.',t:1},
+ {id:'c_paris',e:'🕯️',n:'Kerzenlicht',h:'Schließe Paris ab.',t:1},
+ {id:'c_newyork',e:'🍭',n:'Zuckerstange',h:'Schließe New York ab.',t:2},
+ {id:'c_vegas',e:'🌟',n:'Glitzerstern',h:'Schließe Las Vegas ab.',t:2},
+ {id:'c_nordpol',e:'🌌',n:'Nordlicht',h:'Schließe den Nordpol ab.',t:2},
+ {id:'fly',e:'🦌',n:'Fliegendes Rentier',h:'Flieg mit dem Schlitten und lande wieder.',t:1},
+ {id:'slide',e:'🐧',n:'Rutsch-Pinguin',h:'Rutsche eine Rutsche hinunter.',t:1},
+ {id:'skate',e:'❄️',n:'Eiskristall',h:'Geh Schlittschuhlaufen.',t:1},
+ {id:'wheel',e:'🔔',n:'Silberglocke',h:'Fahr mit dem Riesenrad.',t:1},
+ {id:'cookie',e:'🍪',n:'Lebkuchenmann',h:'Backe Lebkuchen.',t:1},
+ {id:'priv',e:'🔥',n:'Kaminfeuer',h:'Besuche ein Privathaus mit Kamin.',t:1},
+ {id:'station',e:'🚂',n:'Weihnachtszug',h:'Kaufe am Bahnhof eine Fahrkarte.',t:1},
+ {id:'airport',e:'✈️',n:'Geschenke-Flieger',h:'Checke am Flughafen ein Paket ein.',t:1},
+ {id:'veg',e:'🥕',n:'Rudolfs Karotte',h:'Kauf Gemüse am Wochenmarkt.',t:1},
+ {id:'stadium',e:'🏆',n:'Stadion-Pokal',h:'Besuche die wartenden Kinder im Stadion.',t:2},
+ {id:'photo',e:'📸',n:'Schnappschuss',h:'Mach ein Foto an einer Sehenswürdigkeit.',t:1},
+ {id:'wet',e:'🐻‍❄️',n:'Eisbär-Brrr',h:'Lande im kalten Wasser.',t:1},
+ {id:'crash',e:'🧸',n:'Bumms-Teddy',h:'Stoß 15-mal irgendwo an.',t:1},
+ {id:'police',e:'👮',n:'Erwischt!',h:'Lass dich von der Polizei erwischen.',t:2},
+ {id:'s3',e:'🌠',n:'Sternschnuppe',h:'Hol 3 Sterne in einer Stadt.',t:2},
+ {id:'s10',e:'🧣',n:'Kuschelschal',h:'Sammle insgesamt 10 Sterne.',t:2},
+ {id:'all3',e:'👑',n:'Goldene Krone',h:'Hol alle Sterne in allen Städten.',t:3},
+];
+const STK_BY={};STK.forEach(s=>STK_BY[s.id]=s);
+const STK_COL={1:['#ffb36b','#c5651a'],2:['#e4ecf7','#7f93b0'],3:['#ffe27a','#d49a00']};
+let STKG=store.get('sbb-stk',{}),STKC=store.get('sbb-stkc',{});
+const stkQ=[];let stkBusy=false;
+function stkCount(){return STK.filter(s=>STKG[s.id]).length;}
+function stk(id){
+ const s=STK_BY[id];if(!s||STKG[id])return;
+ STKG[id]=Date.now();store.set('sbb-stk',STKG);stkQ.push(s);stkNext();
+}
+function stkNext(){
+ if(stkBusy||!stkQ.length)return;stkBusy=true;
+ const s=stkQ.shift(),p=$('spop');
+ p.innerHTML='<div class="sbadge" style="--a:'+STK_COL[s.t][0]+';--b:'+STK_COL[s.t][1]+'">'+s.e+'</div><div><small>Neuer Sticker!</small><br><b>'+esc(s.n)+'</b></div>';
+ p.hidden=false;p.classList.remove('go');void p.offsetWidth;p.classList.add('go');
+ try{sfx('bling');}catch(e){}
+ setTimeout(()=>{p.hidden=true;stkBusy=false;setTimeout(stkNext,250);},2600);
+ if($('album')&&!$('album').hidden)renderAlbum();
+ const b=$('albumBtn');if(b)b.textContent='📒 Stickerbuch ('+stkCount()+'/'+STK.length+')';
+}
+function stkCnt(k){
+ STKC[k]=(STKC[k]||0)+1;store.set('sbb-stkc',STKC);
+ if(k==='gifts'){const n=STKC.gifts;if(n>=1)stk('gift1');if(n>=25)stk('g25');if(n>=100)stk('g100');if(n>=250)stk('g250');}
+ if(k==='crash'&&STKC.crash>=15)stk('crash');
+}
+function stkFinish(id,stars){
+ const m={zenting:'c_zenting',berlin:'c_berlin',london:'c_london',paris:'c_paris',newyork:'c_newyork',vegas:'c_vegas',nordpol:'c_nordpol'};
+ if(m[id])stk(m[id]);else{const c=CITIES.find(c=>c.id===id);if(c)stk('c_'+id);}
+ if(stars>=3)stk('s3');
+ const t=totalStars();if(t>=10)stk('s10');if(t>=CITIES.length*3)stk('all3');
+}
+function renderAlbum(){
+ const g=$('agrid');g.innerHTML='';$('acount').textContent=stkCount()+' von '+STK.length;
+ for(const s of STK){
+  const ok=!!STKG[s.id],d=document.createElement('button');d.className='stk'+(ok?'':' lock');
+  d.style.cssText='--a:'+STK_COL[s.t][0]+';--b:'+STK_COL[s.t][1]+';--r:'+((s.id.charCodeAt(1)%7)-3)+'deg';
+  d.innerHTML='<div class="sbadge">'+(ok?s.e:'?')+'</div><span>'+(ok?esc(s.n):'???')+'</span>';
+  d.onclick=()=>{$('ainfo').innerHTML=ok?'<b>'+esc(s.e+' '+s.n)+'</b><br>'+esc(s.h):'<b>Noch gesperrt</b><br>'+esc(s.h);};
+  g.appendChild(d);
+ }
+}
+{const ab=$('albumBtn');if(ab){ab.textContent='📒 Stickerbuch ('+stkCount()+'/'+STK.length+')';ab.addEventListener('click',()=>{renderAlbum();$('ainfo').textContent='Tippe auf einen Sticker, um zu sehen, wie du ihn bekommst.';$('album').hidden=false;});}
+ $('aclose').addEventListener('click',()=>{$('album').hidden=true;});}
 
 })();
 })();
