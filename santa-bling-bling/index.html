@@ -82,6 +82,7 @@ input{width:100%;max-width:280px;padding:10px 12px;border-radius:12px;border:0;f
 #bkstep{font-size:20px;font-weight:700;min-height:28px}
 .mhead{display:flex;align-items:center;gap:12px}.mhead .lg{height:88px;width:auto;flex:none;filter:drop-shadow(0 3px 6px rgba(0,0,0,.35))}.mhead .lt small{display:block;font-size:13px;letter-spacing:5px;color:#ffe9a0;font-weight:700}.mhead .lt h1{font-size:34px;line-height:1;margin:0}.mhead .lt .logo{background:linear-gradient(180deg,#fff3b0,#ffd54a 55%,#e09a00);-webkit-background-clip:text;background-clip:text;color:transparent;filter:drop-shadow(0 2px 0 rgba(120,60,0,.6))}.mhead .tag{font-style:italic;color:#ffd9d9;font-size:13px;margin-top:3px}
 @media (max-height:460px){.mhead .lg{height:54px}.mhead .lt h1{font-size:24px}.mhead .lt small{font-size:10px;letter-spacing:3px}.mhead .tag{display:none}}
+.chip.lock .pv{filter:brightness(0) opacity(.55)}.stars{font-size:44px;letter-spacing:6px;color:#ffd54a;text-shadow:0 2px 0 #a86a00;margin-bottom:4px}.stars span{color:#fff3;text-shadow:none}.st{color:#ffd54a;font-size:11px}.st span{color:#fff4}.newc{margin:8px 0;padding:8px;border-radius:12px;background:#ffd54a;color:#4a2b00;font-size:16px}.sec h3 em{font-style:normal;float:right;font-size:13px;color:#ffd54a}#cmsg:not(:empty){font-size:12px;margin-top:8px;padding:6px 8px;border-radius:8px;background:#0006}.chip small{font-size:10px;opacity:.9}
 </style>
 </head>
 <body>
@@ -136,9 +137,9 @@ input{width:100%;max-width:280px;padding:10px 12px;border-radius:12px;border:0;f
 </svg>
 <div class="lt"><small>SANTA</small><h1><span class="logo">Bling Bling</span></h1><div class="tag">Die wilde Bescherung</div><div class="sub">v1.6 · 7 Städte · bring alle Geschenke zu den Kindern!</div></div></div>
   <div class="cols">
-   <section class="sec"><h3><i>1</i> Wer bist du?</h3>
+   <section class="sec"><h3><i>1</i> Wer bist du? <em id="stot"></em></h3>
     <input id="name" maxlength="12" placeholder="Dein Name" autocomplete="off">
-    <div class="grid" id="chars"></div>
+    <div class="grid" id="chars"></div><div id="cmsg"></div>
    </section>
    <div class="rcol">
     <section class="sec"><h3><i>2</i> Wohin geht's?</h3>
@@ -2085,6 +2086,12 @@ function roadByIdAt(id,f){const r=W.roads.find(r=>r.id===id)||W.roads[0],s=r.smp
 const mm=$('mm'),mx=mm.getContext('2d');
 const PROG0=store.get('sbb-prog',{done:{}});
 const ALL=/[?&]all\b/.test(location.search);
+const STARS=store.get('sbb-stars',{});
+for(const k in PROG0.done)if(PROG0.done[k]&&!STARS[k])STARS[k]=1;
+const CHAR_REQ={santa:0,snow:2,ginger:5,christ:9,elf:13};
+const totalStars=()=>Object.values(STARS).reduce((a,b)=>a+b,0);
+const charOk=k=>ALL||totalStars()>=(CHAR_REQ[k]||0);
+if(!charOk(sel.ch))sel.ch='santa';
 function unlocked(i){return ALL||i===0||!!PROG0.done[CITIES[i-1].id]||!!PROG0.done[CITIES[i].id];}
 function toast(t,ms){if(typeof FP!=='undefined'&&FP&&FP.kind==='room'){roomBubble(t,ms?ms/1000+1:4);return;}const el=$('toast');el.textContent=t;el.hidden=false;if(G)G.toastT=(ms||2200)/1000;else setTimeout(()=>el.hidden=true,ms||2200);}
 function say(e,t,ms){if(typeof FP!=='undefined'&&FP&&FP.kind==='room'){roomBubble(e+' '+t,ms?ms/1000+1:6);return;}const el=$('say');el.innerHTML='<b>'+e+'</b>'+t;el.hidden=false;if(G)G.sayT=(ms||4500)/1000;}
@@ -2407,8 +2414,11 @@ function finish(){
  const nm=($('name').value||'Spieler').trim().slice(0,12)||'Spieler';
  hs[id].push({n:nm,s:G.score,c:sel.ch,t:Math.round(G.t)});hs[id].sort((a,b)=>b.s-a.s);hs[id]=hs[id].slice(0,8);store.set('sbb-hs-v1',hs);
  PROG0.done[id]=true;store.set('sbb-prog',PROG0);
+ const rr=G.t/par,stars=rr<=.6?3:rr<=1?2:1,before=totalStars();
+ STARS[id]=Math.max(STARS[id]||0,stars);store.set('sbb-stars',STARS);
+ G.stars=stars;G.newChars=Object.keys(CHAR_REQ).filter(k=>CHAR_REQ[k]>before&&CHAR_REQ[k]<=totalStars());
  const nxt=CITIES[G.idx+1];
- $('endtxt').innerHTML=G.lvl.icon+' '+G.lvl.name+' geschafft!<br>Zeit: <b>'+fmt(G.t)+'</b> · Zeitbonus: <b>+'+tb+'</b><br>Fotos: <b>'+G.photos+'</b> · Gesamtpunkte: <b>⭐ '+G.score+'</b>'+(nxt?'<br>Nächste Stadt: <b>'+nxt.icon+' '+nxt.name+'</b>':'<br>🎅 Du hast ganz Weihnachten gerettet!');
+ $('endtxt').innerHTML='<div class="stars">'+'★'.repeat(stars)+'<span>'+'★'.repeat(3-stars)+'</span></div>'+G.lvl.icon+' '+G.lvl.name+' geschafft!<br>Zeit: <b>'+fmt(G.t)+'</b> · Zeitbonus: <b>+'+tb+'</b><br>Fotos: <b>'+G.photos+'</b> · Gesamtpunkte: <b>⭐ '+G.score+'</b>'+(nxt?'<br>Nächste Stadt: <b>'+nxt.icon+' '+nxt.name+'</b>':'<br>🎅 Du hast ganz Weihnachten gerettet!')+G.newChars.map(k=>'<div class="newc">🎁 Neue Figur freigeschaltet: <b>'+CHARS[k].icon+' '+CHARS[k].name+'</b></div>').join('')+'<div class="hint">'+(stars<3?(stars<2?'⭐⭐ ab Zeit unter '+fmt(par)+' · ':'')+'⭐⭐⭐ ab Zeit unter '+fmt(Math.round(par*.6)):'Perfekt – mehr Sterne gibt es nicht!')+'</div>';
  $('fly').hidden=true;$('horn').hidden=true;$('act').hidden=true;$('zone').hidden=true;
  showReward(()=>{$('next').hidden=!nxt;renderHS('hs3',id);$('end').hidden=false;$('say').hidden=true;$('toast').hidden=true;});
  auDrive(0,'foot',false);sfx('win');setTimeout(()=>sfx('hoho'),1200);
@@ -3294,12 +3304,26 @@ function skyline(g,id,W_,H_,rise,t,dark){
 }
 function showReward(cb){
  const nxt=CITIES[G.idx+1],lastLv=!nxt;
- RW={cb,t0:performance.now(),done:false,id:nxt?nxt.id:'nordpol',nxt,score:G.score,lastLv};
+ RW={cb,t0:performance.now(),done:false,id:nxt?nxt.id:'nordpol',nxt,score:G.score,lastLv,stars:G.stars||1,newChars:G.newChars||[],pop:0};
  rw.hidden=false;rw.width=innerWidth;rw.height=innerHeight;
  sfx('jingle');
  const skip=()=>{if(!RW||RW.done||performance.now()-RW.t0<1500)return;endReward();};
  rw.onpointerdown=skip;
  requestAnimationFrame(rwFrame);
+}
+function rwStar(g,x,y,r,col){g.beginPath();for(let i=0;i<10;i++){const a=-1.5708+i*.6283,rr=i%2?r*.45:r;g.lineTo(x+Math.cos(a)*rr,y+Math.sin(a)*rr);}g.closePath();g.fillStyle=col;g.fill();g.lineWidth=3;g.strokeStyle='#a86a00';g.stroke();}
+function rwStarsFx(g,t,W_,H_){
+ const n=RW.stars,u=H_/480,tt=t;
+ // Wetter-Effekte je nach Sternen: 1 = leiser Schneefall, 2 = Feuerwerk, 3 = Feuerwerk + goldener Konfettiregen + Rentier-Sprung
+ if(n===1){for(let i=0;i<60;i++){const x=(i*97%100)/100*W_+Math.sin(tt+i)*12,y=((tt*40*u+i*53)%(H_+20))-10;g.fillStyle='rgba(255,255,255,.8)';g.fillRect(x,y,3*u,3*u);}}
+ if(n>=2&&tt>1.5){const R2=mulberry(Math.floor(tt*(n===3?4:2.2)));for(let i=0;i<(n===3?4:2);i++){const fx=R2()*W_,fy=R2()*H_*.4+H_*.05,rr=(((tt*(n===3?4:2.2))%1))*70*u;g.strokeStyle='hsl('+(R2()*360)+',100%,65%)';g.lineWidth=3;for(let k=0;k<16;k++){const a=k/16*6.283;g.beginPath();g.moveTo(fx+Math.cos(a)*rr*.5,fy+Math.sin(a)*rr*.5);g.lineTo(fx+Math.cos(a)*rr,fy+Math.sin(a)*rr);g.stroke();}}}
+ if(n===3){for(let i=0;i<90;i++){const x=(i*61%100)/100*W_+Math.sin(tt*2+i)*20,y=((tt*90*u+i*37)%(H_+30))-15;g.save();g.translate(x,y);g.rotate(tt*3+i);g.fillStyle=['#ffd54a','#fff3b0','#ff8ad8','#6bff7a','#4aa3ff'][i%5];g.fillRect(-3*u,-2*u,6*u,4*u);g.restore();}
+  const jx=W_*.2+Math.sin(tt*2)*W_*.05,jy=H_*.86-Math.abs(Math.sin(tt*5))*H_*.12;g.font=Math.round(46*u)+'px sans-serif';g.textAlign='center';g.fillText('🦌',jx,jy);g.fillText('🎅',W_-jx,jy);g.fillText('🎁',W_/2,H_*.9-Math.abs(Math.sin(tt*5+1))*H_*.1);}
+ // Sterne poppen nacheinander auf
+ for(let i=0;i<3;i++){const t0=1.2+i*.7,k=Math.min(1,Math.max(0,(tt-t0)/.45));if(k<=0)continue;if(i<n){if(RW.pop<=i){RW.pop=i+1;sfx('bell');}const s=k<1?1+Math.sin(k*3.14)*.7:1;rwStar(g,W_/2+(i-1)*H_*.17,H_*.34,H_*.07*s,'#ffd54a');}else{rwStar(g,W_/2+(i-1)*H_*.17,H_*.34,H_*.07,'rgba(255,255,255,.18)');}}
+ const lab=n===3?'PERFEKT! Du bist ein Champion!':n===2?'Super gemacht!':'Geschafft – beim nächsten Mal noch schneller!';
+ if(tt>2.4){g.textAlign='center';g.textBaseline='middle';g.font='bold '+Math.round(22*u)+'px sans-serif';g.lineWidth=5;g.strokeStyle='rgba(8,14,40,.85)';g.strokeText(lab,W_/2,H_*.45,W_*.92);g.fillStyle=n===3?'#ffd54a':'#fff';g.fillText(lab,W_/2,H_*.45,W_*.92);}
+ if(RW.newChars.length&&tt>3.6){const s='🎁 Neue Figur: '+RW.newChars.map(k=>CHARS[k].icon+' '+CHARS[k].name).join(', ');g.font='bold '+Math.round(22*u)+'px sans-serif';g.lineWidth=5;g.strokeStyle='rgba(8,14,40,.85)';g.strokeText(s,W_/2,H_*.53,W_*.92);g.fillStyle='#9be7ff';g.fillText(s,W_/2,H_*.53,W_*.92);}
 }
 function endReward(){if(!RW||RW.done)return;RW.done=true;rw.hidden=true;rw.onpointerdown=null;const c=RW.cb;RW=null;c&&c();}
 function rwFrame(){
@@ -3337,6 +3361,7 @@ function rwFrame(){
  if(RW.nxt&&t>3.6){const a=Math.min(1,(t-3.6)/1);g.globalAlpha=a;tx('Nächste Station: '+RW.nxt.icon+' '+RW.nxt.name,.62,30,'#9be7ff');tx(TEASE[RW.nxt.id]||RW.nxt.blurb,.7,18,'#fff');g.globalAlpha=1;}
  if(RW.lastLv&&t>3){const a=Math.min(1,(t-3)/1);g.globalAlpha=a;tx('🎄 Frohe Weihnachten! 🎅',.62,34,'#ffd54a');tx('Alle Geschenke sind da – die Kinder freuen sich!',.7,18,'#fff');g.globalAlpha=1;
   const R2=mulberry(Math.floor(t*3));for(let i=0;i<3;i++){const fxx=R2()*W_,fy=R2()*H_*.45,rr=((t*3)%1)*60*(H_/480);g.strokeStyle='hsl('+(R2()*360)+',100%,65%)';g.lineWidth=3;for(let k=0;k<14;k++){const aa=k/14*6.283;g.beginPath();g.moveTo(fxx+Math.cos(aa)*rr*.5,fy+Math.sin(aa)*rr*.5);g.lineTo(fxx+Math.cos(aa)*rr,fy+Math.sin(aa)*rr);g.stroke();}}}
+ rwStarsFx(g,t,W_,H_);
  if(t>2){g.globalAlpha=.6+.4*Math.sin(t*4);g.textAlign='center';g.font=Math.round(14*H_/480)+'px sans-serif';g.fillStyle='#fff';g.fillText('Tippe zum Weiter',W_/2,H_*.96);g.globalAlpha=1;}
  if(t>DUR){endReward();return;}
  requestAnimationFrame(rwFrame);
@@ -3757,9 +3782,11 @@ function renderHS(id,lvId){
 }
 function renderMenu(){
  const ch=$('chars');ch.innerHTML='';
- for(const k in CHARS){const b=document.createElement('button');b.className='chip'+(sel.ch===k?' sel':'');b.innerHTML='<canvas class="pv" width="128" height="128" data-k="'+k+'"></canvas>'+CHARS[k].name;b.onclick=()=>{sel.ch=k;store.set('sbb-ch',k);renderMenu();};ch.appendChild(b);}
+ const cm=$('cmsg');cm.textContent='';
+ $('stot').textContent='⭐ '+totalStars()+'/'+CITIES.length*3;
+ for(const k in CHARS){const ok=charOk(k),b=document.createElement('button');b.className='chip'+(sel.ch===k?' sel':'')+(ok?'':' lock');b.innerHTML='<canvas class="pv" width="128" height="128" data-k="'+k+'"></canvas>'+CHARS[k].name+(ok?'':'<br><small>🔒 ab '+CHAR_REQ[k]+' ⭐</small>');b.onclick=()=>{if(!ok){cm.textContent='🔒 '+CHARS[k].name+' wird freigeschaltet, wenn du insgesamt '+CHAR_REQ[k]+' ⭐ gesammelt hast (du hast '+totalStars()+'). Schnelle Level geben bis zu 3 ⭐!';return;}sel.ch=k;store.set('sbb-ch',k);renderMenu();};ch.appendChild(b);}
  const lv=$('levels');lv.innerHTML='';
- CITIES.forEach((c,i)=>{const b=document.createElement('button'),ok=unlocked(i);b.className='chip'+(sel.lv===i?' sel':'')+(ok?'':' lock');b.innerHTML='<b>'+(ok?c.icon:'🔒')+'</b>'+c.name+(PROG0.done[c.id]?' ✓':'');b.onclick=()=>{sel.lv=i;renderMenu();};lv.appendChild(b);});
+ CITIES.forEach((c,i)=>{const b=document.createElement('button'),ok=unlocked(i);b.className='chip'+(sel.lv===i?' sel':'')+(ok?'':' lock');b.innerHTML='<b>'+(ok?c.icon:'🔒')+'</b>'+c.name+(STARS[c.id]?'<br><small class="st">'+'★'.repeat(STARS[c.id])+'<span>'+'★'.repeat(3-STARS[c.id])+'</span></small>':'');b.onclick=()=>{sel.lv=i;renderMenu();};lv.appendChild(b);});
  const c=CITIES[sel.lv],ok=unlocked(sel.lv);
  $('sel').innerHTML=ok?'<b>'+esc(c.name)+'</b> · '+esc(c.blurb)+' · 🎁 '+c.gifts:'🔒 Schließe zuerst '+esc(CITIES[sel.lv-1].name)+' ab.';
  $('start').disabled=!ok;$('start').style.opacity=ok?1:.5;
