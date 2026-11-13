@@ -135,7 +135,7 @@ input{width:100%;max-width:280px;padding:10px 12px;border-radius:12px;border:0;f
 <path d="M146 118 Q158 112 164 100" fill="none" stroke="#ffd54a" stroke-width="2" stroke-linecap="round"/>
 <path d="M164 100 l1.8 -4.6 l1.8 4.6 l4.6 1.8 l-4.6 1.8 l-1.8 4.6 l-1.8 -4.6 l-4.6 -1.8z" fill="url(#lg)"/>
 </svg>
-<div class="lt"><small>SANTA</small><h1><span class="logo">Bling Bling</span></h1><div class="tag">Die wilde Bescherung</div><div class="sub">v1.8 · 7 Städte · bring alle Geschenke zu den Kindern!</div></div></div>
+<div class="lt"><small>SANTA</small><h1><span class="logo">Bling Bling</span></h1><div class="tag">Die wilde Bescherung</div><div class="sub">v1.8.1 · 7 Städte · bring alle Geschenke zu den Kindern!</div></div></div>
   <div class="cols">
    <section class="sec"><h3><i>1</i> Wer bist du? <em id="stot"></em></h3>
     <input id="name" maxlength="12" placeholder="Dein Name" autocomplete="off">
@@ -2375,7 +2375,7 @@ function findAction(){
  if(P.veh==='foot'&&!P.fly)for(const v of G.vehicles){if(v.wreck)continue;const d=Math.hypot(v.x-P.x,v.y-P.y);if(d<55+VEH[v.type].r)cand(d,'Einsteigen '+VEH[v.type].icon,()=>enter(v));}
  for(const w of G.wichtel){const d=Math.hypot(w.x-P.x,w.y-P.y);if(d<60)cand(d,'Sprechen 💬',()=>talk(w));}
  for(const s of W.spots){const lab=(ENTER[s.act]&&s.paint!=='stand'&&s.paint!=='rink')?'Eintreten 🚪':ACT_LABEL[s.act];if(!lab)continue;const d=s.paint==='rink'?(rectDist(P.x,P.y,s)<2?0:99):rectDist(P.x,P.y,s)-(s.paint==='stand'?10:0);if(d<46)cand(d,lab,()=>spotAct(s));}
- for(const h of W.houses){const d=Math.hypot(h.door.x-P.x,h.door.y-P.y);if(d<48){if(h.target&&!h.done)cand(d-30,'Geschenk abgeben 🎁',()=>spotAct(houseSpot(h)));else cand(d,h.done?'Besuchen 🎄':'Anklopfen 🚪',()=>spotAct(houseSpot(h)));}}
+ for(const h of W.houses){const d=Math.hypot(h.door.x-P.x,h.door.y-P.y);if(d<48){cand(d+4,h.done?'Besuchen 🎄':'Anklopfen 🚪',()=>spotAct(houseSpot(h)));}}
  if(!P.fly&&G.skateCd<=0&&P.z<3&&onIce(P.x,P.y))cand(20,'Schlittschuhlaufen ⛸️',startSkate);
  if(!best&&P.veh!=='foot'&&!P.fly)best={lab:'Aussteigen',fn:exitVeh};
  return best;
@@ -2514,7 +2514,8 @@ function update(dt){
  if(sp2>60&&Math.random()<.2)particles.push({x:P.x+(Math.random()-.5)*20,y:P.y+(Math.random()-.5)*20,vx:0,vy:-20,life:.5,c:'#ffd54a'});
  auDrive(sp2,P.veh,S.on);
  if(P.veh==='sled'||P.veh==='gsled'){G.jt=(G.jt||0)-dt;if(sp2>90&&G.jt<=0){G.jt=.55;sfx('jingle');}}
- // Geschenke werden in den Häusern übergeben (Aktionstaste an der Tür)
+ // Geschenke abliefern: automatisch an der Tür (wie früher); im Haus kann man zusätzlich eintreten
+ for(const h of W.houses){if(!h.target||h.done)continue;if(Math.hypot(h.door.x-P.x,h.door.y-P.y)<44+P.r*.6)deliver(h);}
  if(G.got>=G.total){finish();return;}
  // Helfer einsammeln
  for(let i=G.pick.length-1;i>=0;i--){const p=G.pick[i];if(Math.hypot(p.x-P.x,p.y-P.y)<28+P.r){
