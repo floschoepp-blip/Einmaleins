@@ -138,7 +138,7 @@ input{width:100%;max-width:280px;padding:10px 12px;border-radius:12px;border:0;f
 <path d="M146 118 Q158 112 164 100" fill="none" stroke="#ffd54a" stroke-width="2" stroke-linecap="round"/>
 <path d="M164 100 l1.8 -4.6 l1.8 4.6 l4.6 1.8 l-4.6 1.8 l-1.8 4.6 l-1.8 -4.6 l-4.6 -1.8z" fill="url(#lg)"/>
 </svg>
-<div class="lt"><small>SANTA</small><h1><span class="logo">Bling Bling</span></h1><div class="tag">Die wilde Bescherung</div><div class="sub">v1.11 · 7 Städte · bring alle Geschenke zu den Kindern!</div></div></div>
+<div class="lt"><small>SANTA</small><h1><span class="logo">Bling Bling</span></h1><div class="tag">Die wilde Bescherung</div><div class="sub">v1.12 · 7 Städte · bring alle Geschenke zu den Kindern!</div></div></div>
   <div class="cols">
    <section class="sec"><h3><i>1</i> Wer bist du? <em id="stot"></em></h3>
     <input id="name" maxlength="12" placeholder="Dein Name" autocomplete="off">
@@ -159,6 +159,7 @@ input{width:100%;max-width:280px;padding:10px 12px;border-radius:12px;border:0;f
   <button class="ghost" id="tvBtn" style="margin-top:8px">📺 Fernseher-Modus (Handy als Controller)</button>
   <details class="more"><summary>🏆 Bestenliste &amp; Steuerung</summary>
    <label style="display:block;margin:8px 0;font-size:14px"><input type="checkbox" id="tts" style="width:auto;margin-right:8px;vertical-align:middle">🗣️ Gesprochene Sätze</label>
+   <label style="display:block;margin:8px 0;font-size:14px">🌍 Online-Bestenliste: <input id="bcode" maxlength="12" placeholder="Code, z. B. FAMILIE" autocomplete="off" autocapitalize="characters" style="width:150px;display:inline-block;padding:4px 8px"><br><small style="opacity:.75">Alle mit demselben Code sehen sich. Leer = nur auf diesem Gerät.</small></label>
    <div class="hs" id="hs"></div>
    <div class="hint">Steuerung: links Finger ziehen (am PC: Pfeile/WASD oder Maus ziehen) · Aktions-Knopf (am PC: E oder Leertaste) · Zoom: Plus/Minus, zwei Finger oder Mausrad · Ton: 🔊 oben rechts<br>Tipp: Sammle 3 Helfer für den Stern-Flug 🌟</div>
   </details>
@@ -2787,6 +2788,7 @@ function finish(){
  const hs=store.get('sbb-hs-v1',{}),id=G.lvl.id;hs[id]=hs[id]||[];
  const nm=($('name').value||'Spieler').trim().slice(0,12)||'Spieler';
  hs[id].push({n:nm,s:G.score,c:sel.ch,t:Math.round(G.t)});hs[id].sort((a,b)=>b.s-a.s);hs[id]=hs[id].slice(0,8);store.set('sbb-hs-v1',hs);
+ try{boardPush(id,{n:nm,s:G.score,c:sel.ch,t:Math.round(G.t)}).then(()=>{if(G&&G.mode==='end')renderHS('hs3',id);});}catch(e){}
  PROG0.done[id]=true;store.set('sbb-prog',PROG0);
  const rr=G.t/par,stars=rr<=.6?3:rr<=1?2:1,before=totalStars();
  STARS[id]=Math.max(STARS[id]||0,stars);store.set('sbb-stars',STARS);stkFinish(id,stars);
@@ -4186,8 +4188,15 @@ function hud(){
 }
 /* ---------- Menü ---------- */
 function renderHS(id,lvId){
- const hs=store.get('sbb-hs-v1',{}),list=(hs[lvId||CITIES[sel.lv].id]||[]).slice(0,5);
- $(id).innerHTML=list.length?'<div style="opacity:.7;margin-bottom:2px">🏆 Highscore '+esc(CITIES[CITIES.findIndex(c=>c.id===(lvId||CITIES[sel.lv].id))].name)+'</div>'+list.map((e,i)=>'<div><span>'+(i+1)+'. '+esc(e.n)+'</span><span>⭐ '+e.s+'</span></div>').join(''):'';
+ const cid=lvId||CITIES[sel.lv].id,nmC=esc(CITIES[CITIES.findIndex(c=>c.id===cid)].name);
+ const hs=store.get('sbb-hs-v1',{}),list=(hs[cid]||[]).slice(0,5),el=$(id);
+ const loc=list.length?'<div style="opacity:.7;margin-bottom:2px">🏆 Highscore '+nmC+'</div>'+list.map((e,i)=>'<div><span>'+(i+1)+'. '+esc(e.n)+'</span><span>⭐ '+e.s+'</span></div>').join(''):'';
+ el.innerHTML=loc;
+ if(typeof BCODE!=='undefined'&&BCODE&&bcodeOk(BCODE)){
+  const tk=el._tk=(el._tk||0)+1;
+  boardLoad(cid).then(o=>{if(el._tk!==tk)return;
+   el.innerHTML=loc+'<div style="opacity:.7;margin:6px 0 2px">🌍 Online ('+esc(BCODE)+') '+nmC+'</div>'+(o===null?'<div style="opacity:.6">gerade nicht erreichbar</div>':o.length?o.map((e,i)=>'<div><span>'+(i+1)+'. '+esc(e.n)+'</span><span>⭐ '+e.s+'</span></div>').join(''):'<div style="opacity:.6">noch kein Eintrag – sei der Erste!</div>');});
+ }
 }
 function renderMenu(){
  const ch=$('chars');ch.innerHTML='';
@@ -4404,20 +4413,21 @@ function qrDraw(cv,text,px){
 
 /* ---------- TV-Modus: Handy als Controller (Firebase REST, ohne SDK) ---------- */
 const FBC={apiKey:'AIzaSyCoBlKKHyzsb7zadEyDQQ7BB6V5dStJ1os',db:'https://klasse3a-5ef03-default-rtdb.europe-west1.firebasedatabase.app'};
+const fbmm=(location.search.match(/[?&]fbmock=([^&]+)/)||[])[1],MK=fbmm?decodeURIComponent(fbmm):'';
+const DB=MK||FBC.db,UID=MK?MK+'/id':'https://identitytoolkit.googleapis.com',UST=MK?MK+'/st':'https://securetoken.googleapis.com';
+const AK='sbb-auth';let auth=store.get(AK,null);
+const jf=(url,o)=>fetch(url,o).then(r=>r.json().then(j=>{if(!r.ok)throw new Error((j&&j.error&&(j.error.message||j.error))||r.status);return j;}));
+function token(){
+ if(auth&&auth.exp>Date.now()+60000)return Promise.resolve(auth);
+ if(auth&&auth.refresh)return jf(UST+'/v1/token?key='+FBC.apiKey,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'grant_type=refresh_token&refresh_token='+encodeURIComponent(auth.refresh)}).then(j=>{auth={uid:j.user_id,tok:j.id_token,refresh:j.refresh_token,exp:Date.now()+(+j.expires_in)*1000};store.set(AK,auth);return auth;});
+ return jf(UID+'/v1/accounts:signUp?key='+FBC.apiKey,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({returnSecureToken:true})}).then(j=>{auth={uid:j.localId,tok:j.idToken,refresh:j.refreshToken,exp:Date.now()+(+j.expiresIn)*1000};store.set(AK,auth);return auth;});
+}
+
 const TVON=/[?&]tv\b/.test(location.search);
 {const tb=$('tvBtn');if(tb){if(TVON)tb.textContent='📱 Zurück zum Einzelspieler-Modus';
  tb.addEventListener('click',()=>{const u=new URL(location.href);if(TVON)u.searchParams.delete('tv');else u.searchParams.set('tv','1');location.href=u.href;});}}
 if(TVON)tvInit();
 function tvInit(){
- const mm=(location.search.match(/[?&]fbmock=([^&]+)/)||[])[1],MK=mm?decodeURIComponent(mm):'';
- const DB=MK||FBC.db,UID=MK?MK+'/id':'https://identitytoolkit.googleapis.com',UST=MK?MK+'/st':'https://securetoken.googleapis.com';
- const AK='sbb-auth';let auth=store.get(AK,null);
- const jf=(url,o)=>fetch(url,o).then(r=>r.json().then(j=>{if(!r.ok)throw new Error((j&&j.error&&(j.error.message||j.error))||r.status);return j;}));
- function token(){
-  if(auth&&auth.exp>Date.now()+60000)return Promise.resolve(auth);
-  if(auth&&auth.refresh)return jf(UST+'/v1/token?key='+FBC.apiKey,{method:'POST',headers:{'Content-Type':'application/x-www-form-urlencoded'},body:'grant_type=refresh_token&refresh_token='+encodeURIComponent(auth.refresh)}).then(j=>{auth={uid:j.user_id,tok:j.id_token,refresh:j.refresh_token,exp:Date.now()+(+j.expires_in)*1000};store.set(AK,auth);return auth;});
-  return jf(UID+'/v1/accounts:signUp?key='+FBC.apiKey,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({returnSecureToken:true})}).then(j=>{auth={uid:j.localId,tok:j.idToken,refresh:j.refreshToken,exp:Date.now()+(+j.expiresIn)*1000};store.set(AK,auth);return auth;});
- }
  let code='',IN={},seen={},seenT={},rx={},ord=0,es=null,err='';
  const CHS='ABCDEFGHJKLMNPQRSTUVWXYZ',mkCode=()=>{let s='';for(let i=0;i<4;i++)s+=CHS[Math.floor(Math.random()*CHS.length)];return s;};
  function openRoom(n){
@@ -4513,6 +4523,24 @@ function tvInit(){
   try{qrDraw($('tvqr'),new URL('pad.html?c='+c+(MK?'&fbmock='+encodeURIComponent(MK):''),location.href).href,5);}catch(e){err='QR-Fehler';}
   openStream();setInterval(openStream,45*60000);
  }).catch(e=>{err='Keine Verbindung: '+(e.message||e);});
+}
+
+/* ---------- Online-Bestenliste (Firebase, Code wie bei Klasse 3) ---------- */
+var BCODE=store.get('sbb-bcode','');
+const bslug=n=>String(n).toLowerCase().replace(/[^a-z0-9]/g,'').slice(0,10)||'x';
+function bcodeOk(c){return /^[A-Z0-9-]{3,12}$/.test(c);}
+{const bi=$('bcode');if(bi){bi.value=BCODE;bi.addEventListener('change',()=>{const c=bi.value.trim().toUpperCase().replace(/[^A-Z0-9-]/g,'').slice(0,12);bi.value=c;BCODE=c;store.set('sbb-bcode',c);try{renderHS('hs');}catch(e){}});}}
+function boardPush(city,e){
+ if(!BCODE||!bcodeOk(BCODE))return Promise.resolve();
+ return token().then(a=>{const u=DB+'/santa/boards/'+BCODE+'/'+city+'/'+a.uid+'_'+bslug(e.n)+'.json?auth='+a.tok;
+  return fetch(u).then(r=>r.json()).then(old=>{if(old&&old.s>=e.s)return;
+   return fetch(u,{method:'PUT',body:JSON.stringify({n:e.n.slice(0,12),s:e.s,c:e.c,t:e.t,u:Date.now()})});});}).catch(()=>{});
+}
+function boardLoad(city){
+ if(!BCODE||!bcodeOk(BCODE))return Promise.resolve(null);
+ return token().then(a=>fetch(DB+'/santa/boards/'+BCODE+'/'+city+'.json?auth='+a.tok)).then(r=>r.json()).then(o=>{
+  if(!o||o.error)return o&&o.error?null:[];
+  return Object.values(o).filter(x=>x&&typeof x.s==='number').sort((a,b)=>b.s-a.s).slice(0,8);}).catch(()=>null);
 }
 
 })();
