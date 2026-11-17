@@ -781,10 +781,10 @@ row(s+14,0,2); row(s+24,1,2); row(s+34,-1,2); bell(s+44,0,0);
 jumpGap(3,-1);
 };
 SEG[14]=function(){ // Lückensprint
-s=full(9); cp(s+3); gift(s+4.5,0); jumpGap(3.6,1);
-s=full(6); gift(s+3,1); jumpGap(3.8,-1);
-s=full(6); gift(s+3,-1); jumpGap(3.8,0);
-s=full(6); bell(s+3,0,0); jumpGap(4,1);
+s=full(9); cp(s+3); gift(s+4.5,0); jumpGap(3.4,1);
+s=full(6); gift(s+3,1); jumpGap(3.5,-1);
+s=full(6); gift(s+3,-1); jumpGap(3.5,0);
+s=full(6); bell(s+3,0,0); jumpGap(3.6,1);
 s=full(14); row(s+4,1,3); row(s+9,-1,2); jumpGap(3.4,0);
 };
 SEG[15]=function(){ // Quer-Verkehr: viele quer rollende Kugeln hintereinander
@@ -1230,14 +1230,14 @@ function snowmanGeo(kind,col){
   return build(parts);
 }
 (function(){
-  var geos=[0,1,2].map(function(k){ return TH.obst==='snowman'?snowmanGeo(k,[0xe8212e,0x2f8dff,0x37c95a][k]):themedObstGeo(TH.obst,k); });
+  var geos=[0,1,2].map(function(k){ var sg=function(){ return snowmanGeo(k,[0xe8212e,0x2f8dff,0x37c95a][k]); }; if(TH.obst==='snowman') return sg(); try{ return themedObstGeo(TH.obst,k)||sg(); }catch(e){ return sg(); } });
   snowmen.forEach(function(sm,i){
     sm.mesh=new THREE.Mesh(geos[i%3],VC); sm.mesh.position.set(sm.x,0,sm.z); sm.mesh.castShadow=true; scene.add(sm.mesh);
   });
   var bp=[G(new THREE.IcosahedronGeometry(.6,2),{c:0xffffff,c2:0xaec6ee})],r2=rng(7);
   for(var k=0;k<7;k++){var a=r2()*6.28,b=Math.acos(r2()*2-1);
     bp.push(G(sp(.24+r2()*.08,8,6),{c:k%2?0xffffff:0xc4d8f6,p:[Math.sin(b)*Math.cos(a)*.4,Math.cos(b)*.4,Math.sin(b)*Math.sin(a)*.4]}));}
-  var ballGeo=TH.roller==='snow'?build(bp):themedRollerGeo(TH.roller);
+  var ballGeo=build(bp); if(TH.roller!=='snow'){ try{ ballGeo=themedRollerGeo(TH.roller)||ballGeo; }catch(e){} }
   balls.forEach(function(b){ b.mesh=new THREE.Mesh(ballGeo,VC); b.mesh.castShadow=true; scene.add(b.mesh); });
 })();
 
