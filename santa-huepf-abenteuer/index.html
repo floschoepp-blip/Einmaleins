@@ -122,6 +122,15 @@ h1 span{color:#ffd23e}
 #menuBot{position:sticky;bottom:calc(-30px - env(safe-area-inset-bottom));margin-left:-18px;margin-right:-18px;padding:18px 18px calc(30px + env(safe-area-inset-bottom));width:calc(100% + 36px);
   background:linear-gradient(180deg,rgba(4,8,36,0),rgba(4,8,36,.92) 32%)}
 @media (max-height:720px){ #start .help{display:none} #start h1{font-size:clamp(28px,8vw,44px)} .big{min-height:72px;padding:14px 20px 10px} }
+
+/* Nichts zusammenquetschen: Elemente behalten ihre Größe, stattdessen wird gescrollt */
+#start>*,#win>*,#win .card>*,#menuMid>*{flex-shrink:0}
+#win .big{font-size:clamp(20px,5.4vw,30px);min-height:72px;line-height:1.15;padding:14px 20px 11px;animation:none}
+#win .mid{min-height:60px}
+#win .card{padding:16px 14px 18px}
+#stats{font-size:clamp(20px,5.4vw,32px)}
+#win #winH{font-size:clamp(30px,9vw,52px)}
+@media (max-height:800px){ #stars{font-size:46px;margin:2px 0} #score{font-size:32px} }
 @media (min-width:700px){ #start{padding-top:34px} .help{font-size:20px} }
 @media (orientation:landscape) and (pointer:coarse) and (max-height:520px){#rotate{display:flex}}
 </style>
@@ -165,7 +174,7 @@ h1 span{color:#ffd23e}
       <input class="inp" id="bcode" maxlength="12" placeholder="Klassen-Code" autocomplete="off" autocapitalize="characters">
     </div>
     <div class="hsbox"><b id="hsTitle">🏆 Bestenliste</b><ol id="hsList"></ol><small id="hsNote"></small></div>
-    <div style="opacity:.55;font-size:12px;font-weight:700">Version 2.2</div>
+    <div style="opacity:.55;font-size:12px;font-weight:700">Version 2.3</div>
   </div>
   <div id="menuBot">
     <div class="help">◀ ▶ Spur wechseln &nbsp;·&nbsp; ⬆ Springen<br>2× tippen = Doppelsprung!</div>
