@@ -165,6 +165,7 @@ h1 span{color:#ffd23e}
       <input class="inp" id="bcode" maxlength="12" placeholder="Klassen-Code" autocomplete="off" autocapitalize="characters">
     </div>
     <div class="hsbox"><b id="hsTitle">🏆 Bestenliste</b><ol id="hsList"></ol><small id="hsNote"></small></div>
+    <div style="opacity:.55;font-size:12px;font-weight:700">Version 2.2</div>
   </div>
   <div id="menuBot">
     <div class="help">◀ ▶ Spur wechseln &nbsp;·&nbsp; ⬆ Springen<br>2× tippen = Doppelsprung!</div>
@@ -1875,7 +1876,7 @@ function unlocked(i){ return SV.all||i===0||!!SV.done[STAGES[i-1].id]; }
 function starsText(n){ return n?('⭐⭐⭐'.slice(0,n)):''; }
 
 /* ---------- Menü ---------- */
-function reloadClean(){ try{ history.replaceState(null,'',location.pathname+location.search); }catch(e){} location.reload(); }
+function reloadClean(){ location.replace(location.pathname+'?v='+Date.now()); }
 function renderMenu(){
   var map=$('map'),h='';
   STAGES.forEach(function(st,i){
