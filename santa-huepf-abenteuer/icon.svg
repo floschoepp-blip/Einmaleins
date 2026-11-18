@@ -1,0 +1,37 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+<defs>
+<linearGradient id="bg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0a1448"/><stop offset=".55" stop-color="#1f4aa8"/><stop offset="1" stop-color="#5aa0e8"/></linearGradient>
+<linearGradient id="au" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#5affc0" stop-opacity="0"/><stop offset=".5" stop-color="#5affc0" stop-opacity=".55"/><stop offset="1" stop-color="#b080ff" stop-opacity="0"/></linearGradient>
+<linearGradient id="hat" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff5a5a"/><stop offset="1" stop-color="#c8141e"/></linearGradient>
+<radialGradient id="glow" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#fff2a8" stop-opacity=".9"/><stop offset="1" stop-color="#fff2a8" stop-opacity="0"/></radialGradient>
+</defs>
+<rect width="512" height="512" fill="url(#bg)"/>
+<path d="M0 150 C120 90 260 190 512 110 L512 190 C300 260 150 160 0 230Z" fill="url(#au)"/>
+<g fill="#fff"><circle cx="70" cy="70" r="4"/><circle cx="130" cy="40" r="3"/><circle cx="420" cy="60" r="4"/><circle cx="465" cy="120" r="3"/><circle cx="360" cy="35" r="3"/><circle cx="40" cy="150" r="3"/><circle cx="250" cy="28" r="3"/></g>
+<path d="M0 430 C100 390 200 410 280 425 C370 440 440 400 512 415 L512 512 L0 512Z" fill="#fff"/>
+<path d="M0 470 C120 440 240 470 340 460 C420 452 470 450 512 458 L512 512 L0 512Z" fill="#cfe2fb"/>
+<path d="M70 410 Q150 300 256 330" fill="none" stroke="#ffe27a" stroke-width="10" stroke-linecap="round" stroke-dasharray="2 22" opacity=".9"/>
+<circle cx="260" cy="250" r="190" fill="url(#glow)"/>
+<ellipse cx="256" cy="440" rx="95" ry="16" fill="#8aa8d8" opacity=".55"/>
+<g transform="translate(46 12) scale(.82) rotate(-8 256 270)">
+<path d="M256 340 C150 340 120 250 150 170 C175 105 245 70 330 80 C380 86 410 130 400 175 C392 215 410 250 390 290 C370 330 320 340 256 340Z" fill="url(#hat)"/>
+<path d="M330 80 C400 60 450 100 440 170 C436 200 410 210 400 175 C410 130 380 86 330 80Z" fill="#b8101a"/>
+<circle cx="440" cy="190" r="34" fill="#fff"/><circle cx="430" cy="180" r="12" fill="#e8f0ff"/>
+<path d="M120 300 C150 270 360 270 410 300 C425 340 410 365 380 372 C330 382 190 382 140 372 C110 365 105 335 120 300Z" fill="#fff"/>
+<g fill="#e8f0ff"><circle cx="150" cy="330" r="14"/><circle cx="215" cy="345" r="12"/><circle cx="290" cy="350" r="13"/><circle cx="360" cy="340" r="12"/></g>
+<circle cx="256" cy="385" r="120" fill="#ffd2b0"/>
+<path d="M136 395 C130 470 190 520 256 520 C322 520 382 470 376 395 C340 430 290 440 256 440 C222 440 172 430 136 395Z" fill="#fff"/>
+<path d="M200 430 Q256 470 312 430 Q256 455 200 430Z" fill="#e8f0ff"/>
+<ellipse cx="195" cy="405" rx="22" ry="14" fill="#ff9aa0" opacity=".75"/><ellipse cx="317" cy="405" rx="22" ry="14" fill="#ff9aa0" opacity=".75"/>
+<ellipse cx="208" cy="372" rx="13" ry="17" fill="#1c1c2c"/><ellipse cx="304" cy="372" rx="13" ry="17" fill="#1c1c2c"/>
+<circle cx="212" cy="365" r="5" fill="#fff"/><circle cx="308" cy="365" r="5" fill="#fff"/>
+<path d="M180 345 Q208 326 236 346" fill="none" stroke="#fff" stroke-width="14" stroke-linecap="round"/><path d="M276 346 Q304 326 332 345" fill="none" stroke="#fff" stroke-width="14" stroke-linecap="round"/>
+<ellipse cx="256" cy="402" rx="26" ry="21" fill="#ff8a8a"/>
+<path d="M214 438 Q256 478 298 438 Q256 452 214 438Z" fill="#d83040"/>
+</g>
+<g transform="translate(398 300) rotate(14)">
+<path d="M-34 10 C-34 -30 34 -30 34 10 L44 36 L-44 36Z" fill="#ffc83a"/><path d="M-34 10 C-34 -30 34 -30 34 10" fill="none" stroke="#e8a010" stroke-width="5"/>
+<circle cx="0" cy="40" r="11" fill="#e8a010"/><circle cx="0" cy="-30" r="8" fill="#ffc83a"/><path d="M-18 -8 C-18 -20 -6 -24 0 -24" fill="none" stroke="#fff6c0" stroke-width="6" stroke-linecap="round"/>
+</g>
+<g transform="translate(100 190) rotate(-14)"><rect x="-26" y="-22" width="52" height="46" rx="6" fill="#5ae0a0"/><rect x="-6" y="-22" width="12" height="46" fill="#fff"/><rect x="-26" y="-4" width="52" height="12" fill="#fff"/><path d="M0 -22 C-18 -48 -34 -22 0 -22 C34 -22 18 -48 0 -22Z" fill="#fff"/></g>
+</svg>
