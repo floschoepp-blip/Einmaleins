@@ -204,7 +204,7 @@ h1 span{color:#ffd23e}
       <input class="inp" id="bcode" maxlength="12" placeholder="Klassen-Code" autocomplete="off" autocapitalize="characters">
     </div>
     <div class="hsbox"><b id="hsTitle">🏆 Bestenliste</b><ol id="hsList"></ol><small id="hsNote"></small></div>
-    <div style="opacity:.55;font-size:12px;font-weight:700">Version 3.9</div>
+    <div style="opacity:.55;font-size:12px;font-weight:700">Version 3.10</div>
   </div>
   <div id="menuBot">
     <div class="help">◀ ▶ Spur wechseln &nbsp;·&nbsp; ⬆ Springen<br>2× tippen = Doppelsprung!</div>
@@ -1455,7 +1455,8 @@ var VEHS=[
 ];
 function totalStars(){ var t=0,k; for(k in SV.best) if(SV.best[k]&&SV.best[k].st) t+=SV.best[k].st; return t; }
 function vehById(id){ for(var i=0;i<VEHS.length;i++) if(VEHS[i].id===id) return VEHS[i]; return VEHS[0]; }
-function vehOk(id){ return vehById(id).need<=totalStars(); }
+function vehUnl(v){ return !!SV.all||v.need<=totalStars(); }
+function vehOk(id){ return vehUnl(vehById(id)); }
 function vehParts(id){
   var P=[],i,sx,PI=Math.PI;
   if(id==='skate'){
@@ -2119,7 +2120,7 @@ function starsText(n){ return n?('⭐⭐⭐'.slice(0,n)):''; }
 function reloadClean(){ location.replace(location.pathname+'?v='+Date.now()); }
 function renderVeh(){
   var h='',ts=totalStars();
-  VEHS.forEach(function(v){ var ok=v.need<=ts;
+  VEHS.forEach(function(v){ var ok=vehUnl(v);
     h+='<button class="vbtn'+(v.id===VEH.id?' sel':'')+(ok?'':' lock')+'" data-v="'+v.id+'"><span class="ve">'+(ok?v.em:'🔒')+'</span><span class="vn">'+(ok?v.n:'ab '+v.need+'⭐')+'</span></button>'; });
   $('vehRow').innerHTML=h;
   $('vehInfo').innerHTML='⭐ '+ts+' Sterne gesammelt<br><b>'+VEH.em+' '+VEH.n+':</b> '+VEH.txt;
@@ -2127,7 +2128,7 @@ function renderVeh(){
 $('vehRow').addEventListener('click',function(e){
   var el=e.target.closest?e.target.closest('.vbtn'):null; if(!el) return;
   var v=vehById(el.getAttribute('data-v')),ts=totalStars();
-  if(v.need>ts){ $('vehInfo').innerHTML='🔒 '+v.em+' '+v.n+' gibt es ab '+v.need+' Sternen.<br>Du hast '+ts+' ⭐ – sammle mehr Sterne!'; return; }
+  if(!vehUnl(v)){ $('vehInfo').innerHTML='🔒 '+v.em+' '+v.n+' gibt es ab '+v.need+' Sternen.<br>Du hast '+ts+' ⭐ – sammle mehr Sterne!'; return; }
   SV.veh=v.id; writeSave(); setVehicle(v.id); renderVeh();
 });
 function renderMenu(){
