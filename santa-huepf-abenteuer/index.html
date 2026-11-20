@@ -6,7 +6,7 @@
 <script>
 /* Immer die neueste Version: beim Start kurz nachsehen, ob auf dem Server eine neuere Version liegt, und dann frisch laden. */
 (function(){
-  var B='3.34'; window.__BUILD=B;
+  var B='3.35'; window.__BUILD=B;
   try{
     if(location.protocol==='file:'||!window.fetch) return;
     var base=location.pathname.replace(/[^\/]*$/,'');
@@ -246,7 +246,7 @@ h1 span{color:#ffd23e}
       <input class="inp" id="bcode" maxlength="12" placeholder="Klassen-Code" autocomplete="off" autocapitalize="characters">
     </div>
     <div class="hsbox"><b id="hsTitle">🏆 Bestenliste</b><ol id="hsList"></ol><small id="hsNote"></small></div>
-    <div style="opacity:.55;font-size:12px;font-weight:700">Version 3.34</div>
+    <div style="opacity:.55;font-size:12px;font-weight:700">Version 3.35</div>
   </div>
   <div id="menuBot">
     <div class="help">◀ ▶ Spur wechseln &nbsp;·&nbsp; ⬆ Springen<br>2× tippen = Doppelsprung!</div>
@@ -3303,8 +3303,8 @@ function RB(){ return FBC.db+'/santa/rooms/'+RACE.code; }
 
 /* ---------- Lobby ---------- */
 var rlEl=$('raceLobby');
-if(!BOSSLV) $('raceBtn').style.display='';
-$('raceBtn').addEventListener('click',function(){ $('rcode').value=RACE.code||BCODE||''; rlEl.classList.remove('hidden'); });
+$('raceBtn').style.display='';
+$('raceBtn').addEventListener('click',function(){ if(BOSSLV){ var k=STAGES.length-1; while(k>0&&STAGES[k].type==='boss') k--; for(var q=0;q<STAGES.length;q++){ if(STAGES[q].type!=='boss'){ k=q; break; } } SV.lv=k; writeSave(); reloadClean(); return; } $('rcode').value=RACE.code||BCODE||''; rlEl.classList.remove('hidden'); });
 $('rback').addEventListener('click',function(){ raceLeave(); });
 $('rcode').addEventListener('keydown',function(e){ e.stopPropagation(); if(e.key==='Enter') raceJoin(); });
 $('rjoin').addEventListener('click',raceJoin);
