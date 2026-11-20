@@ -1872,8 +1872,8 @@ function featStep(dt,prevY){
    Die Welt wird ausgeblendet, es geht durch den Weltraum: Santa steuert nach links/rechts und mit „Hoch!“ nach oben,
    Geschenke liegen auf einer Wellenbahn, Asteroiden, Minen und Satelliten versperren die Höhen daneben. */
 VW.space=false; VW.lastFlap=-9; VW.hidden=[]; VW.sp=null; VW.fog0=null;
-function spA(zw){ return 1.5+1.1*Math.sin(-zw*.045); }          // Höhe der Geschenk-Bahn (ohne die 0,7 Grundhöhe)
-function spC(zw){ return .7+spA(zw); }
+function spAlt(zw){ return 1.5+1.1*Math.sin(-zw*.045); }          // Höhe der Geschenk-Bahn (ohne die 0,7 Grundhöhe)
+function spCen(zw){ return .7+spAlt(zw); }
 function buildSpace(){
   var g=new THREE.Group(),follow=new THREE.Group(),i,rr=rng(31337),len=TOTAL+260;
   // Sterne über die ganze Strecke
@@ -1886,7 +1886,7 @@ function buildSpace(){
   var road=new THREE.Mesh(stripGeo(prof,-(TOTAL+60),30,4,function(c,k){ var xm=Math.abs(prof[c][0]+.5); if(xm>5) return 0x2ad4ff; return (c+k)%2?0x0d1238:0x161e52; }),VC); road.receiveShadow=true; g.add(road);
   // Raumtore: Ringe, durch die man fliegt
   VW.gates=[]; var gp=[],dd;
-  for(dd=95;dd<TOTAL-50;dd+=52+rr()*16){ var ln=Math.floor(rr()*3)-1,gz=-dd,gy=spC(gz);
+  for(dd=95;dd<TOTAL-50;dd+=52+rr()*16){ var ln=Math.floor(rr()*3)-1,gz=-dd,gy=spCen(gz);
     VW.gates.push({x:ln*LANE,y:gy,z:gz,used:false});
     gp.push(G(tor(1.5,.13,8,28),{c:0x7ff6ff,c2:0xff7ad9,p:[ln*LANE,gy,gz]}),G(tor(1.5,.04,6,28),{c:0xffffff,s:[1.07,1.07,1],p:[ln*LANE,gy,gz]})); }
   if(gp.length) g.add(new THREE.Mesh(build(gp),VC));
@@ -1921,10 +1921,10 @@ function setSpace(on){
     if(VW.fog0){ scene.fog.color.copy(VW.fog0.c); } renderer.setClearColor(HORIZON);
   }
   VW.space=on;
-  items.forEach(function(it,k){ if(it.y0===undefined) it.y0=it.y; it.y=on?it.y0+spA(it.z):it.y0; if(!it.taken) haloPos.setY(k,it.y+vwGY(it.x)); });
+  items.forEach(function(it,k){ if(it.y0===undefined) it.y0=it.y; it.y=on?it.y0+spAlt(it.z):it.y0; if(!it.taken) haloPos.setY(k,it.y+vwGY(it.x)); });
   haloPos.needsUpdate=true;
-  snowmen.forEach(function(sm){ var C=spC(sm.z); sm.y=on?(C>2.5?Math.max(.4,C-2.7):C+2.7):0; sm.mesh.position.y=on?sm.y:vwGY(sm.x); });
-  balls.forEach(function(b){ if(b.mode==='boss') return; b.fy=on?(spC(b.z)>2.5?0:3.0):0; });
+  snowmen.forEach(function(sm){ var C=spCen(sm.z); sm.y=on?(C>2.5?Math.max(.4,C-2.7):C+2.7):0; sm.mesh.position.y=on?sm.y:vwGY(sm.x); });
+  balls.forEach(function(b){ if(b.mode==='boss') return; b.fy=on?(spCen(b.z)>2.5?0:3.0):0; });
   var jb=document.querySelector('#bJ span'); if(jb&&jb.dataset) { if(!jb.dataset.t) jb.dataset.t=jb.textContent; jb.textContent=on?'Hoch!':jb.dataset.t; }
 }
 function gateStep(){
