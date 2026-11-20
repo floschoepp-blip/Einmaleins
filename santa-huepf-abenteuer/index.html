@@ -212,7 +212,7 @@ h1 span{color:#ffd23e}
       <input class="inp" id="bcode" maxlength="12" placeholder="Klassen-Code" autocomplete="off" autocapitalize="characters">
     </div>
     <div class="hsbox"><b id="hsTitle">🏆 Bestenliste</b><ol id="hsList"></ol><small id="hsNote"></small></div>
-    <div style="opacity:.55;font-size:12px;font-weight:700">Version 3.17</div>
+    <div style="opacity:.55;font-size:12px;font-weight:700">Version 3.18</div>
   </div>
   <div id="menuBot">
     <div class="help">◀ ▶ Spur wechseln &nbsp;·&nbsp; ⬆ Springen<br>2× tippen = Doppelsprung!</div>
@@ -1791,9 +1791,25 @@ function padNote(f,t0,dur){
   for(i=0;i<2;i++){ var o=AC.createOscillator(); o.type='sawtooth'; o.frequency.value=f*(i?1.004:.996); o.connect(lp); o.start(t0); o.stop(t0+dur+.3); }
   lp.connect(g); g.connect(musicGain); toRev(g,.3);
 }
+/* Musik-Dateien (selbst erzeugt, lizenzfrei): A = Pop, B = Karibik, E = Swing, C = Boss. Werden pro Welt geladen;
+   klappt das Laden nicht (offline), spielt die eingebaute Synthesizer-Musik weiter. */
+var MTRACK={nordpol:'a',zenting:'a',bahamas:'b',newyork:'e',london:'e',paris:'e'},mBufs={},mSrc=null,mSample=0,mGen=0;
+function trackFor(){ return STAGE.type==='boss'?'c':(MTRACK[STAGE.theme]||'a'); }
+function playSample(buf,gen){
+  if(gen!==mGen||!musicOn||!AC) return;
+  try{ var s=AC.createBufferSource(); s.buffer=buf; s.loop=true; s.connect(musicGain); s.start(); mSrc=s; mSample=2; }catch(e){ mSample=0; if(!mTimer) music(); }
+}
+function loadSample(name,gen){
+  if(mBufs[name]){ playSample(mBufs[name],gen); return; }
+  mSample=1;
+  fetch('musik/'+name+'.mp3').then(function(r){ if(!r.ok) throw 0; return r.arrayBuffer(); })
+   .then(function(ab){ return new Promise(function(ok,no){ AC.decodeAudioData(ab,ok,no); }); })
+   .then(function(buf){ mBufs[name]=buf; playSample(buf,gen); })
+   .catch(function(){ if(gen===mGen&&musicOn){ mSample=0; if(!mTimer) music(); } });
+}
 function music(){
   mTimer=0;
-  if(!AC||!musicOn) return;
+  if(!AC||!musicOn||mSample) return;
   if(AC.state!=='running'){ mTimer=setTimeout(music,500); return; }
   var pr=musicProfile(),B=pr.b/(.92+.08*relSp);
   if(mNext<AC.currentTime) mNext=AC.currentTime+.08;
@@ -1802,11 +1818,15 @@ function music(){
 }
 function startMusic(){
   if(!AC) return;
-  musicOn=true; musicGain.gain.cancelScheduledValues(AC.currentTime); musicGain.gain.setValueAtTime(.9,AC.currentTime);
-  mBar=0; mNext=0; if(!mTimer) music();
+  musicOn=true; mGen++; mSample=0; musicGain.gain.cancelScheduledValues(AC.currentTime); musicGain.gain.setValueAtTime(.9,AC.currentTime);
+  if(mSrc){ try{ mSrc.stop(); }catch(e){} mSrc=null; }
+  mBar=0; mNext=0;
+  if(window.fetch&&location.protocol!=='file:') loadSample(trackFor(),mGen); else music();
 }
 function stopMusic(){
-  musicOn=false;
+  musicOn=false; mGen++;
+  var old=mSrc; mSrc=null; if(old) setTimeout(function(){ try{ old.stop(); }catch(e){} },600);
+  mSample=0;
   if(AC&&musicGain){ musicGain.gain.cancelScheduledValues(AC.currentTime); musicGain.gain.setValueAtTime(musicGain.gain.value,AC.currentTime); musicGain.gain.linearRampToValueAtTime(0,AC.currentTime+.4); }
 }
 /* Fahrgeräusche: ein leiser Dauerton pro Fahrzeug, der mit Tempo und Bodenkontakt mitgeht */
