@@ -138,7 +138,7 @@ input{width:100%;max-width:280px;padding:10px 12px;border-radius:12px;border:0;f
 <path d="M146 118 Q158 112 164 100" fill="none" stroke="#ffd54a" stroke-width="2" stroke-linecap="round"/>
 <path d="M164 100 l1.8 -4.6 l1.8 4.6 l4.6 1.8 l-4.6 1.8 l-1.8 4.6 l-1.8 -4.6 l-4.6 -1.8z" fill="url(#lg)"/>
 </svg>
-<div class="lt"><small>SANTA</small><h1><span class="logo">Bling Bling</span></h1><div class="tag">Die wilde Bescherung</div><div class="sub">v1.22 · 7 Städte · bring alle Geschenke zu den Kindern!</div></div></div>
+<div class="lt"><small>SANTA</small><h1><span class="logo">Bling Bling</span></h1><div class="tag">Die wilde Bescherung</div><div class="sub">v1.23 · 7 Städte · bring alle Geschenke zu den Kindern!</div></div></div>
   <div class="cols">
    <section class="sec"><h3><i>1</i> Wer bist du? <em id="stot"></em></h3>
     <input id="name" maxlength="12" placeholder="Dein Name" autocomplete="off">
@@ -4129,7 +4129,8 @@ function fp3Resize(){
 }
 function fp3Dispose(o){o.traverse(n=>{if(n.geometry)n.geometry.dispose();if(n.material){const ms=Array.isArray(n.material)?n.material:[n.material];for(const m of ms){for(const k in m){if(m[k]&&m[k].isTexture)m[k].dispose();}m.dispose();}}});}
 /* ---------- Stadt-Themen ---------- */
-function fp3Theme(id,dark){
+let fp3Trop=0;
+function fp3Theme(id,dark){fp3Trop=(id==='tropen'||id==='australien'||id==='amazonas')?(id==='amazonas'?2:1):0;
  const T={ground:'#dce7f4',sky:['#6aa6e6','#dbe9f8'],fog:'#d6e4f4',houses:'gable',roof:'#f6f9fd',cols:['#c9a77c','#b5774f','#d9c9a3','#9aa7b8','#c46f5e'],cactus:0,mesa:0,sand:0};
  if(id==='tropen'){Object.assign(T,{ground:'#efdfae',sky:['#2f9fe8','#bfeaf2'],fog:'#d6f0ee',houses:'gable',cols:['#fbe3b0','#ffd1c1','#bfe8e4','#f6c9d8'],sand:1,roof:'#c9a35a'});}
  else if(id==='australien'){Object.assign(T,{ground:'#d9b88a',sky:['#3f8fe0','#f1dcb8'],fog:'#ecd8b4',houses:'gable',cols:['#f4efe3','#e6d8b8','#cfe0e8','#e8c9c0'],sand:1,mesa:1,roof:'#b5412e'});}
@@ -4172,6 +4173,18 @@ function fp3Ground(T,flat){
 function fp3Trees(list,leaf,dense){
  const n=list.length,G=new THREE.Group();
  const bark=fp3Mat('#5a3a24',1),lf=fp3Mat(leaf||'#1f5a3a',.9),sn=fp3Mat('#f7fbff',.8);
+ if(fp3Trop){ // Palmen / Dschungelbaeume statt Tannen
+  const tr=new THREE.InstancedMesh(new THREE.CylinderGeometry(.14,.22,1,6),fp3Mat('#8a6a42',1),n);
+  const cr=[0,1,2,3,4].map(()=>new THREE.InstancedMesh(fp3Trop===2?new THREE.SphereGeometry(1,8,6):new THREE.ConeGeometry(1,1,7),fp3Mat(fp3Trop===2?'#1f7a38':'#3a9a44',.9),n));
+  const M=new THREE.Matrix4(),Q=new THREE.Quaternion(),S=new THREE.Vector3(),P=new THREE.Vector3(),E=new THREE.Euler();
+  list.forEach((t,i)=>{const h=t.h,y0=t.y||0,jg=fp3Trop===2;E.set(0,(i*1.7)%6.28,0);Q.setFromEuler(E);
+   const th=h*(jg?.55:.8);M.compose(P.set(t.x,y0+th/2,t.z),Q,S.set(jg?1.8:1,th,jg?1.8:1));tr.setMatrixAt(i,M);
+   for(let k=0;k<5;k++){const a=k/5*6.283+i;const L=jg?h*.34:h*.3;const q=new THREE.Quaternion().setFromEuler(new THREE.Euler(0,a,Math.PI/2.4));
+    if(jg){M.compose(P.set(t.x+Math.cos(a)*L*.5,y0+th+(k%2)*h*.08,t.z+Math.sin(a)*L*.5),Q,S.set(h*.3,h*.26,h*.3));}
+    else{M.compose(P.set(t.x+Math.cos(a)*L*.55,y0+th-.05,t.z+Math.sin(a)*L*.55),q,S.set(h*.07,L*1.1,h*.2));}
+    cr[k].setMatrixAt(i,M);}});
+  for(const m of [tr,...cr]){m.castShadow=!dense;m.receiveShadow=true;G.add(m);}
+  return G;}
  const trunk=new THREE.InstancedMesh(new THREE.CylinderGeometry(.16,.26,1,6),bark,n);
  const co=[0,1,2,3].map(()=>new THREE.InstancedMesh(new THREE.ConeGeometry(1,1,9),lf,n));
  const ca=[0,1,2,3].map(()=>new THREE.InstancedMesh(new THREE.ConeGeometry(1,1,9),sn,n));
@@ -4330,8 +4343,8 @@ function fp3Arm(){
   const cf=new THREE.Mesh(new THREE.TorusGeometry(.056,.024,8,14),cuff);cf.position.z=-.01;a.add(cf);
   const hd=new THREE.Mesh(new THREE.SphereGeometry(.06,12,10),mit);hd.scale.set(1,.9,1.2);hd.position.z=-.07;a.add(hd);
   const th=new THREE.Mesh(new THREE.SphereGeometry(.026,8,6),mit);th.position.set(-sx*.05,.02,-.06);a.add(th);return a;};
- const R=mk(1);R.position.set(.27,-.27,-.5);R.rotation.set(.18,.12,0);g.add(R);
- const L=mk(-1);L.position.set(-.27,-.28,-.48);L.rotation.set(.22,-.2,0);g.add(L);
+ const R=mk(1);R.scale.setScalar(.8);R.position.set(.29,-.3,-.5);R.rotation.set(.18,.12,0);g.add(R);
+ const L=mk(-1);L.scale.setScalar(.8);L.position.set(-.29,-.31,-.48);L.rotation.set(.22,-.2,0);g.add(L);
  const ball=new THREE.Mesh(new THREE.SphereGeometry(.075,14,12),fp3Mat('#fff',.8,{emissive:c3('#9ec2ee'),emissiveIntensity:.06}));ball.position.set(0,.075,-.1);R.add(ball);
  return{g,R,L,ball};
 }
@@ -5116,16 +5129,8 @@ function drawGroundAndWorld(v,z,tm){
  const city=sp.roadStyle==='city';
  for(const r of W.roads){if(!r.bb)r.bb=bboxPts(r.pts,r.w);r.vis=inView(r.bb,v);}
  const rc=sp.roadCol;
- for(const w2 of [[34,.035],[26,.045],[18,.05]])for(const r of W.roads)if(r.vis){ctx.strokeStyle='rgba(30,25,40,'+w2[1]+')';ctx.lineWidth=r.w+(city?22:14)+w2[0]*.5;strokePoly(r.pts);}
- for(const r of W.roads)if(r.vis){ctx.strokeStyle=rc?rc[0]:(city?'#cdd3dc':'#f2f6fb');ctx.lineWidth=r.w+(city?22:14);strokePoly(r.pts);}
- if(city)for(const r of W.roads)if(r.vis){ctx.strokeStyle='#eef2f7';ctx.lineWidth=r.w+10;strokePoly(r.pts);}
- // Gehwege zu den Haustüren: unter der Straße, endet am Bordstein
- {const pc=sp.pathCol||['#a79c88','#e4dccb','rgba(120,105,85,.28)'];ctx.lineCap='butt';ctx.lineJoin='round';
-  const vis=p=>p[0].x>v.x0-220&&p[0].x<v.x1+220&&p[0].y>v.y0-220&&p[0].y<v.y1+220;
-  const stroke=p=>{ctx.beginPath();p.forEach((q,i)=>i?ctx.lineTo(q.x,q.y):ctx.moveTo(q.x,q.y));ctx.stroke();};
-  for(const p of W.paths)if(vis(p)){ctx.strokeStyle=pc[0];ctx.lineWidth=13;stroke(p);}
-  for(const p of W.paths)if(vis(p)){ctx.strokeStyle=pc[1];ctx.lineWidth=10;stroke(p);ctx.strokeStyle=pc[2];ctx.lineWidth=10;ctx.setLineDash([1.4,7]);stroke(p);ctx.setLineDash([]);
-   const s=p[0];ctx.fillStyle=pc[0];ctx.fillRect(s.x-13,s.y,26,5);ctx.fillStyle=pc[1];ctx.fillRect(s.x-12,s.y+.5,24,3.5);ctx.fillStyle='#7a5a3a';ctx.fillRect(s.x-8,s.y+5,16,4);}}
+ for(const w2 of [[34,.035],[26,.045],[18,.05]])for(const r of W.roads)if(r.vis){ctx.strokeStyle='rgba(30,25,40,'+w2[1]+')';ctx.lineWidth=r.w+4+w2[0]*.5;strokePoly(r.pts);}
+ for(const r of W.roads)if(r.vis){ctx.strokeStyle=rc?rc[0]:(city?'#cdd3dc':'#f2f6fb');ctx.lineWidth=r.w+4;strokePoly(r.pts);}
  for(const r of W.roads)if(r.vis){ctx.strokeStyle=rc?rc[1]:(city?'#4f5662':'#8d939e');ctx.lineWidth=r.w;strokePoly(r.pts);}
  for(const r of W.roads)if(r.vis){ctx.strokeStyle='rgba(0,0,0,.12)';ctx.lineWidth=r.w;strokePoly(r.pts);ctx.strokeStyle=rc?rc[1]:(city?'#4f5662':'#8d939e');ctx.lineWidth=r.w-5;strokePoly(r.pts);}
  for(const r of W.roads)if(r.vis&&r.k==='hw'){ctx.strokeStyle='#2f343d';ctx.lineWidth=r.w;strokePoly(r.pts);ctx.strokeStyle='#ffd24a';ctx.lineWidth=r.w-4;strokePoly(r.pts);ctx.strokeStyle='#2b3038';ctx.lineWidth=r.w-8;strokePoly(r.pts);ctx.strokeStyle='#f4f6f8';ctx.lineWidth=2.4;ctx.setLineDash([26,30]);ctx.lineDashOffset=-tm*60;strokePoly(r.pts);ctx.setLineDash([]);ctx.strokeStyle='rgba(255,210,74,.9)';ctx.lineWidth=3;ctx.setLineDash([2,34]);ctx.lineDashOffset=-tm*120;strokePoly(r.pts);ctx.setLineDash([]);}
