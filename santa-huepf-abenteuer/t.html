@@ -1691,8 +1691,9 @@ function buildHover(){
 // Echte Dünung: lange Wellen laufen mit Santas Tempo in Fahrtrichtung (−z); Kämme sind spitz, Täler flach
 var WK=.4;
 function wavePh(x,z){ return WK*(z+VW.wz)+.10*x; }
-function waveFace(x,z){ return Math.cos(wavePh(x,z)); }
-function waveLock(){ VW.wz=-Math.PI/3/WK-P.z-.1*P.x/WK; }
+function waveDelta(){ return .9+.9*Math.sin((typeof time==='number'?time:0)*1.3); }   // Santa carvt langsam an der Wellenwand hoch und runter
+function waveFace(x,z){ return Math.cos(wavePh(x,z)-waveDelta()); }
+function waveLock(){ VW.wz=(waveDelta()-Math.PI/3)/WK-P.z-.1*P.x/WK; }
 function waveH(x,z,t){ var p=wavePh(x,z); return .1+.5*Math.sin(p)+.15*Math.sin(2*p+.9)-.05*Math.sin(3*p)+.035*Math.sin(1.7*z-t*2.9+x*.6)+.02*Math.sin(2.3*x+1.1*z-t*1.6); }
 function waveDZ(x,z,t){ var p=wavePh(x,z); return .5*WK*Math.cos(p)+.3*WK*Math.cos(2*p+.9)-.15*WK*Math.cos(3*p)+.0595*Math.cos(1.7*z-t*2.9+x*.6)+.022*Math.cos(2.3*x+1.1*z-t*1.6); }
 function buildSurf(){
