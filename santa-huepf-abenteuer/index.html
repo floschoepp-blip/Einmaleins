@@ -2,6 +2,25 @@
 <html lang="de">
 <head>
 <meta charset="utf-8">
+<meta http-equiv="Cache-Control" content="no-cache, must-revalidate">
+<script>
+/* Immer die neueste Version: beim Start kurz nachsehen, ob auf dem Server eine neuere Version liegt, und dann frisch laden. */
+(function(){
+  var B='3.23'; window.__BUILD=B;
+  try{
+    if(location.protocol==='file:'||!window.fetch) return;
+    var base=location.pathname.replace(/[^\/]*$/,'');
+    function num(v){ var p=String(v).split('.'); return (+p[0])*1000+(+p[1]||0); }
+    fetch(base+'version.txt?t='+Date.now(),{cache:'no-store'}).then(function(r){ return r.ok?r.text():null; }).then(function(t){
+      if(!t) return; t=t.trim(); if(!/^\d+\.\d+$/.test(t)) return;
+      if(num(t)<=num(B)){ try{ sessionStorage.removeItem('shh-upd'); }catch(e){} return; }
+      var n=0; try{ n=+(sessionStorage.getItem('shh-upd')||0); sessionStorage.setItem('shh-upd',n+1); }catch(e){}
+      if(n>=2) return;
+      location.replace(location.pathname+'?v='+Date.now());
+    }).catch(function(){});
+  }catch(e){}
+})();
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, minimum-scale=1, user-scalable=no, viewport-fit=cover">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="mobile-web-app-capable" content="yes">
@@ -214,7 +233,7 @@ h1 span{color:#ffd23e}
       <input class="inp" id="bcode" maxlength="12" placeholder="Klassen-Code" autocomplete="off" autocapitalize="characters">
     </div>
     <div class="hsbox"><b id="hsTitle">🏆 Bestenliste</b><ol id="hsList"></ol><small id="hsNote"></small></div>
-    <div style="opacity:.55;font-size:12px;font-weight:700">Version 3.22</div>
+    <div style="opacity:.55;font-size:12px;font-weight:700">Version 3.23</div>
   </div>
   <div id="menuBot">
     <div class="help">◀ ▶ Spur wechseln &nbsp;·&nbsp; ⬆ Springen<br>2× tippen = Doppelsprung!</div>
