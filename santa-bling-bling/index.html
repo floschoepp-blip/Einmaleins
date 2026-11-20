@@ -138,7 +138,7 @@ input{width:100%;max-width:280px;padding:10px 12px;border-radius:12px;border:0;f
 <path d="M146 118 Q158 112 164 100" fill="none" stroke="#ffd54a" stroke-width="2" stroke-linecap="round"/>
 <path d="M164 100 l1.8 -4.6 l1.8 4.6 l4.6 1.8 l-4.6 1.8 l-1.8 4.6 l-1.8 -4.6 l-4.6 -1.8z" fill="url(#lg)"/>
 </svg>
-<div class="lt"><small>SANTA</small><h1><span class="logo">Bling Bling</span></h1><div class="tag">Die wilde Bescherung</div><div class="sub">v1.35 · 7 Städte · bring alle Geschenke zu den Kindern!</div></div></div>
+<div class="lt"><small>SANTA</small><h1><span class="logo">Bling Bling</span></h1><div class="tag">Die wilde Bescherung</div><div class="sub">v1.36 · 7 Städte · bring alle Geschenke zu den Kindern!</div></div></div>
   <div class="cols">
    <section class="sec"><h3><i>1</i> Wer bist du? <em id="stot"></em></h3>
     <input id="name" maxlength="12" placeholder="Dein Name" autocomplete="off">
@@ -7254,7 +7254,12 @@ function tvInit(){
   box.classList.toggle('big',pm()==='menu');
   const ks=activeKeys(),names=ks.map((k,i)=>(i?'':'🎮 ')+(IN[k].n||'?')).join(' · ');
   $('tvp').textContent=ks.length?names:'Noch kein Handy verbunden';
-  $('tvs').textContent=err||((typeof AC!=='undefined'&&AC&&AC.state==='running')?'':'🔊 Einmal klicken oder tippen, damit der Ton an geht');
+  const snd=typeof AC!=='undefined'&&AC&&AC.state==='running';
+  if(!snd){try{auInit();}catch(e){}}
+  const tvs=$('tvs'),key=(snd?'on':'off')+'|'+err;
+  if(tvs.dataset.k!==key){tvs.dataset.k=key;
+   if(snd)tvs.textContent=err;
+   else{tvs.innerHTML='';if(err){const e=document.createElement('span');e.textContent=err+' ';tvs.appendChild(e);}const bt=document.createElement('button');bt.id='tvsnd';bt.textContent='🔊 Ton am Fernseher einschalten (hier klicken / OK)';bt.style.cssText='font:bold 15px sans-serif;padding:8px 14px;border-radius:12px;border:2px solid #ffd54a;background:#c62f2f;color:#fff;cursor:pointer';bt.addEventListener('click',()=>{try{auInit();}catch(e){}});tvs.appendChild(bt);try{bt.focus();}catch(e){}}}
  },500);
  openRoom(0).then(c=>{$('tvc').textContent=c;
   try{qrDraw($('tvqr'),new URL('pad.html?c='+c+(MK?'&fbmock='+encodeURIComponent(MK):''),location.href).href,5);}catch(e){err='QR-Fehler';}
