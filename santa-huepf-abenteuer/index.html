@@ -24,6 +24,22 @@ html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;-webkit-text
 /* ---------- HUD ---------- */
 #hud{position:fixed;top:0;left:0;right:0;padding:calc(10px + env(safe-area-inset-top)) calc(12px + env(safe-area-inset-right)) 0 calc(12px + env(safe-area-inset-left));
   display:none;pointer-events:none;z-index:5}
+#vehRow,#vehRow *{touch-action:pan-x pan-y}
+#vehRow{display:flex;gap:8px;overflow-x:auto;overflow-y:hidden;padding:4px 4px 6px;-webkit-overflow-scrolling:touch}
+.vbtn{flex:0 0 auto;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:74px;padding:6px 6px 5px;border-radius:16px;border:3px solid rgba(255,255,255,.5);background:rgba(10,24,90,.8);color:#fff;font-family:inherit;font-weight:800}
+.vbtn .ve{font-size:28px;line-height:1.1}.vbtn .vn{font-size:12px;white-space:nowrap}
+.vbtn.sel{border-color:#ffd23e;background:linear-gradient(180deg,#3a6ce0,#1c3fa8);box-shadow:0 0 0 2px rgba(255,210,62,.5)}
+.vbtn.lock{opacity:.6}
+#vehInfo{font-size:clamp(13px,3.6vw,16px);font-weight:700;color:#e8f0ff;line-height:1.3;padding:0 6px;min-height:2.6em}
+#reward{font-size:clamp(15px,4.2vw,20px);font-weight:800;color:#fff;line-height:1.5;min-height:1.2em}
+#reward small{opacity:.8;font-weight:700}
+.dance{display:inline-block;font-size:1.5em;animation:dance .5s ease-in-out infinite alternate}.dance.d2{animation-delay:.25s}
+@keyframes dance{from{transform:translateY(0) rotate(-14deg)}to{transform:translateY(-8px) rotate(14deg)}}
+#fx{position:fixed;top:0;left:0;right:0;bottom:0;z-index:12;pointer-events:none;overflow:hidden}
+.fxi{position:absolute;top:-50px;font-size:clamp(22px,6.5vw,36px);animation:fxfall linear infinite}
+@keyframes fxfall{to{transform:translateY(115vh) rotate(360deg)}}
+.fxb{position:absolute;font-size:clamp(34px,10vw,64px);opacity:0;animation:fxburst 1.2s ease-out infinite}
+@keyframes fxburst{0%{transform:scale(.2);opacity:0}30%{opacity:1}100%{transform:scale(1.5);opacity:0}}
 #hudBtns{display:flex;gap:10px;pointer-events:auto}
 #pause{justify-content:center;background:rgba(4,10,40,.74)}
 #pause h1{margin:0 0 6px;font-size:clamp(30px,9vw,44px);color:#ffd23e;text-shadow:0 3px 0 rgba(0,0,0,.4)}
@@ -179,12 +195,14 @@ h1 span{color:#ffd23e}
   <div id="menuMid">
     <div id="map"></div>
     <div id="diffRow"></div>
+    <div id="vehRow"></div>
+    <div id="vehInfo"></div>
     <div id="nameRow">
       <input class="inp" id="pname" maxlength="12" placeholder="Dein Spitzname" autocomplete="off" autocapitalize="words">
       <input class="inp" id="bcode" maxlength="12" placeholder="Klassen-Code" autocomplete="off" autocapitalize="characters">
     </div>
     <div class="hsbox"><b id="hsTitle">🏆 Bestenliste</b><ol id="hsList"></ol><small id="hsNote"></small></div>
-    <div style="opacity:.55;font-size:12px;font-weight:700">Version 3.5</div>
+    <div style="opacity:.55;font-size:12px;font-weight:700">Version 3.6</div>
   </div>
   <div id="menuBot">
     <div class="help">◀ ▶ Spur wechseln &nbsp;·&nbsp; ⬆ Springen<br>2× tippen = Doppelsprung!</div>
@@ -199,6 +217,7 @@ h1 span{color:#ffd23e}
     <div id="stats"></div>
     <div id="score"></div>
     <div id="newrec"></div>
+    <div id="reward"></div>
     <div class="hsbox" id="wbox"><b id="wTitle">🏆 Bestenliste</b><ol id="wlist"></ol><small id="wNote"></small></div>
   </div>
   <button class="big" id="next">Weiter ▶</button>
@@ -213,6 +232,7 @@ h1 span{color:#ffd23e}
     <button class="mid" id="pMenu">Zum Menü</button>
   </div>
 </div>
+<div id="fx" class="hidden"></div>
 <div id="rotate">📱<br>Bitte dreh dein Handy<br>ins Hochformat!</div>
 <div id="err">Das Spiel konnte nicht geladen werden. 😕<br>Bitte prüfe die Internet-Verbindung<br>und lade die Seite neu.</div>
 
@@ -1421,6 +1441,46 @@ function updateParticles(dt){
   pfA.position.needsUpdate=pfA.aSize.needsUpdate=pfA.aColor.needsUpdate=true;
 }
 
+/* Fahrzeuge: wählbar im Menü, mit Sternen freigeschaltet, jedes mit eigenen Eigenschaften.
+   sp=Tempo, jp=Sprungkraft, ag=Wendigkeit (Spurwechsel), mg=Sammelradius, h=Höhe der Standfläche */
+var VEHS=[
+  {id:'foot',n:'Zu Fuß',em:'🎅',need:0,sp:1,jp:1,ag:1,mg:1,h:0,txt:'Der Klassiker – ohne Extras'},
+  {id:'skate',n:'Skateboard',em:'🛹',need:3,sp:1.1,jp:1,ag:1.3,mg:1,h:.2,txt:'Wendig und etwas schneller'},
+  {id:'surf',n:'Surfbrett',em:'🏄',need:8,sp:.95,jp:1.12,ag:1,mg:1,h:.14,txt:'Springt höher, aber etwas langsamer'},
+  {id:'roller',n:'Roller',em:'🛴',need:15,sp:1.15,jp:1,ag:1.15,mg:1.15,h:.22,txt:'Flitzer: schnell und wendig'},
+  {id:'hover',n:'Schwebebrett',em:'🛸',need:25,sp:1,jp:1.1,ag:1,mg:1.6,h:.36,txt:'Springt höher und holt Geschenke heran'},
+  {id:'rocket',n:'Raketen-Schlitten',em:'🚀',need:40,sp:1.15,jp:1.12,ag:1.1,mg:1.3,h:.34,txt:'Das Beste von allem'}
+];
+function totalStars(){ var t=0,k; for(k in SV.best) if(SV.best[k]&&SV.best[k].st) t+=SV.best[k].st; return t; }
+function vehById(id){ for(var i=0;i<VEHS.length;i++) if(VEHS[i].id===id) return VEHS[i]; return VEHS[0]; }
+function vehOk(id){ return vehById(id).need<=totalStars(); }
+function vehParts(id){
+  var P=[],i,sx,PI=Math.PI;
+  if(id==='skate'){
+    P.push(G(bx(.62,.08,1.5),{c:0x2a6fe0,c2:0x1a4aa8,p:[0,.16,0]}),G(bx(.5,.02,1.3),{c:0xffd23e,p:[0,.205,0]}));
+    for(sx=-1;sx<=1;sx+=2) for(i=-1;i<=1;i+=2) P.push(G(cy(.09,.09,.08,10),{c:0xffffff,r:[0,0,PI/2],p:[sx*.26,.09,i*.5]}));
+  } else if(id==='surf'){
+    P.push(G(sp(.5,14,8),{c:0xff7ad9,c2:0xd04aa8,s:[.62,.14,1.7],p:[0,.1,0]}),G(sp(.5,12,6),{c:0xffffff,s:[.12,.15,1.45],p:[0,.115,0]}));
+  } else if(id==='roller'){
+    P.push(G(bx(.5,.07,1.4),{c:0x37c95a,c2:0x1f8a3a,p:[0,.18,0]}),G(cy(.035,.035,1.0,6),{c:0xcfcfd8,r:[-.18,0,0],p:[0,.7,.62]}),G(cy(.03,.03,.6,6),{c:0x2a2a34,r:[0,0,PI/2],p:[0,1.2,.7]}));
+    for(i=-1;i<=1;i+=2) P.push(G(cy(.1,.1,.07,10),{c:0x23232c,r:[0,0,PI/2],p:[0,.1,i*.58]}));
+  } else if(id==='hover'){
+    P.push(G(cy(.62,.7,.1,18),{c:0xbfeaff,c2:0x4a7fe0,p:[0,.3,0]}),G(tor(.66,.05,6,20),{c:0x6cf0ff,r:[PI/2,0,0],p:[0,.3,0]}),G(sp(.2,8,6),{c:0xff7ad9,s:[1,.4,1],p:[0,.16,0]}));
+  } else if(id==='rocket'){
+    for(sx=-1;sx<=1;sx+=2) P.push(G(cy(.04,.04,1.8,6),{c:0xd8d8e0,r:[PI/2,0,0],p:[sx*.3,.08,0]}));
+    P.push(G(bx(.7,.18,1.5),{c:0xe8212e,c2:0xa01020,p:[0,.24,0]}),G(cn(.3,.5,10),{c:0xffd23e,r:[PI/2,0,0],p:[0,.26,1.0]}),G(cn(.2,.55,8),{c:0xff9a30,c2:0xffe066,r:[-PI/2,0,0],p:[0,.26,-1.05]}));
+  }
+  return P;
+}
+var VEH=VEHS[0],vehG=null,vehH=0;
+function setVehicle(id){
+  VEH=vehById(id);
+  if(vehG){ model.remove(vehG); if(vehG.geometry) vehG.geometry.dispose(); vehG=null; }
+  vehH=VEH.h; model.position.y=-.9+vehH;
+  if(VEH.id!=='foot'){ vehG=new THREE.Mesh(build(vehParts(VEH.id)),VC); vehG.castShadow=true; model.add(vehG); }
+}
+setVehicle(vehOk(SV.veh)?SV.veh:'foot');
+
 /* =====================================================================
    Endgegner: Modelle, Schneeball-Wellen, Treffer durch Glocken
    ===================================================================== */
@@ -1636,7 +1696,7 @@ document.addEventListener('visibilitychange',function(){
    Spiel-Logik
    ===================================================================== */
 var GRAV=TH.grav||30,JUMP_V=10.5,JUMP2_V=9.5;
-var state='menu',time=0,auto=false;
+var state='menu',time=0,auto=false,dynSp=1,cleanT=0,fastToast=false;
 var P={x:0,y:0,z:0,vy:0,lane:0,ground:true,jumps:0};
 var curCp=cps[0],invuln=0,wantJump=0,flip=0,runPh=0,rT=0,rDone=false,winT=0,winShown=false,winFrom=null,sledV=0;
 var runT=0,gotG=0,gotB=0,falls=0,camSnap=false,sq=0,shake=0,stepSide=1;
@@ -1660,7 +1720,7 @@ function hud(){ $('nG').textContent=gotG; $('nB').textContent=gotB; }
 $('tG').textContent='/'+nGifts; $('tB').textContent='/'+nBells;
 
 function resetGame(){
-  gotG=0;gotB=0;falls=0;combo=0;runT=0; hud();
+  gotG=0;gotB=0;falls=0;combo=0;runT=0;dynSp=1;cleanT=0;fastToast=false; hud();
   if(BOSS) bossReset();
   resetItems();
   cps.forEach(function(c,i){setCp(c,i===0);}); curCp=cps[0];
@@ -1671,20 +1731,20 @@ function resetGame(){
 function startGame(){
   initAudio(); startMusic();
   resetGame();
-  $('start').classList.add('hidden'); $('win').classList.add('hidden');
+  $('start').classList.add('hidden'); $('win').classList.add('hidden'); $('fx').classList.add('hidden');
   $('hud').style.display='block'; $('controls').style.display='flex';
   state='play';
 }
 function fail(kind){
   if(state!=='play') return;
-  state='respawn'; rT=0; rDone=false; falls++;
+  state='respawn'; rT=0; rDone=false; falls++; cleanT=0; dynSp=Math.max(.85,dynSp-.08);
   if(kind==='hit'){ P.vy=7; emit(P.x,P.y+1,P.z,16,5,0xffffff,.8,true); shake=.35; }
   sfx.oops();
   toast(kind==='fall'?'Platsch! Gleich nochmal ❄️':'Hoppla! Gleich nochmal ⛄',1500);
 }
 function doJump(){
   if(P.jumps<2&&P.y>-.9){
-    P.vy=P.jumps===0?JUMP_V:JUMP2_V; sq=.25;
+    P.vy=(P.jumps===0?JUMP_V:JUMP2_V)*VEH.jp; sq=.25;
     if(P.jumps===1){ flip=1; sfx.jump2(); emit(P.x,P.y+.3,P.z,10,3,0xfff2a0,.55); }
     else { sfx.jump(); emit(P.x,P.y+.05,P.z,5,2.2,0xffffff,.8,true); }
     P.jumps++; P.ground=false; return true;
@@ -1719,11 +1779,16 @@ function autopilot(){
 }
 
 function updatePlay(dt){
-  var dist=-P.z,speed=(6.5+1.5*Math.min(1,dist/TOTAL))*DF.speed*(TH.spd||1),i;
+  var dist=-P.z,i;
+  // Tempo passt sich an: wächst im Level und mit fehlerfreiem Spielen, Stürze bremsen wieder ab
+  cleanT+=dt; var tg=.95+.1*Math.min(1,dist/TOTAL)+Math.min(.17,cleanT*.008);
+  dynSp+=(tg-dynSp)*Math.min(1,dt*.6); dynSp=Math.max(.85,Math.min(1.2,dynSp));
+  if(dynSp>1.1&&!fastToast){ fastToast=true; toast('Santa wird schneller! ⚡',1500); } else if(dynSp<1.04) fastToast=false;
+  var speed=(6.5+1.5*Math.min(1,dist/TOTAL))*DF.speed*(TH.spd||1)*dynSp*VEH.sp;
   if(auto) autopilot();
   runT+=dt; bossUpdate(dt);
   P.z-=speed*dt;
-  P.x+=(P.lane*LANE-P.x)*Math.min(1,dt*14);
+  P.x+=(P.lane*LANE-P.x)*Math.min(1,dt*14*VEH.ag);
   var prevY=P.y;
   P.vy-=GRAV*dt; P.y+=P.vy*dt;
   var sup=supported(P.x,P.z);
@@ -1745,9 +1810,9 @@ function updatePlay(dt){
   // Einsammeln
   var cy_=P.y+.8,hp=false;
   for(i=0;i<items.length;i++){var it=items[i];
-    if(it.taken||Math.abs(it.z-P.z)>1.3) continue;
+    if(it.taken||Math.abs(it.z-P.z)>1.3*VEH.mg) continue;
     var ex=it.x-P.x,ey=it.y-cy_,ez=it.z-P.z;
-    if(ex*ex+ey*ey+ez*ez<1.45){
+    if(ex*ex+ey*ey+ez*ez<1.45*VEH.mg*VEH.mg){
       it.taken=true; setItem(it,time); itemMeshes[it.variant].instanceMatrix.needsUpdate=true;
       haloPos.setY(i,-999); hp=true;
       if(it.type){ gotB++; if(BOSS) bossHit(); sfx.bell(); bump($('nB')); emit(it.x,it.y,it.z,14,4.5,0xffe066,.7); }
@@ -1792,8 +1857,10 @@ function updateWin(dt){
 
 function animate(dt){
   var i;
+  if(vehG) vehG.visible=!(state==='win'&&santa.parent===sledGroup);
   sq+=(0-sq)*Math.min(1,dt*9);
   if(state==='win'&&santa.parent===sledGroup){
+    model.position.y=-.9;
     armR.rotation.set(0,0,2.5+Math.sin(time*8)*.4); armL.rotation.set(0,0,-.3); legL.rotation.x=legR.rotation.x=0;
     hatTip.rotation.z=-.9+Math.sin(time*5)*.15;
   } else {
@@ -1803,10 +1870,10 @@ function animate(dt){
       armR.rotation.set(0,0,2.5+Math.sin(time*7)*.4); armL.rotation.set(0,0,-.3); legL.rotation.x=legR.rotation.x=0;
       hatTip.rotation.z=-.9+Math.sin(time*6)*.2;
     } else {
-      var sw=Math.sin(runPh);
-      if(P.ground){ legL.rotation.x=sw*1.0; legR.rotation.x=-sw*1.0; armL.rotation.set(-sw*.9,0,-.22); armR.rotation.set(sw*.9,0,.22);
-        model.position.y=-.9+Math.abs(Math.cos(runPh))*.08; inner.rotation.x=.1; }
-      else { legL.rotation.x=.8; legR.rotation.x=-.5; armL.rotation.set(0,0,-2.3); armR.rotation.set(0,0,2.3); model.position.y=-.9; inner.rotation.x=0; }
+      var sw=Math.sin(runPh),lk=vehG?.12:1;
+      if(P.ground){ legL.rotation.x=sw*lk; legR.rotation.x=-sw*lk; armL.rotation.set(-sw*.9,0,-.22); armR.rotation.set(sw*.9,0,.22);
+        model.position.y=-.9+vehH+Math.abs(Math.cos(runPh))*(vehG?.02:.08); inner.rotation.x=.1; }
+      else { legL.rotation.x=.8; legR.rotation.x=-.5; armL.rotation.set(0,0,-2.3); armR.rotation.set(0,0,2.3); model.position.y=-.9+vehH; inner.rotation.x=0; }
       model.scale.set(1-sq*.5,1+sq,1-sq*.5);
       hatTip.rotation.z=-.9+Math.sin(runPh*2)*.18+Math.max(-.6,Math.min(.6,P.vy*.05));
       if(state==='play'){
@@ -2048,6 +2115,19 @@ function starsText(n){ return n?('⭐⭐⭐'.slice(0,n)):''; }
 
 /* ---------- Menü ---------- */
 function reloadClean(){ location.replace(location.pathname+'?v='+Date.now()); }
+function renderVeh(){
+  var h='',ts=totalStars();
+  VEHS.forEach(function(v){ var ok=v.need<=ts;
+    h+='<button class="vbtn'+(v.id===VEH.id?' sel':'')+(ok?'':' lock')+'" data-v="'+v.id+'"><span class="ve">'+(ok?v.em:'🔒')+'</span><span class="vn">'+(ok?v.n:'ab '+v.need+'⭐')+'</span></button>'; });
+  $('vehRow').innerHTML=h;
+  $('vehInfo').innerHTML='⭐ '+ts+' Sterne gesammelt<br><b>'+VEH.em+' '+VEH.n+':</b> '+VEH.txt;
+}
+$('vehRow').addEventListener('click',function(e){
+  var el=e.target.closest?e.target.closest('.vbtn'):null; if(!el) return;
+  var v=vehById(el.getAttribute('data-v')),ts=totalStars();
+  if(v.need>ts){ $('vehInfo').innerHTML='🔒 '+v.em+' '+v.n+' gibt es ab '+v.need+' Sternen.<br>Du hast '+ts+' ⭐ – sammle mehr Sterne!'; return; }
+  SV.veh=v.id; writeSave(); setVehicle(v.id); renderVeh();
+});
 function renderMenu(){
   var map=$('map'),h='';
   STAGES.forEach(function(st,i){
@@ -2058,6 +2138,7 @@ function renderMenu(){
   map.innerHTML=h;
   var sel=map.querySelector('.sel'); if(sel&&sel.scrollIntoView){ try{ map.scrollLeft=sel.offsetLeft-(map.clientWidth-sel.offsetWidth)/2; }catch(e){} }
   var dr=$('diffRow'); dr.innerHTML=['😊 Leicht','🙂 Normal','😎 Schwer'].map(function(t,i){ return '<button class="dbtn'+(i===DIFF?' sel':'')+'" data-d="'+i+'">'+t+'</button>'; }).join('');
+  renderVeh();
   $('stageSub').innerHTML=STAGE.emoji+' '+(BOSSLV?'Endgegner: ':'Station '+(SV.lv+1)+': ')+esc(STAGE.name)+(BOSSLV?'<br>Sammle Glocken 🔔 – sie treffen den Boss!':'<br>Sammle Geschenke und finde deinen Schlitten! 🛷');
   var bs=SV.best[STAGE.id+'-'+DIFF];
   $('hsTitle').textContent='🏆 '+STAGE.name+' · '+DIFF_NAMES[DIFF]+(bs?' · dein Rekord '+bs.s:'');
@@ -2084,14 +2165,31 @@ $('pRestart').addEventListener('click',function(){ setPause(false); startGame();
 $('next').addEventListener('click',function(){ if(SV.lv<STAGES.length-1){ SV.lv++; writeSave(); reloadClean(); } });
 renderMenu();
 
+/* ---------- Belohnungen ---------- */
+function rewardFx(st){
+  var fx=$('fx'),n=st===3?44:(st===2?22:8),em=st===3?['🎁','🎉','⭐','🔔','🎆','✨']:['🎁','🎉','⭐','🔔'],h='',i;
+  for(i=0;i<n;i++) h+='<span class="fxi" style="left:'+Math.round(Math.random()*96)+'%;animation-duration:'+(2.6+Math.random()*2.4).toFixed(1)+'s;animation-delay:'+(Math.random()*1.6).toFixed(1)+'s">'+em[i%em.length]+'</span>';
+  if(st===3) for(i=0;i<5;i++) h+='<span class="fxb" style="left:'+(10+i*20)+'%;top:'+(14+(i%2)*22)+'%;animation-delay:'+(i*.35).toFixed(2)+'s">🎆</span>';
+  fx.innerHTML=h; fx.classList.remove('hidden');
+  setTimeout(function(){ fx.classList.add('hidden'); fx.innerHTML=''; },st===3?7000:5500);
+}
+function rewardShow(st,starB,tsBefore){
+  var rw='',ts=totalStars();
+  if(starB) rw+='🌟 Stern-Bonus: +'+Math.round(starB*DF.mult)+' Punkte<br>';
+  if(st===3) rw+='<span class="dance">🎅</span> Tanz-Party! <span class="dance d2">💃</span><br>';
+  VEHS.forEach(function(v){ if(v.need>tsBefore&&v.need<=ts) rw+='🎁 Neues Fahrzeug: <b>'+v.em+' '+v.n+'</b>! Wähle es im Menü.<br>'; });
+  rw+='<small>⭐ '+ts+' Sterne gesammelt</small>';
+  $('reward').innerHTML=rw; rewardFx(st);
+}
 /* ---------- Punkte & Siegbildschirm ---------- */
 function winScreenExtra(st){
   var gG=Math.min(gotG,nGifts),gB=Math.min(gotB,nBells),par=SLED_D/7.2+12;
-  var timeB=Math.max(0,Math.round(par-runT))*5,clean=Math.max(0,100-falls*25),boss=BOSSLV?300:0;
-  var score=Math.round((gG*10+gB*25+timeB+clean+boss)*DF.mult);
-  var key=STAGE.id+'-'+DIFF,old=SV.best[key],isNew=!old||score>old.s;
+  var timeB=Math.max(0,Math.round(par-runT))*5,clean=Math.max(0,100-falls*25),boss=BOSSLV?300:0,starB=st===3?150:(st===2?60:0);
+  var score=Math.round((gG*10+gB*25+timeB+clean+boss+starB)*DF.mult);
+  var key=STAGE.id+'-'+DIFF,old=SV.best[key],isNew=!old||score>old.s,tsBefore=totalStars();
   if(isNew) SV.best[key]={s:score,st:Math.max(st,old?old.st:0)}; else if(st>old.st) old.st=st;
   SV.done[STAGE.id]=true; writeSave();
+  rewardShow(st,starB,tsBefore);
   $('winH').innerHTML=(BOSSLV?'Boss besiegt! ':'Geschafft! ')+'<span>🎉</span>';
   $('stats').innerHTML='🎁 '+gG+' von '+nGifts+' &nbsp; 🔔 '+gB+' von '+nBells+'<br><small style="font-size:.6em;opacity:.85">'+DIFF_NAMES[DIFF]+' · '+Math.round(runT)+' s · Punkte ×'+DF.mult+'</small>';
   $('score').textContent=score+' Punkte';
