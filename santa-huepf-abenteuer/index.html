@@ -40,6 +40,11 @@ html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;-webkit-text
 @keyframes fxfall{to{transform:translateY(115vh) rotate(360deg)}}
 .fxb{position:absolute;font-size:clamp(34px,10vw,64px);opacity:0;animation:fxburst 1.2s ease-out infinite}
 @keyframes fxburst{0%{transform:scale(.2);opacity:0}30%{opacity:1}100%{transform:scale(1.5);opacity:0}}
+#spd{position:fixed;top:0;left:0;right:0;bottom:0;pointer-events:none;opacity:0;z-index:2;
+  background:repeating-conic-gradient(from 0deg at 50% 58%,rgba(255,255,255,0) 0 4deg,rgba(255,255,255,.55) 4.4deg 4.9deg,rgba(255,255,255,0) 5.3deg 9deg);
+  -webkit-mask-image:radial-gradient(circle at 50% 58%,transparent 34%,#000 82%);mask-image:radial-gradient(circle at 50% 58%,transparent 34%,#000 82%);
+  animation:spdrush .22s linear infinite}
+@keyframes spdrush{from{transform:scale(1)}to{transform:scale(1.18)}}
 #hudBtns{display:flex;gap:10px;pointer-events:auto}
 #pause{justify-content:center;background:rgba(4,10,40,.74)}
 #pause .card{display:flex;flex-direction:column;align-items:center;gap:8px;padding:20px 18px 22px}
@@ -167,6 +172,7 @@ h1 span{color:#ffd23e}
 <body>
 <canvas id="c"></canvas>
 <div id="vig"></div>
+<div id="spd"></div>
 
 <div id="hud">
   <div id="hudRow">
@@ -205,7 +211,7 @@ h1 span{color:#ffd23e}
       <input class="inp" id="bcode" maxlength="12" placeholder="Klassen-Code" autocomplete="off" autocapitalize="characters">
     </div>
     <div class="hsbox"><b id="hsTitle">🏆 Bestenliste</b><ol id="hsList"></ol><small id="hsNote"></small></div>
-    <div style="opacity:.55;font-size:12px;font-weight:700">Version 3.12</div>
+    <div style="opacity:.55;font-size:12px;font-weight:700">Version 3.13</div>
   </div>
   <div id="menuBot">
     <div class="help">◀ ▶ Spur wechseln &nbsp;·&nbsp; ⬆ Springen<br>2× tippen = Doppelsprung!</div>
@@ -365,7 +371,7 @@ function resize(){
   var w=canvas.clientWidth||document.documentElement.clientWidth||window.innerWidth,h=canvas.clientHeight||document.documentElement.clientHeight||window.innerHeight;
   renderer.setSize(w,h,false);
   camera.aspect=w/h;
-  camera.fov=(w/h<1)?72:56;
+  camera.fov=(w/h<1)?72:56; camera.userData.fov0=camera.fov;
   camera.updateProjectionMatrix();
   U.pscale.value=h*pixelRatio/(2*Math.tan(camera.fov*Math.PI/360));
   U.dpr.value=pixelRatio;
@@ -1700,7 +1706,7 @@ document.addEventListener('visibilitychange',function(){
    Spiel-Logik
    ===================================================================== */
 var GRAV=TH.grav||30,JUMP_V=10.5,JUMP2_V=9.5;
-var state='menu',time=0,auto=false,dynSp=1,cleanT=0,fastToast=false;
+var curSpeed=7,camBump=0,yawS=0,prevPX=0,spdOp=-1,state='menu',time=0,auto=false,dynSp=1,cleanT=0,fastToast=false;
 var P={x:0,y:0,z:0,vy:0,lane:0,ground:true,jumps:0};
 var curCp=cps[0],invuln=0,wantJump=0,flip=0,runPh=0,rT=0,rDone=false,winT=0,winShown=false,winFrom=null,sledV=0;
 var runT=0,gotG=0,gotB=0,falls=0,camSnap=false,sq=0,shake=0,stepSide=1;
@@ -1788,7 +1794,7 @@ function updatePlay(dt){
   cleanT+=dt; var tg=.95+.1*Math.min(1,dist/TOTAL)+Math.min(.17,cleanT*.008);
   dynSp+=(tg-dynSp)*Math.min(1,dt*.6); dynSp=Math.max(.85,Math.min(1.2,dynSp));
   if(dynSp>1.1&&!fastToast){ fastToast=true; toast('Santa wird schneller! ⚡',1500); } else if(dynSp<1.04) fastToast=false;
-  var speed=(6.5+1.5*Math.min(1,dist/TOTAL))*DF.speed*(TH.spd||1)*dynSp*VEH.sp;
+  var speed=(6.5+1.5*Math.min(1,dist/TOTAL))*DF.speed*(TH.spd||1)*dynSp*VEH.sp; curSpeed=speed;
   if(auto) autopilot();
   runT+=dt; bossUpdate(dt);
   P.z-=speed*dt;
@@ -1797,7 +1803,7 @@ function updatePlay(dt){
   P.vy-=GRAV*dt; P.y+=P.vy*dt;
   var sup=supported(P.x,P.z);
   if(P.vy<=0&&P.y<=0&&sup&&prevY>-.45){
-    if(!P.ground&&P.vy<-4){ sfx.land(); sq=-.28; emit(P.x,.08,P.z,8,2.6,0xffffff,.9,true); }
+    if(!P.ground&&P.vy<-4){ camBump=Math.min(.5,-P.vy*.04); sfx.land(); sq=-.28; emit(P.x,.08,P.z,8,2.6,0xffffff,.9,true); }
     P.y=0;P.vy=0;P.ground=true;P.jumps=0;
   } else P.ground=false;
   if(wantJump>0){ if(doJump()) wantJump=0; else wantJump-=dt; }
@@ -1906,6 +1912,7 @@ function animate(dt){
       if(state==='play'){
         if(flip>0){ flip=Math.max(0,flip-dt*2.2); inner.rotation.x=(1-flip)*Math.PI*2; if(flip===0) inner.rotation.x=0; }
         inner.rotation.z=(P.lane*LANE-P.x)*.24;
+        var vx=(P.x-prevPX)/Math.max(dt,.001); prevPX=P.x; yawS+=(Math.max(-.32,Math.min(.32,-vx*.035))-yawS)*Math.min(1,dt*12); santa.rotation.y=Math.PI+yawS;
         santa.visible=(invuln>0&&!auto)?(Math.floor(time*14)%2===0):true;
       }
     }
@@ -1947,14 +1954,23 @@ function updateCamera(dt,snap){
     tmpB.set(sledGroup.position.x,sledGroup.position.y+1.2,sledGroup.position.z-.5);
   } else {
     var py=Math.max(P.y,0);
-    tmpA.set(P.x*.55,4.7+py*.25,P.z+7.6); tmpB.set(P.x*.75,1.2+py*.35,P.z-5);
+    var sp_=Math.max(-1,Math.min(3.5,curSpeed-6.5));     // schneller = Kamera weiter hinten
+    tmpA.set(P.x*.55,4.7+py*.25,P.z+7.6+sp_*.22); tmpB.set(P.x*.75,1.2+py*.35,P.z-5-sp_*.3);
   }
   var k=snap?1:1-Math.exp(-dt*(state==='win'?3:8));
   camPos.lerp(tmpA,k); camLook.lerp(tmpB,k);
   camera.position.copy(camPos);
+  // Kamera-Gefühl: Blickfeld weitet sich mit dem Tempo, Landungs-Stoß, leichtes Laufwippen
+  var f0=camera.userData.fov0||camera.fov,ft=f0;
+  if(state==='play'||state==='respawn') ft=f0+Math.max(-1.5,Math.min(7,(curSpeed-6.5)*1.6));
+  var df=(ft-camera.fov)*Math.min(1,dt*3); if(Math.abs(df)>.002){ camera.fov+=df; camera.updateProjectionMatrix(); }
+  camBump+=(0-camBump)*Math.min(1,dt*7); if(camBump>.002) camera.position.y-=camBump;
+  if(state==='play'&&P.ground&&!vehG) camera.position.y+=Math.sin(runPh*2)*.035;
   if(shake>0){ shake=Math.max(0,shake-dt); camera.position.x+=(Math.random()-.5)*shake*.5; camera.position.y+=(Math.random()-.5)*shake*.5; }
   camera.lookAt(camLook);
-  if(state==='play') camera.rotateZ((P.lane*LANE-P.x)*-.018);
+  if(state==='play') camera.rotateZ((P.lane*LANE-P.x)*-.028);
+  var so=(state==='play')?Math.max(0,Math.min(.5,(curSpeed-7.6)/4.5)):0;
+  if(Math.abs(so-spdOp)>.02){ spdOp=so; $('spd').style.opacity=so; }
 }
 function updateWorld(dt){
   // Sternschnuppen
