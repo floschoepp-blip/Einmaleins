@@ -148,6 +148,8 @@ h1 span{color:#ffd23e}
 #start,#start *,#win,#win *{touch-action:pan-y}
 #map,#map *{touch-action:pan-x pan-y}
 #start .inp{touch-action:manipulation}
+#start.typing #menuBot{position:static;background:none;margin-top:12px;padding-bottom:12px}
+#start.typing{padding-bottom:42vh}
 #start #vehRow,#start #vehRow *,#start #map,#start #map *{touch-action:pan-x pan-y}
 #menuBot{position:sticky;bottom:calc(-30px - env(safe-area-inset-bottom));margin-left:-18px;margin-right:-18px;padding:18px 18px calc(30px + env(safe-area-inset-bottom));width:calc(100% + 36px);
   background:linear-gradient(180deg,rgba(4,8,36,0) 0,rgba(4,8,36,.96) 26px)}
@@ -212,7 +214,7 @@ h1 span{color:#ffd23e}
       <input class="inp" id="bcode" maxlength="12" placeholder="Klassen-Code" autocomplete="off" autocapitalize="characters">
     </div>
     <div class="hsbox"><b id="hsTitle">🏆 Bestenliste</b><ol id="hsList"></ol><small id="hsNote"></small></div>
-    <div style="opacity:.55;font-size:12px;font-weight:700">Version 3.21</div>
+    <div style="opacity:.55;font-size:12px;font-weight:700">Version 3.22</div>
   </div>
   <div id="menuBot">
     <div class="help">◀ ▶ Spur wechseln &nbsp;·&nbsp; ⬆ Springen<br>2× tippen = Doppelsprung!</div>
@@ -2568,8 +2570,8 @@ window.addEventListener('keydown',function(e){
 // Kein Zoomen, Scrollen oder Markieren beim Tippen (iOS ignoriert user-scalable=no, deshalb hier von Hand)
 document.addEventListener('touchstart',function(e){ if(e.touches.length>1) e.preventDefault(); },{passive:false});
 var lastTouchEnd=0;
-document.addEventListener('touchend',function(e){ var n=Date.now(); if(n-lastTouchEnd<350) e.preventDefault(); lastTouchEnd=n; },{passive:false});
-window.addEventListener('scroll',function(){ if(window.scrollX||window.scrollY) window.scrollTo(0,0); });
+document.addEventListener('touchend',function(e){ var n=Date.now(); if(n-lastTouchEnd<350&&!(e.target&&e.target.tagName==='INPUT')) e.preventDefault(); lastTouchEnd=n; },{passive:false});
+window.addEventListener('scroll',function(){ var a=document.activeElement; if(a&&a.tagName==='INPUT') return; if(window.scrollX||window.scrollY) window.scrollTo(0,0); });
 if(window.visualViewport){
   var vpMeta=document.querySelector('meta[name=viewport]'),vpBase=vpMeta?vpMeta.getAttribute('content'):'',vpBusy=false;
   window.visualViewport.addEventListener('resize',function(){
@@ -2727,6 +2729,12 @@ $('diffRow').addEventListener('click',function(e){
 });
 $('pname').addEventListener('change',function(){ PNAME=this.value.trim().slice(0,12); this.value=PNAME; SV.name=PNAME; writeSave(); lsSet('sbb-name',PNAME); renderMenu(); });
 $('bcode').addEventListener('change',function(){ BCODE=cleanCode(this.value); this.value=BCODE; lsSet('sbb-bcode',BCODE); renderMenu(); });
+// Tastatur auf dem Handy: Eingabefeld muss sichtbar bleiben (Startknopf-Leiste weg, Feld in die Mitte scrollen)
+['pname','bcode'].forEach(function(id){ var el=$(id);
+  el.addEventListener('focus',function(){ $('start').classList.add('typing'); setTimeout(function(){ try{ el.scrollIntoView({block:'center'}); }catch(e){} },300); });
+  el.addEventListener('blur',function(){ $('start').classList.remove('typing'); });
+});
+if(window.visualViewport) window.visualViewport.addEventListener('resize',function(){ var a=document.activeElement; if(a&&a.tagName==='INPUT') setTimeout(function(){ try{ a.scrollIntoView({block:'center'}); }catch(e){} },100); });
 ['pname','bcode'].forEach(function(id){ $(id).addEventListener('keydown',function(e){ e.stopPropagation(); if(e.key==='Enter') this.blur(); }); });
 $('menuBtn').addEventListener('click',reloadClean);
 $('pMenu').addEventListener('click',reloadClean);
