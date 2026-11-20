@@ -1618,7 +1618,7 @@ function buildHover(){
   var g=new THREE.Group(); g.add(vwMesh(L)); if(D.length) g.add(new THREE.Mesh(build(D),VC)); return {grp:g};
 }
 // Wellen: Teilstücke von 20 m, nur in der Nähe von Santa neu berechnet
-function waveH(x,z,t){ return .05+.07*Math.sin(.55*z-t*1.6+.25*x)+.04*Math.sin(1.3*z-t*2.7-.6*x+1.3)+.02*Math.sin(2.1*x+1.1*z-t*1.4); }
+function waveH(x,z,t){ return .15+.07*Math.sin(.55*z-t*1.6+.25*x)+.04*Math.sin(1.3*z-t*2.7-.6*x+1.3)+.02*Math.sin(2.1*x+1.1*z-t*1.4); }
 function waveDZ(x,z,t){ return .07*.55*Math.cos(.55*z-t*1.6+.25*x)+.04*1.3*Math.cos(1.3*z-t*2.7-.6*x+1.3)+.02*1.1*Math.cos(2.1*x+1.1*z-t*1.4); }
 function buildSurf(){
   var g=new THREE.Group(),NX=12,XW=2.96,chunks=[];
@@ -1645,7 +1645,7 @@ function updateWater(t){
     C.m.visible=true;
     var geo=C.m.geometry,pos=geo.attributes.position,col=geo.attributes.color,NZ=C.NZ;
     for(r=0;r<=NZ;r++){ var z=C.a+(C.b-C.a)*r/NZ;
-      for(c=0;c<=12;c++){ var x=-2.96+5.92*c/12,h=waveH(x,z,t),vi=r*13+c,u=Math.max(0,Math.min(1,(h+.04)/.2)),q=u<.55?u/.55:1,col0=u<.55?WC[0]:WC[1],col1=u<.55?WC[1]:WC[2],f=u<.55?q:(u-.55)/.45;
+      for(c=0;c<=12;c++){ var x=-2.96+5.92*c/12,h=waveH(x,z,t),vi=r*13+c,u=Math.max(0,Math.min(1,(h-.06)/.2)),q=u<.55?u/.55:1,col0=u<.55?WC[0]:WC[1],col1=u<.55?WC[1]:WC[2],f=u<.55?q:(u-.55)/.45;
         pos.setXYZ(vi,x,.02+h,z); col.setXYZ(vi,col0[0]+(col1[0]-col0[0])*f,col0[1]+(col1[1]-col0[1])*f,col0[2]+(col1[2]-col0[2])*f); } }
     pos.needsUpdate=true; col.needsUpdate=true; geo.computeVertexNormals();
   }
@@ -1734,7 +1734,7 @@ function worldUpdate(){
   VW.rideY=0; VW.rideP=0;
   if(VW.cur==='surf'){
     updateWater(time);
-    if(state==='play'||state==='menu'){ VW.rideY=waveH(P.x,P.z,time)-.02; VW.rideP=waveDZ(P.x,P.z,time)*1.1; }
+    if(state==='play'||state==='menu'){ VW.rideY=waveH(P.x,P.z,time)-.08; VW.rideP=waveDZ(P.x,P.z,time)*1.1; }
   }
 }
 applyWorld();
