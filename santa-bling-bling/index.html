@@ -138,7 +138,7 @@ input{width:100%;max-width:280px;padding:10px 12px;border-radius:12px;border:0;f
 <path d="M146 118 Q158 112 164 100" fill="none" stroke="#ffd54a" stroke-width="2" stroke-linecap="round"/>
 <path d="M164 100 l1.8 -4.6 l1.8 4.6 l4.6 1.8 l-4.6 1.8 l-1.8 4.6 l-1.8 -4.6 l-4.6 -1.8z" fill="url(#lg)"/>
 </svg>
-<div class="lt"><small>SANTA</small><h1><span class="logo">Bling Bling</span></h1><div class="tag">Die wilde Bescherung</div><div class="sub">v1.32 · 7 Städte · bring alle Geschenke zu den Kindern!</div></div></div>
+<div class="lt"><small>SANTA</small><h1><span class="logo">Bling Bling</span></h1><div class="tag">Die wilde Bescherung</div><div class="sub">v1.33 · 7 Städte · bring alle Geschenke zu den Kindern!</div></div></div>
   <div class="cols">
    <section class="sec"><h3><i>1</i> Wer bist du? <em id="stot"></em></h3>
     <input id="name" maxlength="12" placeholder="Dein Name" autocomplete="off">
@@ -2144,7 +2144,7 @@ function animalsInit(sp,sx,sy){
  for(const [k,n,v] of tab){
   let base=null;
   for(let i=0;i<n;i++){
-   if(!base||ANI[k].fly===undefined||i%4===0)base=roadPointNear(sx,sy,1900,170);
+   if(k==='crab'&&sp.id==='tropen')base={x:260+Math.random()*2800,y:2470+Math.random()*120};else if(!base||ANI[k].fly===undefined||i%4===0)base=roadPointNear(sx,sy,1900,170);
    const j=ANI[k].fly?30:70;
    out.push({k,v,x:base.x+(Math.random()-.5)*j*2,y:base.y+(Math.random()-.5)*j*2,vx:0,vy:0,t:Math.random()*3,ang:Math.random()*6.283,mv:false,fl:0,hit:0,ph:Math.random()*6});
   }
@@ -2260,7 +2260,7 @@ Object.assign(ANI,{
  capybara:{r:9,wk:15,run:95,fd:80},frog:{r:4,wk:14,run:120,fd:80}
 });
 Object.assign(CITY_ANIMALS,{
- tropen:[['crab',6,0],['pelican',3,0],['turtle',3,0],['parrot',4,0],['monkey',2,1],['flamingo',3,0]],
+ tropen:[['crab',16,0],['pelican',3,0],['turtle',3,0],['parrot',4,0],['monkey',2,1],['flamingo',3,0]],
  australien:[['kangaroo',4,0],['koala',3,0],['emu',3,0],['wombat',2,0],['cockatoo',5,0],['dog',2,0]],
  amazonas:[['monkey',6,0],['sloth',2,0],['toucan',3,0],['parrot',4,0],['jaguar',1,0],['capybara',3,0],['frog',5,0]]
 });
@@ -2366,6 +2366,8 @@ ANI2.frog=(tm,mv,v,fl,ph)=>{
  circ(3.6,-2.1,1.5,'#3dbb5a');circ(3.6,2.1,1.5,'#3dbb5a');circ(3.8,-2.1,.8,'#fff');circ(3.8,2.1,.8,'#fff');circ(3.9,-2.1,.4,'#111');circ(3.9,2.1,.4,'#111');
  ctx.fillStyle='#4a8ae0';ctx.beginPath();ctx.ellipse(6,-3,1.3,1,0,0,6.283);ctx.ellipse(6,3,1.3,1,0,0,6.283);ctx.fill();
 };
+
+{const _c=ANI2.crab;ANI2.crab=(tm,mv,v,fl,ph)=>{ctx.save();ctx.scale(1.7,1.7);_c(tm,mv,v,fl,ph);ctx.restore();};}
 
 /* ===== details.js: Läden, Straßenmöbel, geparkte Autos, Passanten ===== */
 const CITYDET={
@@ -2851,7 +2853,8 @@ CITIES.push({weather:['hurricane','tornado'],id:'tropen',name:'Tropeninsel',icon
     {k:'tvolc',n:'Vulkan',x:2550,y:1470,w:270,h:170,z:96,cr:'small',photo:1,act:'photo',msg:'Der Vulkan spuckt Rauch! Foto 📸'},
     {k:'tsurf',n:'Surf-Laden',x:700,y:1500,w:130,h:84,z:32,cr:'small'},
     {k:'lk',n:'Lebkuchenhaus',x:2750,y:760,w:120,h:90,act:'bake',fit:true}];
-   return{W:3400,H:2400,roads:R,rivers:[],ponds:[{x:1750,y:2080,rx:240,ry:100}],lands,market:{x:1020,y:1440,fit:true},start:{x:1300,y:1215},
+   return{W:3800,H:3100,roads:R,rivers:[{pts:[[-300,3170],[4300,3170]],w:1100,sea:1},{pts:[[3950,-300],[3950,3500]],w:1100,sea:1}],ponds:[{x:1750,y:2080,rx:240,ry:100}],lands,market:{x:1020,y:1440,fit:true},start:{x:1300,y:1215},
+    hwPts:[[430,200],[3250,200],[3250,2440],[430,2440]],boats:[[1500,2780,1.57],[2600,2800,1.57],[3580,1000,0],[3600,1900,0]],sail:[[900,2900,1,'#fff',300,3200],[2000,2980,-1,'#ffd54a',300,3200],[3560,700,1,'#ff7a7a',3500,3700]],
     houses:{dens:.5,step:66,gap:12,lights:.55,tree:.05},palAt:()=>'tropen',trees:{n:190,kinds:['palm','palm','palm','banana','hibisc','mango'],r:[10,15]},edge:'palm',
     bonus:['jeep','buggy','quad','enduro'],vehicles:[{t:'jeep',road:'hwy66',f:.3},{t:'bus',road:'main1',f:.6},{t:'buggy',road:'hwy66',f:.75},{t:'deer',road:'nring',f:.4},{t:'quad',road:'main2',f:.5}],
     traffic:[{t:'jeep',n:2,spd:92},{t:'buggy',n:2,spd:100},{t:'quad',n:1,spd:84},{t:'bus',n:1,spd:70}],lamp:'mod',lampAll:1,decor:{snowmen:3,benches:3}};
@@ -2977,9 +2980,9 @@ function buildWorld(lv){
  // Straßen
  for(const r of sp.roads){const o={id:r.id,w:r.w,main:!!r.main,k:r.k||'road',nohouse:!!r.nohouse,traffic:!!r.traffic,pts:r.pts};o.smp=sampleLine(r.pts,12);w.roads.push(o);for(const s of o.smp){const e={x:s.x,y:s.y,r:r.w/2,id:r.id};w.rs.push(e);gridAdd(w.rg,s.x,s.y,e);}}
  // Flüsse / Bäche
- for(const rv of (sp.rivers||[])){const o={pts:rv.pts,w:rv.w,ice:!!rv.ice,blocks:rv.blocks!==false};o.smp=sampleLine(rv.pts,12);w.rivers.push(o);for(const s of o.smp){const e={x:s.x,y:s.y,r:rv.w/2,blocks:o.blocks,ice:o.ice};w.ws.push(e);gridAdd(w.wg,s.x,s.y,e);}}
+ for(const rv of (sp.rivers||[])){const o={pts:rv.pts,w:rv.w,ice:!!rv.ice,sea:!!rv.sea,blocks:rv.blocks!==false};o.smp=sampleLine(rv.pts,12);w.rivers.push(o);if(o.sea){const xs=rv.pts.map(p=>p[0]),ys=rv.pts.map(p=>p[1]);(w.seaR||(w.seaR=[])).push({x0:Math.min(...xs)-rv.w/2,x1:Math.max(...xs)+rv.w/2,y0:Math.min(...ys)-rv.w/2,y1:Math.max(...ys)+rv.w/2});continue;}for(const s of o.smp){const e={x:s.x,y:s.y,r:rv.w/2,blocks:o.blocks,ice:o.ice};w.ws.push(e);gridAdd(w.wg,s.x,s.y,e);}}
  const roadDist=(x,y)=>{let b=1e9;for(const s of gridGet(w.rg,x,y,1)){const d=Math.hypot(s.x-x,s.y-y)-s.r;if(d<b)b=d;}return b;};
- const waterDist=(x,y)=>{let b=1e9;for(const s of gridGet(w.wg,x,y,1)){const d=Math.hypot(s.x-x,s.y-y)-s.r;if(d<b)b=d;}for(const p of w.ponds){const d=(Math.hypot((x-p.x)/p.rx,(y-p.y)/p.ry)-1)*Math.min(p.rx,p.ry);if(d<b)b=d;}return b;};
+ const waterDist=(x,y)=>{let b=1e9;for(const q of(w.seaR||[])){const d=Math.max(q.x0-x,x-q.x1,q.y0-y,y-q.y1);if(d<b)b=d;}for(const s of gridGet(w.wg,x,y,1)){const d=Math.hypot(s.x-x,s.y-y)-s.r;if(d<b)b=d;}for(const p of w.ponds){const d=(Math.hypot((x-p.x)/p.rx,(y-p.y)/p.ry)-1)*Math.min(p.rx,p.ry);if(d<b)b=d;}return b;};
  w.roadDist=roadDist;w.waterDist=waterDist;
  // Brücken-Geländer: Straßenstücke über Wasser
  for(const r of w.roads){if(r.k==='path')continue;const s=r.smp;for(let i=0;i<s.length-1;i++){const a=s[i],b=s[i+1];if(waterDist(a.x,a.y)<0&&waterDist(b.x,b.y)<0&&w.ws.some(q=>q.blocks&&Math.hypot(q.x-a.x,q.y-a.y)<q.r+2))w.bridges.push({a,b,w:r.w});}}
@@ -3117,7 +3120,7 @@ function buildWorld(lv){
 /* Straße/Wasser-Helfer */
 function roadDistW(x,y){return W.roadDist(x,y);}
 function onRoad(x,y){return W.roadDist(x,y)<2;}
-function solidWater(x,y){let hit=false;for(const s of gridGet(W.wg,x,y,1)){if(s.blocks&&Math.hypot(s.x-x,s.y-y)<s.r){hit=true;break;}}if(hit&&W.roadDist(x,y)<4)return false;return hit;}
+function solidWater(x,y){let hit=false;if(W.seaR)for(const q of W.seaR)if(x>q.x0&&x<q.x1&&y>q.y0&&y<q.y1)return true;for(const s of gridGet(W.wg,x,y,1)){if(s.blocks&&Math.hypot(s.x-x,s.y-y)<s.r){hit=true;break;}}if(hit&&W.roadDist(x,y)<4)return false;return hit;}
 function onIce(x,y){
  if(W.sp.noIce)return false;
  for(const s of gridGet(W.wg,x,y,1)){if(!s.blocks&&Math.hypot(s.x-x,s.y-y)<s.r)return W.roadDist(x,y)>2;}
@@ -3192,6 +3195,7 @@ function startGame(idx){
   const p=roadByIdAt(v.road,v.f);vehicles.push({type:v.t,x:p.x,y:p.y,ang:p.ang,col:v.col});
  }
  for(const t of (sp.bonus||['sport','moto','van','pflug'])){const p=roadPointNear(sx,sy,1700,200);if(p&&!solidWater(p.x,p.y))vehicles.push({type:t,x:p.x,y:p.y,ang:Math.random()*6.28});}
+ for(const b of boatSpawns())vehicles.push(b);
  {const ap=(W.bld||[]).find(b=>b.paint==='airport');if(ap){const cs=[[ap.x+ap.w*.5,ap.y+ap.h+46],[ap.x+ap.w*.5,ap.y-46],[ap.x-60,ap.y+ap.h/2],[ap.x+ap.w+60,ap.y+ap.h/2],[ap.x+ap.w*.3,ap.y+ap.h+70],[ap.x+ap.w*.7,ap.y+ap.h+70]];for(const c of cs){const q={x:c[0],y:c[1]};pushOut(q,26);if(Math.hypot(q.x-c[0],q.y-c[1])<3&&!solidWater(q.x,q.y)){vehicles.push({type:'plane',x:c[0],y:c[1],ang:0});break;}}}}
  // Verkehr
  const traffic=[];
@@ -3299,6 +3303,7 @@ function findAction(){
  if(!P.fly&&G.skateCd<=0&&P.z<3&&onIce(P.x,P.y))cand(20,'Schlittschuhlaufen ⛸️',startSkate);
  if(!best&&P.veh!=='foot'&&!P.fly)best={lab:'Aussteigen',fn:exitVeh};
  if(P.veh==='plane')return {lab:'Landen 🛬',fn:exitVeh};
+ if(P.veh==='boat')return {lab:'Anlegen ⚓',fn:exitVeh};
  return best;
 }
 function doAction(){
@@ -3308,9 +3313,11 @@ function doAction(){
  if(G.mode!=='play')return;
  const a=findAction();if(a)a.fn();
 }
-function enter(v){if(v.type==='plane')setTimeout(()=>{try{toast('✈️ Flieg los! Über Dächer, Wasser und Autos. Mit „Landen“ aufsetzen.',3600);}catch(e){}},50);
+function enter(v){if(v.type==='boat')setTimeout(()=>{try{toast('🚤 Ahoi! Das Boot fährt nur auf dem Wasser. Mit „Anlegen“ gehst du am Ufer an Land.',3600);}catch(e){}},50);
+ if(v.type==='plane')setTimeout(()=>{try{toast('✈️ Flieg los! Über Dächer, Wasser und Autos. Mit „Landen“ aufsetzen.',3600);}catch(e){}},50);
  {const ix=G.vehicles.indexOf(v);if(ix>=0)G.vehicles.splice(ix,1);}P.veh=v.type;P.hp=v.hp==null?100:v.hp;P.z=0;P.fly=false;P.r=VEH[v.type].r;P.ang=v.ang;sfx('pick');toast(VEH[v.type].icon+' '+VEH[v.type].name+'!',1200);if(v.type==='truck')voxSay('truck',{force:true,cd:1});}
 function exitVeh(){
+ if(P.veh==='boat'){const q=boatLand();if(!q){toast('⚓ Fahr näher ans Ufer, dann kannst du anlegen!',2000);sfx('deny');return;}G.vehicles.push({type:'boat',x:P.x,y:P.y,ang:P.ang,hp:P.hp});P.veh='foot';P.r=VEH.foot.r;P.x=q.x;P.y=q.y;P.vx=P.vy=0;sfx('pick');toast('⚓ Angelegt!',1000);return;}
  if(P.veh==='plane'){const q={x:P.x,y:P.y};pushOut(q,VEH.plane.r+4);if(Math.hypot(q.x-P.x,q.y-P.y)>3||solidWater(P.x,P.y)){toast('🛬 Zum Landen brauchst du freie Fläche – nicht über Häusern oder Wasser!',2200);sfx('deny');return;}sfx('thud');toast('🛬 Gelandet!',1200);}
  G.vehicles.push({type:P.veh,x:P.x,y:P.y,ang:P.ang,hp:P.hp});
  P.veh='foot';P.r=VEH.foot.r;
@@ -3408,7 +3415,7 @@ function update(dt){
  const S=G.storm;
  if(!S.on){S.next-=dt;if(S.next<=0){S.on=true;S.t=9;const a=Math.random()*6.283;S.wx=Math.cos(a);S.wy=Math.sin(a);toast(wStart(S),3000);sfx('storm');}}
  else{S.t-=dt;if(S.t<=0){S.on=false;S.next=(25+Math.random()*15)*[1.6,1,.7][DIFF];toast('Der Sturm ist vorbei ☀️',1800);}}
- S.k+=((S.on?1:0)-S.k)*Math.min(1,dt*1.5);wUpdate(S,dt);trainUpdate(dt);
+ S.k+=((S.on?1:0)-S.k)*Math.min(1,dt*1.5);wUpdate(S,dt);trainUpdate(dt);boatUpdate(dt);
  // Spieler
  const V=VEH[P.veh];let[ix,iy]=steer();
  if(P.stun>0){P.stun-=dt;ix=iy=0;}
@@ -3428,7 +3435,7 @@ function update(dt){
  if(S.on&&S.kind!=='tornado'){const wf=S.kind==='hurricane'?150:80;P.vx+=S.wx*wf*dt;P.vy+=S.wy*wf*dt;}
  hazardFx(dt);
  let hit=false;
- if(P.fly||P.veh==='plane'){P.x=clamp(P.x+P.vx*dt,20,W.W-20);P.y=clamp(P.y+P.vy*dt,20,W.H-20);}else hit=moveBy(P,P.vx*dt,P.vy*dt,P.r);
+ if(P.fly||P.veh==='plane'){P.x=clamp(P.x+P.vx*dt,20,W.W-20);P.y=clamp(P.y+P.vy*dt,20,W.H-20);}else if(P.veh==='boat'){const nx=clamp(P.x+P.vx*dt,30,W.W-30),ny=clamp(P.y+P.vy*dt,30,W.H-30);if(inWater(nx,P.y))P.x=nx;else P.vx*=-.25;if(inWater(P.x,ny))P.y=ny;else P.vy*=-.25;}else hit=moveBy(P,P.vx*dt,P.vy*dt,P.r);
  P.bump-=dt;
  if(hit){const spd=Math.hypot(P.vx,P.vy);if(P.bump<=0&&spd>120){sfx('thud');P.bump=.35;if(isMotor(P.veh))dmgVeh(spd*.07);hitQuip(spd);}P.vx*=.8;P.vy*=.8;}
  if(isMotor(P.veh)&&P.hp<55){P.smk-=dt;if(P.smk<=0){P.smk=.12;burst(P.x-Math.cos(P.ang)*10,P.y-Math.sin(P.ang)*10-8,1,P.hp<25?['#ff8a3f','#555']:['#8a8a8a']);}}
@@ -5801,6 +5808,48 @@ function trainItems(v,tm){
  });
 }
 
+/* ===== boat.js: Meer, Motorboote, Segelboote ===== */
+function inWater(x,y){if(W.seaR)for(const q of W.seaR)if(x>q.x0&&x<q.x1&&y>q.y0&&y<q.y1)return true;for(const s of gridGet(W.wg,x,y,1)){if(s.blocks&&!s.ice&&Math.hypot(s.x-x,s.y-y)<s.r)return W.roadDist(x,y)>=4;}return false;}
+VEH.boat={r:18,max:330,acc:2.6,name:'Motorboot',icon:'🚤'};
+VP.boat={len:58,wid:26,r:18,
+ body(c,o){const C=(o&&o.col)||'#e8eef5';
+  ctx.fillStyle='rgba(255,255,255,.55)';ctx.beginPath();ctx.ellipse(-30,0,9,6,0,0,6.283);ctx.fill();
+  ctx.fillStyle=C;ctx.beginPath();ctx.moveTo(-26,-11);ctx.lineTo(10,-12);ctx.quadraticCurveTo(30,-8,32,0);ctx.quadraticCurveTo(30,8,10,12);ctx.lineTo(-26,11);ctx.closePath();ctx.fill();
+  ctx.strokeStyle='#c62f2f';ctx.lineWidth=2.4;ctx.beginPath();ctx.moveTo(-24,-9);ctx.lineTo(10,-10);ctx.quadraticCurveTo(26,-7,28,0);ctx.quadraticCurveTo(26,7,10,10);ctx.lineTo(-24,9);ctx.stroke();
+  ctx.fillStyle='#9a6a3a';ctx.fillRect(-22,-6,18,12);ctx.fillStyle='#b8834a';ctx.fillRect(-22,-6,18,3);
+  ctx.fillStyle='rgba(120,200,240,.8)';ctx.beginPath();ctx.moveTo(6,-7);ctx.lineTo(14,-5);ctx.lineTo(14,5);ctx.lineTo(6,7);ctx.closePath();ctx.fill();
+  ctx.fillStyle='#333';ctx.fillRect(-30,-3,5,6);},
+ cab(c,o){}};
+function boatSpawns(){
+ const out=[];const sp=W.sp;
+ for(const c of(sp.boats||[])){const q={x:c[0],y:c[1]};if(inWater(q.x,q.y))out.push({type:'boat',x:q.x,y:q.y,ang:c[2]||0});}
+ return out;
+}
+function boatInit(){
+ G.sboats=[];const sp=W.sp;
+ for(const s of(sp.sail||[])){G.sboats.push({x:s[0],y:s[1],dir:s[2]||1,spd:16+Math.random()*10,c:s[3]||'#fff',ph:Math.random()*6,x0:s[4]||200,x1:s[5]||W.W-200});}
+}
+function boatUpdate(dt){
+ if(!G.sboats)boatInit();
+ for(const b of G.sboats){b.x+=b.dir*b.spd*dt;if(b.x>b.x1)b.dir=-1;if(b.x<b.x0)b.dir=1;}
+ if(P.veh==='boat'){const sp=Math.hypot(P.vx,P.vy);if(sp>50&&Math.random()<.7)particles.push({x:P.x-Math.cos(P.ang)*28,y:P.y-Math.sin(P.ang)*28,vx:(Math.random()-.5)*16,vy:(Math.random()-.5)*16,life:.8,c:'#ffffff'});}
+}
+function boatLand(){ // Anlegen: Land in der Nähe suchen
+ for(const r of[44,62,82,104])for(let a=0;a<6.283;a+=.35){const q={x:P.x+Math.cos(a)*r,y:P.y+Math.sin(a)*r};if(inWater(q.x,q.y)||solidWater(q.x,q.y))continue;const t={x:q.x,y:q.y};pushOut(t,12);if(Math.hypot(t.x-q.x,t.y-q.y)>2)continue;return q;}
+ return null;
+}
+function boatItems(v,tm){
+ if(!G.sboats)return;
+ for(const b of G.sboats){if(b.x<v.x0-60||b.x>v.x1+60||b.y<v.y0-80||b.y>v.y1+60)continue;
+  addItem(b.y,()=>{const bob=Math.sin(tm*1.6+b.ph)*1.6,d=b.dir;ctx.save();ctx.translate(b.x,b.y+bob);
+   ctx.fillStyle='rgba(255,255,255,.4)';ctx.beginPath();ctx.ellipse(-d*26,2,16,4,0,0,6.283);ctx.fill();
+   ctx.fillStyle='#8a5a30';ctx.beginPath();ctx.moveTo(-24,0);ctx.lineTo(24,0);ctx.lineTo(18,9);ctx.lineTo(-18,9);ctx.closePath();ctx.fill();
+   ctx.fillStyle='#5a3a1c';ctx.fillRect(-1,-46,2.4,46);
+   ctx.fillStyle=b.c;ctx.beginPath();ctx.moveTo(1.5,-44);ctx.lineTo(d*22,-6);ctx.lineTo(1.5,-6);ctx.closePath();ctx.fill();
+   ctx.fillStyle='#ff5a5a';ctx.beginPath();ctx.moveTo(-1,-44);ctx.lineTo(-1-d*12,-36);ctx.lineTo(-1,-30);ctx.closePath();ctx.fill();
+   ctx.restore();});}
+}
+
 /* ===== house3d.js: echte 3D-Gebäudehüllen (Three.js) für die Oberwelt – in den Sprite-Cache gerendert ===== */
 const H3={ok:null,tex:{}};
 function h3Init(){
@@ -6548,6 +6597,9 @@ function drawGroundAndWorld(v,z,tm){
  ctx.lineJoin='round';ctx.lineCap='round';
  for(const rv of W.rivers){
   if(!rv.bb)rv.bb=bboxPts(rv.pts,rv.w);if(!inView(rv.bb,v))continue;
+  if(rv.sea){ctx.strokeStyle='#ecd9a2';ctx.lineWidth=rv.w+120;strokePoly(rv.pts);ctx.strokeStyle='#f6e8bc';ctx.lineWidth=rv.w+84;strokePoly(rv.pts);ctx.strokeStyle='#9fe0e6';ctx.lineWidth=rv.w+30;strokePoly(rv.pts);ctx.strokeStyle='#26a6c8';ctx.lineWidth=rv.w;strokePoly(rv.pts);ctx.strokeStyle='#1c8fb8';ctx.lineWidth=rv.w*.7;strokePoly(rv.pts);
+   ctx.strokeStyle='rgba(255,255,255,'+(.55+Math.sin(tm*1.4)*.15)+')';ctx.lineWidth=5;ctx.save();ctx.translate(0,Math.sin(tm*1.2)*5);ctx.setLineDash([60,40]);ctx.lineDashOffset=-tm*18;ctx.translate(0,0);strokePoly(rv.pts);ctx.restore();ctx.setLineDash([]);
+   ctx.strokeStyle='rgba(255,255,255,.3)';ctx.lineWidth=2;ctx.setLineDash([14,34]);ctx.lineDashOffset=tm*12;for(const k of[-.25,.05,.3]){ctx.save();ctx.translate(0,rv.w*k);strokePoly(rv.pts);ctx.restore();}ctx.setLineDash([]);continue;}
   ctx.strokeStyle='#f5f9fd';ctx.lineWidth=rv.w+16;strokePoly(rv.pts);
   if(rv.ice){ctx.strokeStyle='#bcdcf0';ctx.lineWidth=rv.w;strokePoly(rv.pts);ctx.strokeStyle='#d8edf9';ctx.lineWidth=rv.w*.5;strokePoly(rv.pts);}
   else{ctx.strokeStyle='#2f5f88';ctx.lineWidth=rv.w;strokePoly(rv.pts);ctx.strokeStyle='#3d7aa8';ctx.lineWidth=rv.w*.62;strokePoly(rv.pts);
@@ -6643,7 +6695,7 @@ function drawWorldItems(v,z,tm){
  for(const o of G.vehicles){if(o.x<v.x0-80||o.x>v.x1+80||o.y<v.y0-80||o.y>v.y1+80)continue;addItem(o.y,()=>{drawVehicle(o.type,o.x,o.y,o.ang);if(o.wreck){ctx.fillStyle='rgba(25,25,28,.5)';ctx.beginPath();ctx.ellipse(o.x,o.y-3,16,10,o.ang,0,6.283);ctx.fill();for(let i=0;i<4;i++){const t=((tm*.6+i/4)%1);ctx.fillStyle='rgba(70,70,75,'+(.55*(1-t))+')';ctx.beginPath();ctx.arc(o.x+Math.sin(t*5+i)*4,o.y-8-t*34,4+t*9,0,6.283);ctx.fill();}}else if(o.hp!=null&&o.hp<50&&Math.sin(tm*6)>0){ctx.fillStyle='rgba(90,90,95,.5)';ctx.beginPath();ctx.arc(o.x,o.y-10,5,0,6.283);ctx.fill();}});}
  for(const h of G.hz){if(h.x<v.x0-120||h.x>v.x1+120||h.y<v.y0-80||h.y>v.y1+120)continue;addItem(h.y+(h.k==='drift'?0:2),h.k==='drift'?()=>drawDrift(h):()=>drawPipe(h,G.t));}
  for(const c of G.cops)addItem(c.y,()=>drawVehicle('polizei',c.x,c.y,c.ang,{}));
-trainItems(v,tm);
+trainItems(v,tm);boatItems(v,tm);
  for(const c of G.traffic){if(c.x<v.x0-90||c.x>v.x1+90||c.y<v.y0-90||c.y>v.y1+90)continue;addItem(c.y,()=>drawVehicle(c.type,c.x,c.y,c.ang,{col:c.col}));}
  for(const p of G.pick){if(p.x<v.x0-40||p.x>v.x1+40||p.y<v.y0-40||p.y>v.y1+40)continue;addItem(p.y,()=>{const bo=Math.sin(tm*3+p.bob)*2;ctx.save();ctx.translate(p.x,p.y+bo-2);ctx.fillStyle='rgba(255,226,122,.28)';ctx.beginPath();ctx.arc(0,0,20+Math.sin(tm*4+p.bob)*2,0,6.283);ctx.fill();ctx.restore();drawAnimAt(p.h.t,p.x,p.y+bo,0,.95,tm,false);sparkle(p.x+10,p.y-12+bo,3+Math.sin(tm*5+p.bob)*1.2,tm);});}
  for(const w of G.wichtel){if(w.x<v.x0-40||w.x>v.x1+40||w.y<v.y0-40||w.y>v.y1+40)continue;addItem(w.y,()=>{ctx.save();ctx.translate(w.x,w.y);ctx.rotate(w.ang);ctx.scale(1.05,1.05);drawWichtel(tm,w.mv);ctx.restore();});}
