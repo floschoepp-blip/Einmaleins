@@ -6,7 +6,7 @@
 <script>
 /* Immer die neueste Version: beim Start kurz nachsehen, ob auf dem Server eine neuere Version liegt, und dann frisch laden. */
 (function(){
-  var B='3.30'; window.__BUILD=B;
+  var B='3.31'; window.__BUILD=B;
   try{
     if(location.protocol==='file:'||!window.fetch) return;
     var base=location.pathname.replace(/[^\/]*$/,'');
@@ -246,7 +246,7 @@ h1 span{color:#ffd23e}
       <input class="inp" id="bcode" maxlength="12" placeholder="Klassen-Code" autocomplete="off" autocapitalize="characters">
     </div>
     <div class="hsbox"><b id="hsTitle">🏆 Bestenliste</b><ol id="hsList"></ol><small id="hsNote"></small></div>
-    <div style="opacity:.55;font-size:12px;font-weight:700">Version 3.30</div>
+    <div style="opacity:.55;font-size:12px;font-weight:700">Version 3.31</div>
   </div>
   <div id="menuBot">
     <div class="help">◀ ▶ Spur wechseln &nbsp;·&nbsp; ⬆ Springen<br>2× tippen = Doppelsprung!</div>
@@ -898,7 +898,7 @@ function layoutRun(list){
 /* Boss-Arena: eine lange Fläche, der Boss rollt Schneebälle, Glocken = Treffer */
 function layoutBoss(){
   d=0; var st,i,j,lanes=[0,1,-1,0,-1,1,0,1,-1,0,-1,1],bl=[];
-  st=full(26); cp(st+4); hint(st+5,'Sammle Glocken 🔔 – jede wirft ein Geschenk auf den Boss!');
+  st=full(26); cp(st+4); hint(st+5,'Sammle Glocken 🔔 als Munition und wirf mit dem 🎁-Knopf auf den Boss! Weiche seinen Angriffen aus!');
   var a=full(250); cp(a+3); cp(a+90); cp(a+170);
   for(i=0;i<12;i++){ var dd=a+16+i*18.5; bell(dd,lanes[i],0); bl.push([dd,lanes[i]]); if(i%2===0) row(dd+5,lanes[(i+3)%12],3); else gift(dd+7,lanes[(i+5)%12]); }
   for(i=0;i<8;i++){ bell(a+20+i*28,-lanes[i],0.0); bl.push([a+20+i*28,-lanes[i]]); }
@@ -2275,7 +2275,8 @@ function bossInit(){
   BOSS={kind:STAGE.boss,hp:DF.hp,max:DF.hp,z:0,t:2,dead:false,deadT:0,flash:0,shot:-1,shotFrom:new THREE.Vector3(),arenaEnd:0,throwT:0,grp:makeBossModel(STAGE.boss)};
   BOSS.arenaEnd=SLED_D-20;
   bossShot=new THREE.Mesh(build(ribbonBox(.9,.8,.9,0xff4558,0xb81426,0xffd23e,[0,0,0],.3)),VC); bossShot.visible=false; scene.add(bossShot);
-  sledGroup.visible=true;
+  sledGroup.visible=true; BOSS.n=0; hzInit();
+  var ib=document.getElementById('bI'); if(ib){ document.getElementById('bIe').textContent='🎁'; setInterval(function(){ ib.style.display=(state==='play'&&BOSS&&!BOSS.dead)?'block':'none'; },200); }
 }
 function bossBar(){
   var el=$('bossBar'); if(!el||!BOSS) return; el.style.display='block';
@@ -2285,27 +2286,108 @@ function bossReset(){
   if(!BOSS) return; BOSS.hp=BOSS.max; BOSS.dead=false; BOSS.deadT=0; BOSS.t=2; BOSS.shot=-1; bossShot.visible=false;
   BOSS.grp.visible=true; BOSS.grp.scale.set(BSCALE,BSCALE,BSCALE); BOSS.grp.rotation.set(0,0,0);
   balls.forEach(function(b){ if(b.mode==='boss'){ b.active=false; b.scale=0; b.z=-9999; } });
-  bossBar();
+  hzClear(); AMMO=0; BOSS.n=0; bossAmmoUi(); bossBar();
 }
 function bossOnRespawn(){
   balls.forEach(function(b){ if(b.mode==='boss'){ b.active=false; b.scale=0; b.z=-9999; } });
-  if(BOSS) BOSS.t=1.6;
+  hzClear(); if(BOSS) BOSS.t=1.6;
 }
 var BPAT=[[0],[-1],[1],[-1,0],[0,1],[-1,1],[0],[1],[-1]];
 function bossSpawn(lane){
   for(var i=0;i<balls.length;i++){ var b=balls[i];
     if(b.mode==='boss'&&!b.active){ b.active=true; b.x=lane*LANE; b.z=BOSS.z+2; b.speed=(6.4+Math.random()*1.2)*DF.bs; b.scale=.2; return; } }
 }
+var AMMO=0,HZ=[],hzG={};
+function bossAmmoUi(){ var e=document.getElementById('bIe'),b=document.getElementById('bI'); if(!e) return; e.textContent='🎁'+(AMMO>0?AMMO:''); if(b) b.classList.toggle('empty',AMMO<=0); }
+function bossAmmo(){ AMMO=Math.min(3,AMMO+1); bossAmmoUi(); toast('Munition '+AMMO+'/3 – jetzt mit dem 🎁-Knopf werfen!',1100); }
+function bossThrow(){
+  if(!BOSS||BOSS.dead||state!=='play') return;
+  if(AMMO<=0){ toast('Keine Munition – sammle Glocken 🔔',900); return; }
+  if(BOSS.shot>=0) return;
+  AMMO--; bossAmmoUi(); try{ sfx.jump2(); }catch(e){} bossHit();
+}
+function hzInit(){
+  var col={snowman:0xffffff,dragon:0xff7ac0,wichtel:0xd8202e}[BOSS.kind]||0xffffff;
+  hzG.markGeo=new THREE.RingGeometry(.55,1.2,28); hzG.markGeo.rotateX(-Math.PI/2);
+  hzG.markMat=new THREE.MeshBasicMaterial({color:0xff3a3a,transparent:true,opacity:.75,side:THREE.DoubleSide,depthWrite:false});
+  hzG.lobGeo=new THREE.SphereGeometry(.6,12,10); hzG.lobMat=new THREE.MeshLambertMaterial({color:col,emissive:col,emissiveIntensity:.3});
+  hzG.flatGeo=new THREE.BoxGeometry(1.6,.06,1);
+  hzG.flameGeo=new THREE.ConeGeometry(.5,1.7,7); hzG.flameMat=new THREE.MeshBasicMaterial({color:BOSS.kind==='dragon'?0xff8fd0:0xffa030});
+  hzG.twGeo=new THREE.CylinderGeometry(1.0,.25,.9,10,1,true); hzG.twMat=new THREE.MeshBasicMaterial({color:0xcfe6ff,transparent:true,opacity:.75,side:THREE.DoubleSide,depthWrite:false});
+}
+function hzClear(){ HZ.forEach(hzKill); HZ=[]; }
+function hzKill(h){ [h.mk,h.pr,h.g].forEach(function(o){ if(o) scene.remove(o); }); if(h.fm) h.fm.dispose(); }
+function bossAim(){ var l=Math.random()<.55?Math.round(P.x/LANE):[-1,0,1][Math.floor(Math.random()*3)]; return Math.max(-1,Math.min(1,l)); }
+function hzLob(l,warn,above){
+  var tz=P.z-(curSpeed||7)*warn,tx=l*LANE;
+  var mk=new THREE.Mesh(hzG.markGeo,hzG.markMat); mk.position.set(tx,.14,tz); scene.add(mk);
+  var pr=new THREE.Mesh(hzG.lobGeo,hzG.lobMat); scene.add(pr);
+  HZ.push({t:'lob',age:0,dur:warn,tx:tx,tz:tz,fx:above?tx:BOSS.grp.position.x,fy:above?11:6,fz:above?tz:BOSS.z,mk:mk,pr:pr});
+}
+function hzFire(l,warn){
+  var len=12,x=l*LANE,cz=P.z-(curSpeed||7)*(warn+.5)-len/2+2,g=new THREE.Group(),fm=new THREE.MeshBasicMaterial({color:BOSS.kind==='dragon'?0xff6ab8:0xff4a2a,transparent:true,opacity:.35,depthWrite:false});
+  var fl=new THREE.Mesh(hzG.flatGeo,fm); fl.scale.set(1,1,len); g.add(fl);
+  var cones=[],k; for(k=0;k<9;k++){ var c=new THREE.Mesh(hzG.flameGeo,hzG.flameMat); c.position.set((k%2?.25:-.25),.8,-len/2+(k+.5)*len/9); c.scale.set(.001,.001,.001); g.add(c); cones.push(c); }
+  g.position.set(x,.1,cz); scene.add(g);
+  HZ.push({t:'fire',age:0,warn:warn,burn:.9,x:x,z0:cz-len/2,z1:cz+len/2,g:g,fm:fm,cones:cones});
+}
+function hzTornado(dir){
+  var tz=P.z-(curSpeed||7)*1.5-3,g=new THREE.Group(),fm=new THREE.MeshBasicMaterial({color:0xff4a4a,transparent:true,opacity:.3,depthWrite:false}),k;
+  var st=new THREE.Mesh(hzG.flatGeo,fm); st.scale.set(4.6,1,1.4); st.position.set(0,.1,tz); g.add(st);
+  var tw=new THREE.Group(); for(k=0;k<4;k++){ var m=new THREE.Mesh(hzG.twGeo,hzG.twMat); m.position.y=.5+k*.85; m.scale.set(.5+k*.35,1,.5+k*.35); tw.add(m); }
+  tw.position.set(-dir*3.6,0,tz); tw.scale.set(.001,.001,.001); g.add(tw); scene.add(g);
+  HZ.push({t:'tw',age:0,warn:.9,dur:2.1,dir:dir,tz:tz,g:g,fm:fm,tw:tw});
+}
+function hzHurt(){ if(state==='play'&&invuln<=0) fail('hit'); }
+function hzUpdate(dt){
+  for(var i=HZ.length-1;i>=0;i--){ var h=HZ[i]; h.age+=dt; var done=false;
+    if(h.t==='lob'){
+      var u=Math.min(1,h.age/h.dur);
+      h.pr.position.set(h.fx+(h.tx-h.fx)*u,h.fy*(1-u)+Math.sin(u*Math.PI)*(h.fx===h.tx?0:3),h.fz+(h.tz-h.fz)*u); h.pr.rotation.x+=dt*6;
+      var pul=.85+.25*Math.sin(h.age*14); h.mk.scale.set(pul,1,pul); h.mk.material.opacity=.5+.4*u;
+      if(u>=1){ emit(h.tx,.4,h.tz,22,6,0xffffff,.8); emit(h.tx,.4,h.tz,10,5,0xffd23e,.6); shake=Math.max(shake,.2); if(Math.abs(P.x-h.tx)<1.5&&Math.abs(P.z-h.tz)<1.7&&P.y<1.3) hzHurt(); done=true; }
+    } else if(h.t==='fire'){
+      var burning=h.age>h.warn&&h.age<h.warn+h.burn; h.fm.opacity=burning?.7:.25+.15*Math.sin(h.age*16);
+      h.cones.forEach(function(c,k){ var s=burning?(.8+.3*Math.sin(h.age*20+k)):.001; c.scale.set(s,s,s); });
+      if(burning&&Math.abs(P.x-h.x)<1.1&&P.z>h.z0&&P.z<h.z1&&P.y<.85) hzHurt();
+      if(h.age>h.warn+h.burn) done=true;
+    } else if(h.t==='tw'){
+      var w=h.age<h.warn?h.age/h.warn:1,v=h.age<h.warn?0:Math.min(1,(h.age-h.warn)/h.dur);
+      h.tw.scale.set(w,w,w); h.tw.position.set(-h.dir*3.6+h.dir*7.2*v,0,h.tz); h.tw.rotation.y+=dt*9;
+      h.fm.opacity=h.age<h.warn?.25+.15*Math.sin(h.age*16):.12;
+      if(h.age>=h.warn&&Math.abs(h.tw.position.x-P.x)<1.1&&Math.abs(h.tz-P.z)<1.0&&P.y<2.4) hzHurt();
+      if(h.age>h.warn+h.dur) done=true;
+    }
+    if(done||h.tz-0>P.z+12&&h.t==='tw'){ hzKill(h); HZ.splice(i,1); }
+  }
+}
+function bossAttack(){
+  var ph=1-BOSS.hp/BOSS.max,k=BOSS.kind,n=BOSS.n++,spec=ph>=.3,w=1.35-.35*ph,l=bossAim(),others=[-1,0,1].filter(function(x){ return x!==l; });
+  if(n<2||Math.random()<(spec?.3:.5)){ BPAT[Math.floor(Math.random()*BPAT.length)].forEach(bossSpawn); }
+  else if(k==='snowman'){
+    if(spec&&Math.random()<.55){ hzLob(l,w+.5,true); hzLob(others[Math.floor(Math.random()*2)],w+.7,true); if(ph>.6) hzLob(others[Math.floor(Math.random()*2)],w+.9,true); }
+    else hzLob(l,w,false);
+  } else if(k==='dragon'){
+    if(spec&&Math.random()<.65){ hzFire(l,w); if(ph>.6) hzFire(others[Math.floor(Math.random()*2)],w+.15); }
+    else hzLob(l,w,false);
+  } else {
+    if(spec&&Math.random()<.65) hzTornado(Math.random()<.5?1:-1);
+    else { hzLob(l,w,false); if(ph>.5) hzLob(others[Math.floor(Math.random()*2)],w+.4,false); }
+  }
+  BOSS.throwT=.35;
+}
+window.__bossDbg=function(){ return {BOSS:BOSS,HZ:HZ,ammo:function(){return AMMO;},attack:bossAttack,add:bossAmmo,throwIt:bossThrow,lob:hzLob,fire:hzFire,tw:hzTornado}; };
 function bossHit(){
   if(!BOSS||BOSS.dead) return;
   BOSS.hp--; BOSS.shot=0; BOSS.shotFrom.set(P.x,P.y+1.2,P.z); bossShot.visible=true; bossBar();
 }
 function bossUpdate(dt){
   if(!BOSS) return;
+  hzUpdate(dt);
   BOSS.z=P.z-30;
   if(!BOSS.dead){
     BOSS.t-=dt;
-    if(BOSS.t<=0){ BOSS.t=DF.wave*(.85+Math.random()*.35); BPAT[Math.floor(Math.random()*BPAT.length)].forEach(bossSpawn); BOSS.throwT=.35; }
+    if(BOSS.t<=0){ var ph0=1-BOSS.hp/BOSS.max; BOSS.t=DF.wave*(1-.3*ph0)*(.85+Math.random()*.35); bossAttack(); }
     if(-P.z>BOSS.arenaEnd){
       toast('Noch eine Runde! 🔔',1800);
       resetItems(); cps.forEach(function(c,i){setCp(c,false);}); curCp=cps[1]; setCp(curCp,true);
@@ -2753,7 +2835,7 @@ function updatePlay(dt){
     if(ex*ex+ey*ey+ez*ez<1.45*VEH.mg*VEH.mg){
       it.taken=true; setItem(it,time); itemMeshes[it.variant].instanceMatrix.needsUpdate=true;
       haloPos.setY(i,-999); hp=true;
-      if(it.type){ gotB++; if(BOSS) bossHit(); sfx.bell(); bump($('nB')); emit(it.x,it.y,it.z,14,4.5,0xffe066,.7); }
+      if(it.type){ gotB++; if(BOSS) bossAmmo(); sfx.bell(); bump($('nB')); emit(it.x,it.y,it.z,14,4.5,0xffe066,.7); }
       else { combo=(comboT>0)?combo+1:0; comboT=1.3; gotG++;
         if(VEH.id==='roller'&&combo>=4&&boostT<=0){ boostT=1.5; combo=0; toast('Schub! 🛴',900); sfx.turbo(); }
         if(VEH.id==='rocket'){ rkG++; if(rkG>=8){ rkG=0; if(turbo<2){ turbo++; toast('Turbo geladen! 🚀 Doppelsprung!',1400); } } } sfx.gift(); bump($('nG')); emit(it.x,it.y,it.z,9,4,[0xff8a96,0x9cd0ff,0x9cf5b0,0xdcb0ff][it.variant],.6); }
@@ -3116,7 +3198,7 @@ function renderMenu(){
   var sel=map.querySelector('.sel'); if(sel&&sel.scrollIntoView){ try{ map.scrollLeft=sel.offsetLeft-(map.clientWidth-sel.offsetWidth)/2; }catch(e){} }
   var dr=$('diffRow'); dr.innerHTML=['😊 Leicht','🙂 Normal','😎 Schwer'].map(function(t,i){ return '<button class="dbtn'+(i===DIFF?' sel':'')+'" data-d="'+i+'">'+t+'</button>'; }).join('');
   renderVeh();
-  $('stageSub').innerHTML=STAGE.emoji+' '+(BOSSLV?'Endgegner: ':'Station '+(SV.lv+1)+': ')+esc(STAGE.name)+(BOSSLV?'<br>Sammle Glocken 🔔 – sie treffen den Boss!':'<br>Sammle Geschenke und finde deinen Schlitten! 🛷');
+  $('stageSub').innerHTML=STAGE.emoji+' '+(BOSSLV?'Endgegner: ':'Station '+(SV.lv+1)+': ')+esc(STAGE.name)+(BOSSLV?'<br>Sammle Glocken 🔔, wirf sie mit 🎁 auf den Boss und weiche aus!':'<br>Sammle Geschenke und finde deinen Schlitten! 🛷');
   var bs=SV.best[STAGE.id+'-'+DIFF];
   $('hsTitle').textContent='🏆 '+STAGE.name+' · '+DIFF_NAMES[DIFF]+(bs?' · dein Rekord '+bs.s:'');
   $('pname').value=PNAME; $('bcode').value=BCODE;
@@ -3360,8 +3442,8 @@ function raceUseItem(){
   else { turboT=1.6; invuln=Math.max(invuln,1.7); sfx.turbo(); shake=.25; emit(P.x,P.y+.3,P.z,22,6,0xffa040,.8); toast('Turbo! 🚀',900); }
   RACE.item=null; raceItemUi();
 }
-bindBtn('bI',raceUseItem);
-window.addEventListener('keydown',function(e){ if((e.key==='x'||e.key==='X')&&!e.target.tagName.match(/INPUT/)) raceUseItem(); });
+bindBtn('bI',function(){ if(BOSS) bossThrow(); else raceUseItem(); });
+window.addEventListener('keydown',function(e){ if((e.key==='x'||e.key==='X')&&!e.target.tagName.match(/INPUT/)){ if(BOSS) bossThrow(); else raceUseItem(); } });
 
 /* ---------- pro Bild ---------- */
 function raceFrame(dt){
