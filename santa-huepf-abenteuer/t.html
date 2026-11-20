@@ -1629,7 +1629,7 @@ function buildSurf(){
       var geo=new THREE.BufferGeometry(),idx=[],r,c;
       geo.setAttribute('position',new THREE.BufferAttribute(new Float32Array(cnt*3),3));
       geo.setAttribute('color',new THREE.BufferAttribute(new Float32Array(cnt*3),3));
-      for(r=0;r<NZ;r++) for(c=0;c<NX;c++){ var v=r*(NX+1)+c; idx.push(v,v+1,v+NX+1, v+1,v+NX+2,v+NX+1); }
+      for(r=0;r<NZ;r++) for(c=0;c<NX;c++){ var v=r*(NX+1)+c; idx.push(v,v+NX+1,v+1, v+1,v+NX+1,v+NX+2); }
       geo.setIndex(idx);
       var m=new THREE.Mesh(geo,VC); m.receiveShadow=true; m.frustumCulled=false; m.visible=false; g.add(m);
       chunks.push({m:m,a:a,b:b,NZ:NZ,done:false});
