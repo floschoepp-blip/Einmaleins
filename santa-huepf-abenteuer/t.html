@@ -2619,7 +2619,7 @@ function loop(nowMs){
 requestAnimationFrame(loop);
 
 // kleiner Zugang für Tests
-window.__santa={reward:function(st){ rewardShow(st,st===3?150:(st===2?60:0),0); },setVeh:setVehicle,P:P,plats:plats,snowmen:snowmen,balls:balls,items:items,cps:cps,step:step,move:move,jump:jump,start:startGame,
+window.__santa={reward:function(st){ rewardShow(st,st===3?150:(st===2?60:0),0); },setVeh:setVehicle, feats:function(){return placeFeats();}, VW:VW,P:P,plats:plats,snowmen:snowmen,balls:balls,items:items,cps:cps,step:step,move:move,jump:jump,start:startGame,
   get state(){return state;},get boss(){return BOSS;},stage:STAGE.id,diff:DIFF,get falls(){return falls;},get got(){return [gotG,gotB,nGifts,nBells];},total:TOTAL,sled:SLED_D,
   info:function(){return {calls:renderer.info.render.calls,tris:renderer.info.render.triangles,pr:pixelRatio,shadows:shadowsOn};}};
 
