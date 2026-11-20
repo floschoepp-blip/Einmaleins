@@ -1705,6 +1705,7 @@ function vwBall(id){
   return P?build(P):null;
 }
 function applyWorld(){
+  if(!VW) return;
   var id=VEH.id,k;
   for(k in VW.cache) VW.cache[k].grp.visible=false;
   VW.cur=null;
