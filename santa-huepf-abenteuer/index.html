@@ -211,7 +211,7 @@ h1 span{color:#ffd23e}
       <input class="inp" id="bcode" maxlength="12" placeholder="Klassen-Code" autocomplete="off" autocapitalize="characters">
     </div>
     <div class="hsbox"><b id="hsTitle">🏆 Bestenliste</b><ol id="hsList"></ol><small id="hsNote"></small></div>
-    <div style="opacity:.55;font-size:12px;font-weight:700">Version 3.13</div>
+    <div style="opacity:.55;font-size:12px;font-weight:700">Version 3.14</div>
   </div>
   <div id="menuBot">
     <div class="help">◀ ▶ Spur wechseln &nbsp;·&nbsp; ⬆ Springen<br>2× tippen = Doppelsprung!</div>
@@ -1706,7 +1706,7 @@ document.addEventListener('visibilitychange',function(){
    Spiel-Logik
    ===================================================================== */
 var GRAV=TH.grav||30,JUMP_V=10.5,JUMP2_V=9.5;
-var curSpeed=7,camBump=0,yawS=0,prevPX=0,spdOp=-1,state='menu',time=0,auto=false,dynSp=1,cleanT=0,fastToast=false;
+var relSp=1,curSpeed=7,camBump=0,yawS=0,prevPX=0,spdOp=-1,state='menu',time=0,auto=false,dynSp=1,cleanT=0,fastToast=false;
 var P={x:0,y:0,z:0,vy:0,lane:0,ground:true,jumps:0};
 var curCp=cps[0],invuln=0,wantJump=0,flip=0,runPh=0,rT=0,rDone=false,winT=0,winShown=false,winFrom=null,sledV=0;
 var runT=0,gotG=0,gotB=0,falls=0,camSnap=false,sq=0,shake=0,stepSide=1;
@@ -1794,7 +1794,7 @@ function updatePlay(dt){
   cleanT+=dt; var tg=.95+.1*Math.min(1,dist/TOTAL)+Math.min(.17,cleanT*.008);
   dynSp+=(tg-dynSp)*Math.min(1,dt*.6); dynSp=Math.max(.85,Math.min(1.2,dynSp));
   if(dynSp>1.1&&!fastToast){ fastToast=true; toast('Santa wird schneller! ⚡',1500); } else if(dynSp<1.04) fastToast=false;
-  var speed=(6.5+1.5*Math.min(1,dist/TOTAL))*DF.speed*(TH.spd||1)*dynSp*VEH.sp; curSpeed=speed;
+  var speed=(6.5+1.5*Math.min(1,dist/TOTAL))*DF.speed*(TH.spd||1)*dynSp*VEH.sp; curSpeed=speed; relSp=dynSp*VEH.sp;
   if(auto) autopilot();
   runT+=dt; bossUpdate(dt);
   P.z-=speed*dt;
@@ -1954,7 +1954,7 @@ function updateCamera(dt,snap){
     tmpB.set(sledGroup.position.x,sledGroup.position.y+1.2,sledGroup.position.z-.5);
   } else {
     var py=Math.max(P.y,0);
-    var sp_=Math.max(-1,Math.min(3.5,curSpeed-6.5));     // schneller = Kamera weiter hinten
+    var sp_=Math.max(-1,Math.min(3.5,(relSp-1)*9));     // schneller = Kamera weiter hinten
     tmpA.set(P.x*.55,4.7+py*.25,P.z+7.6+sp_*.22); tmpB.set(P.x*.75,1.2+py*.35,P.z-5-sp_*.3);
   }
   var k=snap?1:1-Math.exp(-dt*(state==='win'?3:8));
@@ -1962,14 +1962,14 @@ function updateCamera(dt,snap){
   camera.position.copy(camPos);
   // Kamera-Gefühl: Blickfeld weitet sich mit dem Tempo, Landungs-Stoß, leichtes Laufwippen
   var f0=camera.userData.fov0||camera.fov,ft=f0;
-  if(state==='play'||state==='respawn') ft=f0+Math.max(-1.5,Math.min(7,(curSpeed-6.5)*1.6));
+  if(state==='play'||state==='respawn') ft=f0+Math.max(-1.5,Math.min(7,(relSp-1)*20));
   var df=(ft-camera.fov)*Math.min(1,dt*3); if(Math.abs(df)>.002){ camera.fov+=df; camera.updateProjectionMatrix(); }
   camBump+=(0-camBump)*Math.min(1,dt*7); if(camBump>.002) camera.position.y-=camBump;
   if(state==='play'&&P.ground&&!vehG) camera.position.y+=Math.sin(runPh*2)*.035;
   if(shake>0){ shake=Math.max(0,shake-dt); camera.position.x+=(Math.random()-.5)*shake*.5; camera.position.y+=(Math.random()-.5)*shake*.5; }
   camera.lookAt(camLook);
   if(state==='play') camera.rotateZ((P.lane*LANE-P.x)*-.028);
-  var so=(state==='play')?Math.max(0,Math.min(.5,(curSpeed-7.6)/4.5)):0;
+  var so=(state==='play')?Math.max(0,Math.min(.5,(relSp-1.04)/.2)):0;
   if(Math.abs(so-spdOp)>.02){ spdOp=so; $('spd').style.opacity=so; }
 }
 function updateWorld(dt){
