@@ -212,7 +212,7 @@ h1 span{color:#ffd23e}
       <input class="inp" id="bcode" maxlength="12" placeholder="Klassen-Code" autocomplete="off" autocapitalize="characters">
     </div>
     <div class="hsbox"><b id="hsTitle">🏆 Bestenliste</b><ol id="hsList"></ol><small id="hsNote"></small></div>
-    <div style="opacity:.55;font-size:12px;font-weight:700">Version 3.20</div>
+    <div style="opacity:.55;font-size:12px;font-weight:700">Version 3.21</div>
   </div>
   <div id="menuBot">
     <div class="help">◀ ▶ Spur wechseln &nbsp;·&nbsp; ⬆ Springen<br>2× tippen = Doppelsprung!</div>
@@ -1250,12 +1250,12 @@ var haloPos=haloPts.geometry.attributes.position;
 function setItem(it,time){
   if(it.taken){ _s.set(0,0,0); }
   else { var sc=it.type===1?1.2:1; _s.set(sc,sc,sc); }
-  _p.set(it.x,it.y+Math.sin(time*3+it.phase)*.12,it.z);
+  _p.set(it.x,it.y+vwGY(it.x)+Math.sin(time*3+it.phase)*.12,it.z);
   _e.set(it.type===1?0:.18,time*2+it.phase,it.type===1?Math.sin(time*5+it.phase)*.32:0); _q.setFromEuler(_e);
   _m.compose(_p,_q,_s); itemMeshes[it.variant].setMatrixAt(it.idx,_m);
 }
 function resetItems(){
-  items.forEach(function(it,i){ it.taken=false; setItem(it,0); haloPos.setXYZ(i,it.x,it.y,it.z); });
+  items.forEach(function(it,i){ it.taken=false; setItem(it,0); haloPos.setXYZ(i,it.x,it.y+vwGY(it.x),it.z); });
   itemMeshes.forEach(function(m){m.instanceMatrix.needsUpdate=true;});
   haloPos.needsUpdate=true;
 }
@@ -1543,7 +1543,7 @@ setVehicle(vehOk(SV.veh)?SV.veh:'foot');
    Skateboard = Skatepark mit Halfpipe-Wänden, Surfbrett = Wellen, Roller = Gehweg, Schwebebrett = Eisfeld.
    Die Bahn wird nur über die breiten Platten gelegt (nicht über Lücken); die Spielregeln bleiben gleich.
    ===================================================================== */
-var VW={grp:new THREE.Group(),cache:{},cur:null,rideY:0,rideP:0,obstSaved:false,water:[]};
+var VW={grp:new THREE.Group(),cache:{},cur:null,rideY:0,rideP:0,roll:0,rampY:0,rampT:0,grind:false,obstSaved:false,water:[]};
 scene.add(VW.grp);
 function hexRGB(h){ var c=LIN(h); return [c.r,c.g,c.b]; }
 // Streifen entlang z: prof = Liste [x,y], colFn(i,k) = Farbe des Feldes i (zwischen Profilpunkt i und i+1) in der Platte k
@@ -1570,19 +1570,22 @@ function mergeGeos(list){
 }
 function vwMesh(list){ var m=new THREE.Mesh(mergeGeos(list),VC); m.receiveShadow=true; return m; }
 var VWR=rng(4242);
+function wallY(x){ var a=Math.abs(x); if(a<=.5) return 0; var u=Math.min(1,(a-.5)/2.5); return 1.4*u*u; }
+function wallSlope(x){ var a=Math.abs(x); if(a<=.5) return 0; var u=Math.min(1,(a-.5)/2.5); return (x<0?-1:1)*2*1.4*u/2.5; }
+function vwGY(x){ return (VW&&VW.cur==='skate')?wallY(x):0; }
 function buildSkate(){
-  var L=[],D=[],PI=Math.PI,t,prof=[],wl=[],wr=[];
-  for(t=0;t<=8;t++){ var ang=t/8*PI/2; wl.push([-(2.2+.8*Math.sin(ang)),.8*(1-Math.cos(ang))]); wr.push([2.2+.8*Math.sin(ang),.8*(1-Math.cos(ang))]); }
-  prof=wl.slice().reverse().concat([[-1.1,.02],[0,.02],[1.1,.02]],wr);   // links Wand -> Boden -> rechts Wand
+  var L=[],D=[],PI=Math.PI,t,prof=[],xx;
+  for(xx=-3.05;xx<=3.051;xx+=.25) prof.push([xx,wallY(xx)+.02]);
   fullPlats.forEach(function(p){
     var z0=-(p.s+p.len),z1=-p.s;
     L.push(stripGeo(prof,z0,z1,2.4,function(i,k){
-      var floor=i>=wl.length-1&&i<wl.length+3; if(floor) return k%2?0xb4b9c4:0xc4c9d3;
-      var up=(i<wl.length-1?i:(prof.length-2-i)); return up<2?0xffd23e:(up<5?0x8d96a8:0x6f7a90); }));
-    for(t=-1;t<=1;t+=2) D.push(G(cy(.06,.06,p.len,8),{c:0xe6ebf5,r:[PI/2,0,0],p:[t*3.0,.83,(z0+z1)/2]}));
-    // Farbkleckse an den Wänden (Graffiti-Streifen)
-    var cc=[0xff4a6e,0x4fb4ff,0x7dff8a,0xffd23e,0xff7ad9],q;
-    for(q=z0+3;q<z1-3;q+=5+VWR()*7){ t=VWR()<.5?-1:1; D.push(G(bx(.03,.22,1.2+VWR()*1.6),{c:cc[Math.floor(VWR()*5)],p:[t*2.82,.3,q],r:[0,0,t*-.62]})); }
+      var x=Math.abs((prof[i][0]+prof[i+1][0])/2);
+      if(x>2.75) return 0xffd23e;
+      if(x<.6) return k%2?0xb4b9c4:0xc4c9d3;
+      return (Math.floor(x*2)+k)%2?0x8d96a8:0x99a2b4; }));
+    for(t=-1;t<=1;t+=2) D.push(G(cy(.06,.06,p.len,8),{c:0xe6ebf5,r:[PI/2,0,0],p:[t*3.05,wallY(3.05)+.06,(z0+z1)/2]}));
+    var cc=[0xff4a6e,0x4fb4ff,0x7dff8a,0xffd23e,0xff7ad9],q,ax;
+    for(q=z0+3;q<z1-3;q+=5+VWR()*7){ t=VWR()<.5?-1:1; ax=2.1+VWR()*.4; D.push(G(bx(.7,.02,1.2+VWR()*1.6),{c:cc[Math.floor(VWR()*5)],r:[0,0,t*Math.atan(Math.abs(wallSlope(ax)))],p:[t*ax,wallY(ax)+.04,q]})); }
   });
   var m=vwMesh(L); var g=new THREE.Group(); g.add(m);
   if(D.length){ var dm=new THREE.Mesh(build(D),VC); g.add(dm); }
@@ -1712,7 +1715,7 @@ function applyWorld(){
   if(id==='skate'||id==='surf'||id==='roller'||id==='hover'){
     if(!VW.cache[id]){
       var w=id==='skate'?buildSkate():id==='surf'?buildSurf():id==='roller'?buildRoller():buildHover();
-      VW.cache[id]=w; VW.grp.add(w.grp);
+      addFeatMeshes(id,w.grp); VW.cache[id]=w; VW.grp.add(w.grp);
       if(id==='surf') VW.water=w.chunks;
     }
     VW.cache[id].grp.visible=true; VW.cur=id;
@@ -1728,15 +1731,106 @@ function applyWorld(){
     snowmen.forEach(function(sm,i){ sm.mesh.geometry=(og&&og[i%3])||sm.geo0; });
     balls.forEach(function(b){ if(b.mode==='boss') return; b.mesh.geometry=(VW.cur&&VW.cache['b'+VW.cur].geo)||b.geo0; });
   }
+  snowmen.forEach(function(sm){ sm.mesh.position.y=vwGY(sm.x); });
+  items.forEach(function(it,i){ if(!it.taken) haloPos.setY(i,it.y+vwGY(it.x)); }); haloPos.needsUpdate=true;
 }
 // pro Bild: Wellen berechnen, Santa auf der Welle bewegen
-function worldUpdate(){
-  VW.rideY=0; VW.rideP=0;
+function worldUpdate(dt){
+  VW.rideY=0; VW.rideP=0; VW.roll=0;
+  VW.rampY+=((state==='play'?VW.rampT:0)-VW.rampY)*Math.min(1,(dt||.016)*10);
+  if(VW.cur==='skate'&&(state==='play'||state==='menu')){ VW.rideY=wallY(P.x); VW.roll=-Math.atan(wallSlope(P.x))*.85; }
   if(VW.cur==='surf'){
     updateWater(time);
     if(state==='play'||state==='menu'){ VW.rideY=waveH(P.x,P.z,time)-.08; VW.rideP=waveDZ(P.x,P.z,time)*1.1; }
   }
+  VW.rideY+=VW.rampY;
 }
+/* ---------- Rampen und Schienen ---------- */
+var RH={skate:.62,roller:.56,hover:.56,surf:.5};
+function placeFeats(){
+  if(VW.feats) return VW.feats;
+  var F={ramps:[],rails:[]},rr=rng((STAGE.seed||77)*7+3);
+  function clear(x,zc,half){
+    var i,sm,b;
+    for(i=0;i<snowmen.length;i++){ sm=snowmen[i]; if(Math.abs(sm.x-x)<1.4&&Math.abs(sm.z-zc)<half+3.5) return false; }
+    for(i=0;i<balls.length;i++){ b=balls[i]; if(b.mode==='boss') continue;
+      if(b.mode==='x'){ if(Math.abs(b.z-zc)<half+4) return false; }
+      else if(Math.abs(b.x-x)<1.5&&!(b.b>zc+half+1||b.a<zc-half-1)) return false; }
+    for(i=0;i<cps.length;i++) if(Math.abs(cps[i].z-zc)<half+5) return false;
+    return true;
+  }
+  if(!BOSSLV) fullPlats.forEach(function(p){
+    var dd=p.s+14,toggle=rr()<.5;
+    while(dd<p.s+p.len-12){
+      var rail=toggle,half=rail?3.5:1.4,tries=0,ok=false,lane,zc;
+      toggle=!toggle;
+      while(tries++<5&&!ok){ lane=Math.floor(rr()*3)-1; zc=-(dd+tries*3); ok=clear(lane*LANE,zc,half); }
+      if(ok){
+        if(rail) F.rails.push({x:lane*LANE,z1:zc+half,z0:zc-half,half:half});
+        else F.ramps.push({x:lane*LANE,zEn:zc+half,zEx:zc-half,h:.62,used:false});
+      }
+      dd+=30+rr()*22;
+    }
+  });
+  VW.feats=F; return F;
+}
+function wedgeGeo(W,L,H,cTop,cSide){
+  var w=W/2,l=L/2,A=[-w,0,l],B=[w,0,l],C=[-w,H,-l],Dd=[w,H,-l],E=[-w,0,-l],Fv=[w,0,-l],pos=[],col=[],cen=[0,H/3,0];
+  function tri(a,b,c,hex){
+    var u=[b[0]-a[0],b[1]-a[1],b[2]-a[2]],v=[c[0]-a[0],c[1]-a[1],c[2]-a[2]],n=[u[1]*v[2]-u[2]*v[1],u[2]*v[0]-u[0]*v[2],u[0]*v[1]-u[1]*v[0]];
+    var m=[(a[0]+b[0]+c[0])/3-cen[0],(a[1]+b[1]+c[1])/3-cen[1],(a[2]+b[2]+c[2])/3-cen[2]];
+    if(n[0]*m[0]+n[1]*m[1]+n[2]*m[2]<0){ var t=b; b=c; c=t; }
+    var cc=hexRGB(hex); [a,b,c].forEach(function(p){ pos.push(p[0],p[1],p[2]); col.push(cc[0],cc[1],cc[2]); });
+  }
+  tri(A,B,Dd,cTop); tri(A,Dd,C,cTop); tri(C,Dd,Fv,cSide); tri(C,Fv,E,cSide); tri(A,C,E,cSide); tri(B,Fv,Dd,cSide);
+  var g=new THREE.BufferGeometry();
+  g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(pos),3));
+  g.setAttribute('color',new THREE.BufferAttribute(new Float32Array(col),3));
+  g.computeVertexNormals(); return g;
+}
+function addFeatMeshes(id,grp){
+  var F=placeFeats(),PI=Math.PI,h=RH[id],list=[],base=function(x){ return id==='skate'?wallY(x)+.02:.02; },parts=[];
+  F.ramps.forEach(function(r){
+    var zc=(r.zEn+r.zEx)/2,cols={skate:[0xc89a5e,0x9a6f3a],roller:[0xc4c8d2,0x8f95a3],hover:[0xdff6ff,0x8fd3ff],surf:[0x2fb5d6,0xe9fbff]}[id];
+    var g=wedgeGeo(1.5,r.zEn-r.zEx,r.h,cols[0],cols[1]); g.translate(r.x,base(r.x),zc); list.push(g);
+    if(id==='skate') parts.push(G(bx(1.5,.03,.1),{c:0xffd23e,p:[r.x,base(r.x)+r.h+.01,r.zEx+.04]}));
+  });
+  F.rails.forEach(function(r){
+    var zc=(r.z0+r.z1)/2,len=r.z1-r.z0,b0=base(r.x),k,rad,col,col2,sides;
+    if(id==='skate'){ rad=.06; parts.push(G(cy(rad,rad,len,10),{c:0xdfe4ee,c2:0xaab2c4,r:[PI/2,0,0],p:[r.x,b0+h-rad,zc]}));
+      for(k=-1.5;k<=1.5;k+=1.5) parts.push(G(cy(.035,.04,h-.1,6),{c:0x4a5164,p:[r.x,b0+(h-.1)/2,zc+k*len/3]}),G(bx(.3,.03,.18),{c:0x4a5164,p:[r.x,b0+.015,zc+k*len/3]}));
+      parts.push(G(bx(.1,.12,len),{c:0xffd23e,p:[r.x,b0+h-.16,zc]})); }
+    else if(id==='roller'){ rad=.05; parts.push(G(cy(rad,rad,len,10),{c:0x37c95a,c2:0x1f8a3a,r:[PI/2,0,0],p:[r.x,b0+h-rad,zc]}));
+      for(k=-1.5;k<=1.5;k+=1.5) parts.push(G(cy(.035,.04,h-.08,6),{c:0x2a2f3c,p:[r.x,b0+(h-.08)/2,zc+k*len/3]})); }
+    else if(id==='hover'){ rad=.1; parts.push(G(cy(rad,rad,len,5),{c:0xeafaff,c2:0x6fc4f2,flat:true,r:[PI/2,0,0],p:[r.x,b0+h-rad,zc]}));
+      for(k=-1.5;k<=1.5;k+=1.5) parts.push(G(cn(.12,h-.05,5),{c:0xeafaff,c2:0x5cb8f0,flat:true,r:[PI,0,0],p:[r.x,b0+(h-.05)/2,zc+k*len/3]})); }
+    else { rad=.2; parts.push(G(cy(rad,rad+.02,len,10),{c:0x9a6a3a,c2:0x5c3a1a,r:[PI/2,0,0],p:[r.x,b0+h-rad,zc]}),G(cy(.06,.08,.5,6),{c:0x8a5a2e,r:[0,0,1.1],p:[r.x+.25,b0+h-.05,zc-len*.2]}),G(cy(.06,.08,.4,6),{c:0x8a5a2e,r:[0,0,-1.1],p:[r.x-.22,b0+h-.1,zc+len*.15]}),G(tor(.26,.03,5,12),{c:0xffffff,r:[0,PI/2,0],p:[r.x,b0+.05,zc+len/2]})); }
+  });
+  if(list.length){ var m=new THREE.Mesh(mergeGeos(list),VC); m.castShadow=true; grp.add(m); }
+  if(parts.length){ var pm=new THREE.Mesh(build(parts),VC); pm.castShadow=true; grp.add(pm); }
+}
+// Wird in jedem Bild nach der Bodenprüfung aufgerufen: Rampen starten, auf Schienen landen und rutschen
+function featStep(dt,prevY){
+  VW.rampT=0;
+  if(!VW.cur||BOSSLV) return;
+  var F=placeFeats(),i,r,h=RH[VW.cur],riding=false;
+  for(i=0;i<F.rails.length;i++){ r=F.rails[i];
+    if(Math.abs(P.x-r.x)<.6&&P.z<r.z1+.15&&P.z>r.z0-.15){
+      if(P.vy<=0&&prevY>=h-.08&&P.y<=h+.02){
+        if(!VW.grind){ VW.grind=true; sfx.cp(); toast('Grind! 🔥',700); }
+        P.y=h; P.vy=0; P.ground=true; P.jumps=0; riding=true; trickPts+=dt*30;
+        if(Math.random()<dt*40) emit(P.x,h+vwGY(P.x),P.z+.3,1,2.5,Math.random()<.5?0xffd23e:0xffffff,.45);
+      } else if(P.y<h-.3&&invuln<=0&&state==='play'){ fail('hit'); return; }
+    } }
+  if(!riding) VW.grind=false;
+  for(i=0;i<F.ramps.length;i++){ r=F.ramps[i];
+    if(P.z>r.zEn+2) r.used=false;
+    if(Math.abs(P.x-r.x)<.75&&P.z<r.zEn&&P.z>r.zEx-1){
+      if(P.ground&&P.y<=.05&&P.z>r.zEx) VW.rampT=Math.max(VW.rampT,(r.zEn-P.z)/(r.zEn-r.zEx)*r.h);
+      if(!r.used&&P.ground&&P.z<=r.zEx+.25){ r.used=true; P.vy=11.4*VEH.jp; P.ground=false; P.jumps=1; sq=.22; trickPts+=15; sfx.jump2(); toast('Rampe! 🚀',800); emit(P.x,.3,P.z,12,4,0xffffff,.7,true); }
+    } }
+}
+
 applyWorld();
 
 /* =====================================================================
@@ -2233,6 +2327,7 @@ function updatePlay(dt){
     P.y=0;P.vy=0;P.ground=true;P.jumps=0; glideT=0;
     if(trickAir){ trickAir=false; trickPts+=25; toast('Trick! +25 🛹',900); sfx.cp(); }
   } else P.ground=false;
+  featStep(dt,prevY); if(state!=='play') return;
   if(wantJump>0){ if(doJump()) wantJump=0; else wantJump-=dt; }
   if(P.y<-5){ fail('fall'); return; }
   if(invuln>0) invuln-=dt;
@@ -2326,7 +2421,7 @@ function animate(dt){
     armR.rotation.set(0,0,2.5+Math.sin(time*8)*.4); armL.rotation.set(0,0,-.3); legL.rotation.x=legR.rotation.x=0;
     hatTip.rotation.z=-.9+Math.sin(time*5)*.15;
   } else {
-    worldUpdate(); santa.position.set(P.x,P.y+VW.rideY,P.z);
+    worldUpdate(dt); santa.position.set(P.x,P.y+VW.rideY,P.z);
     if(state==='menu'){
       santa.rotation.y=Math.sin(time*.8)*.25; santa.position.y=Math.abs(Math.sin(time*3))*.12;
       armR.rotation.set(0,0,2.5+Math.sin(time*7)*.4); armL.rotation.set(0,0,-.3); legL.rotation.x=legR.rotation.x=0;
@@ -2343,7 +2438,7 @@ function animate(dt){
       hatTip.rotation.z=-.9+Math.sin(runPh*2)*.18+Math.max(-.6,Math.min(.6,P.vy*.05));
       if(state==='play'){
         if(flip>0){ flip=Math.max(0,flip-dt*2.2); inner.rotation.x=(1-flip)*Math.PI*2; if(flip===0) inner.rotation.x=0; }
-        inner.rotation.z=(P.lane*LANE-P.x)*.24;
+        inner.rotation.z=(P.lane*LANE-P.x)*.24+VW.roll;
         var vx=(P.x-prevPX)/Math.max(dt,.001); prevPX=P.x; yawS+=(Math.max(-.32,Math.min(.32,-vx*.035))-yawS)*Math.min(1,dt*12); santa.rotation.y=Math.PI+yawS;
         santa.visible=(invuln>0&&!auto)?(Math.floor(time*14)%2===0):true;
       }
@@ -2366,7 +2461,7 @@ function animate(dt){
       var ph=time*b.speed/2.5+b.ph,nx=Math.sin(ph)*2.5;
       b.mesh.rotation.z-=(nx-b.x)/b.r; b.x=nx; b.scale=1;
     }
-    b.mesh.position.set(b.x,b.r*b.scale,b.z); b.mesh.scale.set(b.scale||.001,b.scale||.001,b.scale||.001);
+    b.mesh.position.set(b.x,b.r*b.scale+vwGY(b.x),b.z); b.mesh.scale.set(b.scale||.001,b.scale||.001,b.scale||.001);
     if(b.scale>.5&&Math.abs(b.z-P.z)<45&&Math.random()<dt*14) emit(b.x,.1,b.z,1,1.2,0xffffff,.7,true);
   }
   // Geschenke & Glöckchen drehen sich (nur in der Nähe)
@@ -2385,7 +2480,7 @@ function updateCamera(dt,snap){
     tmpA.set(.9,3.8,SLED_Z+11);
     tmpB.set(sledGroup.position.x,sledGroup.position.y+1.2,sledGroup.position.z-.5);
   } else {
-    var py=Math.max(P.y,0);
+    var py=Math.max(P.y,0)+VW.rideY*.7;
     var sp_=Math.max(-1,Math.min(3.5,(relSp-1)*9));     // schneller = Kamera weiter hinten
     tmpA.set(P.x*.55,4.7+py*.25,P.z+7.6+sp_*.22); tmpB.set(P.x*.75,1.2+py*.35,P.z-5-sp_*.3);
   }
@@ -2524,7 +2619,7 @@ function loop(nowMs){
 requestAnimationFrame(loop);
 
 // kleiner Zugang für Tests
-window.__santa={reward:function(st){ rewardShow(st,st===3?150:(st===2?60:0),0); },setVeh:setVehicle,P:P,plats:plats,snowmen:snowmen,balls:balls,items:items,cps:cps,step:step,move:move,jump:jump,start:startGame,
+window.__santa={reward:function(st){ rewardShow(st,st===3?150:(st===2?60:0),0); },setVeh:setVehicle, feats:function(){return placeFeats();}, VW:VW,P:P,plats:plats,snowmen:snowmen,balls:balls,items:items,cps:cps,step:step,move:move,jump:jump,start:startGame,
   get state(){return state;},get boss(){return BOSS;},stage:STAGE.id,diff:DIFF,get falls(){return falls;},get got(){return [gotG,gotB,nGifts,nBells];},total:TOTAL,sled:SLED_D,
   info:function(){return {calls:renderer.info.render.calls,tris:renderer.info.render.triangles,pr:pixelRatio,shadows:shadowsOn};}};
 
@@ -2659,7 +2754,7 @@ function rewardShow(st,starB,tsBefore){
 /* ---------- Punkte & Siegbildschirm ---------- */
 function winScreenExtra(st){
   var gG=Math.min(gotG,nGifts),gB=Math.min(gotB,nBells),par=SLED_D/7.2+12;
-  var timeB=Math.max(0,Math.round(par-runT))*5,clean=Math.max(0,100-falls*25),boss=BOSSLV?300:0,starB=st===3?150:(st===2?60:0),trk=trickPts||0;
+  var timeB=Math.max(0,Math.round(par-runT))*5,clean=Math.max(0,100-falls*25),boss=BOSSLV?300:0,starB=st===3?150:(st===2?60:0),trk=Math.round(trickPts||0);
   var score=Math.round((gG*10+gB*25+timeB+clean+boss+starB+trk)*DF.mult);
   var key=STAGE.id+'-'+DIFF,old=SV.best[key],isNew=!old||score>old.s,tsBefore=totalStars();
   if(isNew) SV.best[key]={s:score,st:Math.max(st,old?old.st:0)}; else if(st>old.st) old.st=st;
