@@ -1052,7 +1052,7 @@ function zenBusy(side,z){ var H=zenHeroes(),i; for(i=0;i<H.length;i++) if(H[i].s
 function zenDecor(){
   var H=zenHeroes(),yI=-1.3;
   H.forEach(function(h){
-    var x=h.side*(HALF_W+5.5+h.R),y=yI,z=h.z,R=h.R,top=islandY(y,0,R),f=h.side>0?-1:1;
+    var x=h.side*(HALF_W+3.4+h.R),y=yI,z=h.z,R=h.R,top=islandY(y,0,R),f=h.side>0?-1:1;
     decorIsland(x,y,z,R);
     zput(zBlumen(16,R*.8),x,top,z,0,1);
     if(h.t==='brunnen'){
