@@ -138,7 +138,7 @@ input{width:100%;max-width:280px;padding:10px 12px;border-radius:12px;border:0;f
 <path d="M146 118 Q158 112 164 100" fill="none" stroke="#ffd54a" stroke-width="2" stroke-linecap="round"/>
 <path d="M164 100 l1.8 -4.6 l1.8 4.6 l4.6 1.8 l-4.6 1.8 l-1.8 4.6 l-1.8 -4.6 l-4.6 -1.8z" fill="url(#lg)"/>
 </svg>
-<div class="lt"><small>SANTA</small><h1><span class="logo">Bling Bling</span></h1><div class="tag">Die wilde Bescherung</div><div class="sub">v1.34 · 7 Städte · bring alle Geschenke zu den Kindern!</div></div></div>
+<div class="lt"><small>SANTA</small><h1><span class="logo">Bling Bling</span></h1><div class="tag">Die wilde Bescherung</div><div class="sub">v1.35 · 7 Städte · bring alle Geschenke zu den Kindern!</div></div></div>
   <div class="cols">
    <section class="sec"><h3><i>1</i> Wer bist du? <em id="stot"></em></h3>
     <input id="name" maxlength="12" placeholder="Dein Name" autocomplete="off">
@@ -327,12 +327,12 @@ function tone(f,dur,type,vol,when,dest,slide){
  g.gain.setValueAtTime(0,t);g.gain.linearRampToValueAtTime(vol||.2,t+.012);g.gain.exponentialRampToValueAtTime(.0001,t+dur);
  o.connect(g);g.connect(dest||sfxG);o.start(t);o.stop(t+dur+.05);
 }
+let NB=null;
 function noise(dur,vol,ff,when,type){
  if(!AC)return;
- const t=AC.currentTime+(when||0),n=Math.floor(AC.sampleRate*dur),b=AC.createBuffer(1,n,AC.sampleRate),d=b.getChannelData(0);
- for(let i=0;i<n;i++)d[i]=(Math.random()*2-1)*(1-i/n);
- const s=AC.createBufferSource();s.buffer=b;const f=AC.createBiquadFilter();f.type=type||'bandpass';f.frequency.value=ff||1500;
- const g=AC.createGain();g.gain.value=vol||.2;s.connect(f);f.connect(g);g.connect(sfxG);s.start(t);
+ if(!NB||NB.sampleRate!==AC.sampleRate){const n=Math.floor(AC.sampleRate*2.2);NB=AC.createBuffer(1,n,AC.sampleRate);const d=NB.getChannelData(0);for(let i=0;i<n;i++)d[i]=Math.random()*2-1;}
+ const t=AC.currentTime+(when||0),s=AC.createBufferSource();s.buffer=NB;const f=AC.createBiquadFilter();f.type=type||'bandpass';f.frequency.value=ff||1500;
+ const g=AC.createGain();g.gain.setValueAtTime(vol||.2,t);g.gain.linearRampToValueAtTime(0,t+dur);s.connect(f);f.connect(g);g.connect(sfxG);s.start(t,Math.random()*(2.2-Math.min(2,dur)),Math.min(2,dur));
 }
 
 /* ---- Aufgenommene englische Stimme (Kokoro, männlich) ---- */
@@ -6954,10 +6954,11 @@ $('tomenu').addEventListener('click',toMenu);
 $('name').value=store.get('sbb-name','');
 $('name').addEventListener('input',()=>store.set('sbb-name',$('name').value));
 let lastTs=0;
+const PERF=/[?&]perf/.test(location.search);let pf={u:0,d:0,gap:0,n:0,t:0,el:null,w:''};
 function frame(ts){
- const dt=Math.min(.05,(ts-lastTs)/1000||.016);lastTs=ts;
+ const gap=ts-lastTs,dt=Math.min(.05,(gap)/1000||.016);lastTs=ts;
  try{
-  if(G){if(G.mode==='fp'||(FP&&G.mode==='bake')){if(G.mode==='bake')update(dt);fpUpdate(dt);}else{update(dt);if(G){draw(ts/1000);if(G.mode!=='end')hud();}}}
+  if(G){if(G.mode==='fp'||(FP&&G.mode==='bake')){if(G.mode==='bake')update(dt);fpUpdate(dt);}else{const t0=PERF?performance.now():0;update(dt);const t1=PERF?performance.now():0;if(G){draw(ts/1000);if(G.mode!=='end')hud();}if(PERF){const t2=performance.now();pf.u=Math.max(pf.u,t1-t0);pf.d=Math.max(pf.d,t2-t1);pf.gap=Math.max(pf.gap,gap);pf.n++;pf.t+=dt;if(pf.t>=2){if(!pf.el){pf.el=document.createElement('div');pf.el.style.cssText='position:fixed;left:6px;top:6px;z-index:999;background:rgba(0,0,0,.75);color:#0f0;font:11px monospace;padding:4px 6px;border-radius:6px;pointer-events:none;white-space:pre';document.body.appendChild(pf.el);}pf.el.textContent='fps '+Math.round(pf.n/pf.t)+'  max-Abstand '+Math.round(pf.gap)+'ms\nupdate max '+pf.u.toFixed(1)+'ms  draw max '+pf.d.toFixed(1)+'ms';pf.u=pf.d=pf.gap=0;pf.n=0;pf.t=0;}}}}
   else if(!$('menu').hidden){drawPreviews(ts/1000);}
  }catch(e){console.error(e);}
  requestAnimationFrame(frame);
