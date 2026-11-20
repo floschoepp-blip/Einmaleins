@@ -181,7 +181,7 @@ h1 span{color:#ffd23e}
       <input class="inp" id="bcode" maxlength="12" placeholder="Klassen-Code" autocomplete="off" autocapitalize="characters">
     </div>
     <div class="hsbox"><b id="hsTitle">🏆 Bestenliste</b><ol id="hsList"></ol><small id="hsNote"></small></div>
-    <div style="opacity:.55;font-size:12px;font-weight:700">Version 3.3</div>
+    <div style="opacity:.55;font-size:12px;font-weight:700">Version 3.4</div>
   </div>
   <div id="menuBot">
     <div class="help">◀ ▶ Spur wechseln &nbsp;·&nbsp; ⬆ Springen<br>2× tippen = Doppelsprung!</div>
@@ -808,12 +808,21 @@ function layoutRun(list){
 }
 /* Boss-Arena: eine lange Fläche, der Boss rollt Schneebälle, Glocken = Treffer */
 function layoutBoss(){
-  d=0; var st,i,lanes=[0,1,-1,0,-1,1,0,1,-1,0,-1,1];
+  d=0; var st,i,j,lanes=[0,1,-1,0,-1,1,0,1,-1,0,-1,1],bl=[];
   st=full(26); cp(st+4); hint(st+5,'Sammle Glocken 🔔 – jede wirft ein Geschenk auf den Boss!');
   var a=full(250); cp(a+3); cp(a+90); cp(a+170);
-  for(i=0;i<12;i++){ var dd=a+16+i*18.5; bell(dd,lanes[i],0); if(i%2===0) row(dd+5,lanes[(i+3)%12],3); else gift(dd+7,lanes[(i+5)%12]); }
-  for(i=0;i<8;i++) bell(a+20+i*28,-lanes[i],0.0);
-  s=full(32); cp(s+3); row(s+7,0,4); hint(s+4,'Geschafft! Da vorne steht dein Schlitten! 🛷');
+  for(i=0;i<12;i++){ var dd=a+16+i*18.5; bell(dd,lanes[i],0); bl.push([dd,lanes[i]]); if(i%2===0) row(dd+5,lanes[(i+3)%12],3); else gift(dd+7,lanes[(i+5)%12]); }
+  for(i=0;i<8;i++){ bell(a+20+i*28,-lanes[i],0.0); bl.push([a+20+i*28,-lanes[i]]); }
+  // Hindernisse im ganzen Kampfbereich: die Strecke bleibt auch nach dem Boss spannend
+  function freeLane(z,pref){
+    var o=[pref,0,1,-1,pref===0?1:-pref],k,l,ok;
+    for(k=0;k<o.length;k++){ l=o[k]; ok=true; bl.forEach(function(q){ if(Math.abs(q[0]-z)<7&&q[1]===l) ok=false; }); if(ok) return l; }
+    return null;
+  }
+  for(i=0;i<11;i++){ var oz=a+34+i*19,ol=freeLane(oz,[1,-1,0][i%3]); if(ol!==null) snowman(oz,ol); if(i%4===2){ var ol2=freeLane(oz,-ol); if(ol2!==null&&ol2!==ol) snowman(oz,ol2); } }
+  for(j=0;j<5;j++){ var bz=a+60+j*40; ballZ(bz,bz+26,[-1,1,0,1,-1][j],5,(j%3)*.3); }
+  hint(a+150,TH.obstName+' und '+TH.rollerName+' – weiter ausweichen!');
+  s=full(32); cp(s+3); snowman(s+12,-1); snowman(s+18,1); row(s+7,0,4); hint(s+4,'Geschafft! Da vorne steht dein Schlitten! 🛷');
   // Boss-Schneebälle (werden vom Boss gesteuert)
   for(i=0;i<6;i++) balls.push({mode:'boss',x:0,z:-9999,speed:7,r:.6,active:false,scale:0});
   return s;
@@ -1523,7 +1532,7 @@ function bossAnim(dt){
     if(u2>=1){
       bossShot.visible=false; BOSS.shot=-1; BOSS.flash=.6; shake=.3;
       emit(0,ty,tz,26,7,0xffe066,.9); emit(0,ty,tz,16,6,[0xff8a96,0x9cd0ff,0x9cf5b0][Math.floor(Math.random()*3)],.8);
-      if(BOSS.hp<=0){ BOSS.dead=true; BOSS.deadT=0; toast('Besiegt! Der Weg ist frei! 🎉',2600); sfx.win(); emit(0,ty,tz,60,9,0xffd23e,1); }
+      if(BOSS.hp<=0){ BOSS.dead=true; BOSS.deadT=0; toast('Boss besiegt! 🎉 Er flüchtet – jetzt noch zum Schlitten! 🛷',3600); sfx.win(); emit(0,ty,tz,60,9,0xffd23e,1); }
       else toast('Treffer! 🎁 Noch '+BOSS.hp+'!',1300);
     }
   }
