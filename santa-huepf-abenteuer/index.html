@@ -24,6 +24,9 @@ html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;-webkit-text
 /* ---------- HUD ---------- */
 #hud{position:fixed;top:0;left:0;right:0;padding:calc(10px + env(safe-area-inset-top)) calc(12px + env(safe-area-inset-right)) 0 calc(12px + env(safe-area-inset-left));
   display:none;pointer-events:none;z-index:5}
+#hudBtns{display:flex;gap:10px;pointer-events:auto}
+#pause{justify-content:center;background:rgba(4,10,40,.74)}
+#pause h1{margin:0 0 6px;font-size:clamp(30px,9vw,44px);color:#ffd23e;text-shadow:0 3px 0 rgba(0,0,0,.4)}
 #hudRow{display:flex;justify-content:space-between;align-items:flex-start}
 #counter{background:linear-gradient(180deg,rgba(24,44,120,.78),rgba(8,16,60,.78));border:3px solid rgba(255,255,255,.7);border-radius:24px;padding:4px 16px 2px 10px;
   font-size:clamp(24px,7vw,34px);font-weight:800;line-height:1.22;text-shadow:0 2px 0 rgba(0,0,0,.4);box-shadow:0 5px 14px rgba(0,0,10,.4),inset 0 2px 0 rgba(255,255,255,.25)}
@@ -32,7 +35,7 @@ html,body{margin:0;padding:0;width:100%;height:100%;overflow:hidden;-webkit-text
 #counter small{font-size:.58em;opacity:.8;margin-left:4px;font-weight:700}
 #counter .bump{animation:bump .25s}
 @keyframes bump{50%{transform:scale(1.3)}}
-#mute{pointer-events:auto;width:56px;height:56px;border-radius:50%;border:3px solid rgba(255,255,255,.7);background:linear-gradient(180deg,rgba(24,44,120,.78),rgba(8,16,60,.78));
+#mute,#pbtn{pointer-events:auto;width:56px;height:56px;border-radius:50%;border:3px solid rgba(255,255,255,.7);background:linear-gradient(180deg,rgba(24,44,120,.78),rgba(8,16,60,.78));
   font-size:26px;line-height:1;color:#fff;padding:0;touch-action:none;box-shadow:0 5px 14px rgba(0,0,10,.4)}
 #bar{position:relative;height:14px;margin:14px 18px 0 18px;background:rgba(8,16,60,.6);border:2px solid rgba(255,255,255,.55);border-radius:9px}
 #barFill{position:absolute;left:0;top:0;bottom:0;width:0;background:linear-gradient(90deg,#ff5a5a,#ffd23e);border-radius:7px;box-shadow:0 0 10px rgba(255,210,62,.7)}
@@ -72,7 +75,7 @@ h1 span{color:#ffd23e}
 .big:active{transform:translateY(5px);box-shadow:0 3px 0 #8f0f1b}
 @keyframes pulse{50%{transform:scale(1.045)}}
 #win{background:rgba(4,8,36,.5);justify-content:center}
-#win .card{background:linear-gradient(180deg,rgba(26,48,130,.92),rgba(8,18,70,.92));border:5px solid #ffd23e;border-radius:32px;padding:24px 20px 24px;width:min(88vw,460px);margin-bottom:22px;
+#win .card,#pause .card{background:linear-gradient(180deg,rgba(26,48,130,.92),rgba(8,18,70,.92));border:5px solid #ffd23e;border-radius:32px;padding:24px 20px 24px;width:min(88vw,460px);margin-bottom:22px;
   box-shadow:0 12px 40px rgba(0,0,0,.55),0 0 40px rgba(255,210,62,.35)}
 #stars{font-size:clamp(44px,14vw,70px);letter-spacing:6px;margin:6px 0}
 #stats{font-size:clamp(24px,7vw,36px);font-weight:800;line-height:1.4}
@@ -152,7 +155,7 @@ h1 span{color:#ffd23e}
       <div class="row"><span class="ico">🎁</span><span id="nG">0</span><small id="tG">/0</small></div>
       <div class="row"><span class="ico">🔔</span><span id="nB">0</span><small id="tB">/0</small></div>
     </div>
-    <button id="mute" aria-label="Ton an/aus">🔊</button>
+    <div id="hudBtns"><button id="pbtn" aria-label="Pause">⏸</button><button id="mute" aria-label="Ton an/aus">🔊</button></div>
   </div>
   <div id="bar"><div id="barFill"></div><div id="barSled">🛷</div><div id="barSanta">🎅</div></div>
   <div id="bossBar"></div>
@@ -181,7 +184,7 @@ h1 span{color:#ffd23e}
       <input class="inp" id="bcode" maxlength="12" placeholder="Klassen-Code" autocomplete="off" autocapitalize="characters">
     </div>
     <div class="hsbox"><b id="hsTitle">🏆 Bestenliste</b><ol id="hsList"></ol><small id="hsNote"></small></div>
-    <div style="opacity:.55;font-size:12px;font-weight:700">Version 3.4</div>
+    <div style="opacity:.55;font-size:12px;font-weight:700">Version 3.5</div>
   </div>
   <div id="menuBot">
     <div class="help">◀ ▶ Spur wechseln &nbsp;·&nbsp; ⬆ Springen<br>2× tippen = Doppelsprung!</div>
@@ -203,6 +206,13 @@ h1 span{color:#ffd23e}
   <button class="mid" id="menuBtn">Zum Menü</button>
 </div>
 
+<div id="pause" class="overlay hidden">
+  <div class="card"><h1>Pause ⏸</h1>
+    <button class="big" id="pResume">Weiter ▶</button>
+    <button class="mid" id="pRestart">Neu starten</button>
+    <button class="mid" id="pMenu">Zum Menü</button>
+  </div>
+</div>
 <div id="rotate">📱<br>Bitte dreh dein Handy<br>ins Hochformat!</div>
 <div id="err">Das Spiel konnte nicht geladen werden. 😕<br>Bitte prüfe die Internet-Verbindung<br>und lade die Seite neu.</div>
 
@@ -1605,6 +1615,14 @@ function stopMusic(){
   musicOn=false;
   if(AC&&musicGain){ musicGain.gain.cancelScheduledValues(AC.currentTime); musicGain.gain.setValueAtTime(musicGain.gain.value,AC.currentTime); musicGain.gain.linearRampToValueAtTime(0,AC.currentTime+.4); }
 }
+var paused=false;
+function setPause(on){
+  if(on){ if(paused||(state!=='play'&&state!=='respawn')) return; paused=true; $('pause').classList.remove('hidden'); try{ if(AC&&AC.state==='running') AC.suspend(); }catch(e){} }
+  else { if(!paused) return; paused=false; $('pause').classList.add('hidden'); last=performance.now(); try{ if(AC&&AC.state!=='running') AC.resume(); }catch(e){} }
+}
+$('pbtn').addEventListener('pointerdown',function(e){ e.preventDefault(); e.stopPropagation(); setPause(true); });
+document.addEventListener('visibilitychange',function(){ if(document.hidden) setPause(true); });
+document.addEventListener('keydown',function(e){ if(e.key==='p'||e.key==='P'||e.key==='Escape'){ setPause(!paused); } });
 $('mute').addEventListener('pointerdown',function(e){
   e.preventDefault(); e.stopPropagation(); muted=!muted; this.textContent=muted?'🔇':'🔊';
   if(master) master.gain.value=muted?0:1;
@@ -1874,8 +1892,8 @@ function step(dt){
 /* =====================================================================
    Steuerung: Touch-Buttons, Wischen, Tastatur
    ===================================================================== */
-function move(dir){ if(state==='play') P.lane=Math.max(-1,Math.min(1,P.lane+dir)); }
-function jump(){ if(state==='play') wantJump=.16; }
+function move(dir){ if(state==='play'&&!paused) P.lane=Math.max(-1,Math.min(1,P.lane+dir)); }
+function jump(){ if(state==='play'&&!paused) wantJump=.16; }
 function bindBtn(id,fn){
   var el=$(id);
   el.addEventListener('pointerdown',function(e){ e.preventDefault(); e.stopPropagation(); el.classList.add('on'); fn(); });
@@ -1925,7 +1943,7 @@ if(window.visualViewport){
     resize();
   });
 }
-document.addEventListener('touchmove',function(e){e.preventDefault();},{passive:false});
+document.addEventListener('touchmove',function(e){ if(e.target&&e.target.closest&&e.target.closest('#start,#win,#pause')) return; e.preventDefault(); },{passive:false});   // Menüs müssen scrollen/wischen dürfen
 ['gesturestart','gesturechange','gestureend'].forEach(function(n){document.addEventListener(n,function(e){e.preventDefault();});});
 document.addEventListener('dblclick',function(e){e.preventDefault();});
 document.addEventListener('contextmenu',function(e){e.preventDefault();});
@@ -1952,7 +1970,7 @@ function lowerQuality(){
 function loop(nowMs){
   requestAnimationFrame(loop);
   var raw=(nowMs-last)/1000; last=nowMs;
-  if(document.hidden||(landscapeBlock&&landscapeBlock.matches)) return;
+  if(document.hidden||paused||(landscapeBlock&&landscapeBlock.matches)) return;
   var dt=Math.min(raw,.05); if(dt<=0) return;
   step(dt);
   renderer.render(scene,camera);
@@ -2060,6 +2078,9 @@ $('pname').addEventListener('change',function(){ PNAME=this.value.trim().slice(0
 $('bcode').addEventListener('change',function(){ BCODE=cleanCode(this.value); this.value=BCODE; lsSet('sbb-bcode',BCODE); renderMenu(); });
 ['pname','bcode'].forEach(function(id){ $(id).addEventListener('keydown',function(e){ e.stopPropagation(); if(e.key==='Enter') this.blur(); }); });
 $('menuBtn').addEventListener('click',reloadClean);
+$('pMenu').addEventListener('click',reloadClean);
+$('pResume').addEventListener('click',function(){ setPause(false); });
+$('pRestart').addEventListener('click',function(){ setPause(false); startGame(); });
 $('next').addEventListener('click',function(){ if(SV.lv<STAGES.length-1){ SV.lv++; writeSave(); reloadClean(); } });
 renderMenu();
 
