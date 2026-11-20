@@ -6,7 +6,7 @@
 <script>
 /* Immer die neueste Version: beim Start kurz nachsehen, ob auf dem Server eine neuere Version liegt, und dann frisch laden. */
 (function(){
-  var B='3.33'; window.__BUILD=B;
+  var B='3.34'; window.__BUILD=B;
   try{
     if(location.protocol==='file:'||!window.fetch) return;
     var base=location.pathname.replace(/[^\/]*$/,'');
@@ -246,7 +246,7 @@ h1 span{color:#ffd23e}
       <input class="inp" id="bcode" maxlength="12" placeholder="Klassen-Code" autocomplete="off" autocapitalize="characters">
     </div>
     <div class="hsbox"><b id="hsTitle">🏆 Bestenliste</b><ol id="hsList"></ol><small id="hsNote"></small></div>
-    <div style="opacity:.55;font-size:12px;font-weight:700">Version 3.33</div>
+    <div style="opacity:.55;font-size:12px;font-weight:700">Version 3.34</div>
   </div>
   <div id="menuBot">
     <div class="help">◀ ▶ Spur wechseln &nbsp;·&nbsp; ⬆ Springen<br>2× tippen = Doppelsprung!</div>
@@ -2961,7 +2961,6 @@ function animate(dt){
     c.stars[0].rotation.y=c.stars[1].rotation.y=time*(c.on?2:.5);
     if(c.on){ c.haloMat.opacity=.5+Math.sin(time*4+i)*.14; c.rayMat.rotation=time*.6; } }
   bossAnim(dt);
-  if(mSrc&&mSrc.playbackRate){ var tr_=state==='play'?Math.max(1,Math.min(1.25,1+(relSp-1)*.9)):1; mRate+=(tr_-mRate)*Math.min(1,dt*2); mSrc.playbackRate.value=mRate; }
   updateParticles(dt);
 }
 function updateCamera(dt,snap){
