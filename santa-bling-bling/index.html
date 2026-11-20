@@ -138,7 +138,7 @@ input{width:100%;max-width:280px;padding:10px 12px;border-radius:12px;border:0;f
 <path d="M146 118 Q158 112 164 100" fill="none" stroke="#ffd54a" stroke-width="2" stroke-linecap="round"/>
 <path d="M164 100 l1.8 -4.6 l1.8 4.6 l4.6 1.8 l-4.6 1.8 l-1.8 4.6 l-1.8 -4.6 l-4.6 -1.8z" fill="url(#lg)"/>
 </svg>
-<div class="lt"><small>SANTA</small><h1><span class="logo">Bling Bling</span></h1><div class="tag">Die wilde Bescherung</div><div class="sub">v1.15 · 7 Städte · bring alle Geschenke zu den Kindern!</div></div></div>
+<div class="lt"><small>SANTA</small><h1><span class="logo">Bling Bling</span></h1><div class="tag">Die wilde Bescherung</div><div class="sub">v1.16 · 7 Städte · bring alle Geschenke zu den Kindern!</div></div></div>
   <div class="cols">
    <section class="sec"><h3><i>1</i> Wer bist du? <em id="stot"></em></h3>
     <input id="name" maxlength="12" placeholder="Dein Name" autocomplete="off">
@@ -341,7 +341,7 @@ function vox(k,o){
  const s=AC.createBufferSource();s.buffer=VB[k];const g=AC.createGain();g.gain.value=o.vol||1.5;s.connect(g);g.connect(master);s.start();voxSrc=s;
  voxT=now+VB[k].duration+(o.cd==null?3.2:o.cd);return true;
 }
-const VG={crash:['c1','c2','c3','c4','c5','c6','c7','c8','c9','c10','c11','c12'],car:['car1','car2','car3','car4','car5','car6','car7','car8'],house:['hs1','hs2','hs3','hs4','hs5','hs6','hs7','hs8'],ped:['pe1','pe2','pe3','pe4','pe5','pe6','pe7','pe8'],tree:['tr1','tr2','tr3','tr4'],wet:['wet1','wet2','wet3','wet4'],fly:['fly1','fly2','fly3'],land:['land1','land2'],gift:['gift1','gift2','gift3','gift4','yeehaw'],skate:['sk1','sk2'],slide:['sl1','sl2'],wheel:['wh1'],truck:['tk1','tk2'],av:['av1'],win:['win1'],hung:['hung1','hung2']};
+const VG={crash:['c1','c2','c3','c4','c5','c6','c7','c8','c9','c10','c11','c12'],car:['car1','car2','car3','car4','car5','car6','car7','car8'],house:['hs1','hs2','hs3','hs4','hs5','hs6','hs7','hs8','howdy'],ped:['pe1','pe2','pe3','pe4','pe5','pe6','pe7','pe8'],tree:['tr1','tr2','tr3','tr4'],wet:['wet1','wet2','wet3','wet4'],fly:['fly1','fly2','fly3'],land:['land1','land2'],gift:['gift1','gift2','gift3','gift4','yeehaw'],skate:['sk1','sk2'],slide:['sl1','sl2'],wheel:['wh1'],truck:['tk1','tk2'],av:['av1'],win:['win1'],hung:['hung1','hung2']};
 function voxSay(g,o){
  const L=VG[g];if(!L)return false;const k=L[Math.floor(Math.random()*L.length)];
  if(vox(k,o)){if(typeof P!=='undefined'&&P&&typeof G!=='undefined'&&G&&G.mode!=='bake'&&VOXT[k])P.say={t:VOXT[k],ttl:2.8};return true;}return false;
@@ -2463,7 +2463,7 @@ function startGame(idx){
  DIFF=store.get('sbb-diff',1);
  if(idx==null)idx=sel.lv;sel.lv=idx;
  const lv=CITIES[idx];
- W=buildWorld(lv);const sp=W.sp;setTimeout(()=>vox('howdy',{force:true,cd:1.5}),700);
+ W=buildWorld(lv);const sp=W.sp;
  let sx=sp.start.x,sy=sp.start.y;
  if(W.park){sx=W.park.x-26;sy=W.park.y+W.park.h/2;}
  {const q={x:sx,y:sy};if(pushOut(q,18)){/*aus Gebäude geschoben*/}sx=q.x;sy=q.y;}
@@ -2506,9 +2506,9 @@ function startGame(idx){
  $('menu').hidden=true;$('end').hidden=true;$('bake').hidden=true;$('hud').hidden=false;$('zone').hidden=false;$('act').hidden=false;genHazards();
  $('hc').textContent=lv.icon+' '+lv.name;$('snd').textContent=muted?'🔇':'🔊';
  toast('Bring '+G.total+' Geschenke zu den Häusern mit 🎁!',3500);
- say('🎄',(T().intro||'Los geht\'s!')+' 🅿️ Dein Fahrzeug wartet am Parkplatz neben dem Markt.',8500);setTimeout(()=>{if(G&&G.mode==='play')speak(T().intro||'Los geht\'s!',{pitch:1.7,rate:1.05});},900);
+ say('🎄',(T().intro||'Los geht\'s!')+' 🅿️ Dein Fahrzeug wartet am Parkplatz neben dem Markt.',8500);setTimeout(()=>{if(G&&G.mode==='play')speak(T().intro||'Los geht\'s!');},2400);
  musicStart(lv.id==='zenting'?['stille','jingle']:lv.id==='nordpol'?['stille','wish','jingle']:lv.id==='vegas'?['jingle','deck']:['jingle','deck','wish','stille']);
- setTimeout(()=>sfx('hoho'),350);
+ setTimeout(()=>sfx('hoho'),300);
  if(warnLog&&W.warn.length)console.warn(W.warn.join(' | '));
 }
 const warnLog=true;
@@ -2526,12 +2526,12 @@ addEventListener('keydown',e=>{
 addEventListener('keyup',e=>{const m=KEYMAP[e.code];if(m)keys[m]=false;});
 addEventListener('blur',()=>{for(const k in keys)keys[k]=false;stick.x=stick.y=0;sp_=null;$('base').hidden=true;});
 const zone=$('zone'),knob=$('knob'),base=$('base');let sp_=null,so={x:0,y:0};
-const R_STICK=52;
+const R_STICK=38;
 function setStick(e){
  let dx=(e.clientX-so.x)/R_STICK,dy=(e.clientY-so.y)/R_STICK;const l=Math.hypot(dx,dy);
  if(l>1){dx/=l;dy/=l;so.x=e.clientX-dx*R_STICK;so.y=e.clientY-dy*R_STICK;base.style.left=so.x+'px';base.style.top=so.y+'px';}
  const m=Math.min(l,1);
- if(m<.1){stick.x=stick.y=0;}else{const mm=(m-.1)/.9;stick.x=dx/m*mm;stick.y=dy/m*mm;}
+ if(m<.06){stick.x=stick.y=0;}else{const mm=(m-.06)/.94;stick.x=dx/m*mm;stick.y=dy/m*mm;}
  knob.style.transform='translate('+(dx*R_STICK*.62)+'px,'+(dy*R_STICK*.62)+'px)';
 }
 const pts=new Map();let pd=0;
@@ -2540,7 +2540,7 @@ function onDown(e){
  if(!G||G.mode!=='play'||isUI(e.target))return;
  if(e.pointerType==='mouse'&&e.button!==0)return;
  pts.set(e.pointerId,{x:e.clientX,y:e.clientY,j:false});
- if(sp_==null&&e.clientX<innerWidth*.62&&e.clientY>innerHeight*.18){
+ if(sp_==null&&e.clientY>innerHeight*.1){
   sp_=e.pointerId;pts.get(e.pointerId).j=true;so={x:e.clientX,y:e.clientY};
   base.style.left=so.x+'px';base.style.top=so.y+'px';base.hidden=false;knob.style.transform='';stick.x=stick.y=0;
  }
@@ -2560,6 +2560,7 @@ function onUp(e){
 }
 addEventListener('pointerdown',onDown,{passive:false});addEventListener('pointermove',onMove,{passive:false});
 addEventListener('pointerup',onUp);addEventListener('pointercancel',onUp);
+['touchend','touchcancel'].forEach(ev=>addEventListener(ev,e=>{if(!e.touches||e.touches.length===0){pts.clear();pd=0;sp_=null;stick.x=stick.y=0;base.hidden=true;knob.style.transform='';}},{passive:true}));
 ['touchmove','gesturestart','gesturechange'].forEach(ev=>document.addEventListener(ev,e=>{if(G&&G.mode==='play')e.preventDefault();},{passive:false}));
 document.addEventListener('contextmenu',e=>e.preventDefault());
 cv.addEventListener('wheel',e=>{e.preventDefault();setZoom(zoom*(e.deltaY<0?1.1:1/1.1));},{passive:false});
@@ -3622,7 +3623,7 @@ function roomHUD(){
 /* ===== extras.js: Hindernisse (Verwehungen, Rohrbrüche) und Belohnungssequenz ===== */
 function genHazards(){
  const lvI=G.idx,R=mulberry(G.idx*977+Math.floor(Math.random()*1e5)),hz=[];
- const dm=[.5,1,1.5][DIFF],nD=Math.max(1,Math.round((3+lvI)*dm)),nP=Math.max(1,Math.round((lvI===0?1:1+Math.floor(lvI/2)+1)*dm));
+ const dm=[.5,1,1.5][DIFF],nD=0,nP=Math.max(1,Math.round((lvI===0?1:1+Math.floor(lvI/2)+1)*dm));
  const rp=()=>{const r=W.roads[Math.floor(R()*W.roads.length)];if(!r||!r.smp||!r.smp.length)return null;const s=r.smp[Math.floor(R()*r.smp.length)];return{x:s.x+s.nx*(R()-.5)*r.w*.5,y:s.y+s.ny*(R()-.5)*r.w*.5,w:r.w};};
  const ok=(p,rad)=>{if(!p)return false;if(Math.hypot(p.x-P.x,p.y-P.y)<260)return false;if(solidWater(p.x,p.y))return false;for(const h of hz)if(Math.hypot(h.x-p.x,h.y-p.y)<160)return false;for(const t of W.houses)if(t.target&&Math.hypot(t.door.x-p.x,t.door.y-p.y)<90)return false;return true;};
  let guard=0;
