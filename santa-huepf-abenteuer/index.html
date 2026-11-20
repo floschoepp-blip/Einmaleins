@@ -6,7 +6,7 @@
 <script>
 /* Immer die neueste Version: beim Start kurz nachsehen, ob auf dem Server eine neuere Version liegt, und dann frisch laden. */
 (function(){
-  var B='3.26'; window.__BUILD=B;
+  var B='3.27'; window.__BUILD=B;
   try{
     if(location.protocol==='file:'||!window.fetch) return;
     var base=location.pathname.replace(/[^\/]*$/,'');
@@ -246,7 +246,7 @@ h1 span{color:#ffd23e}
       <input class="inp" id="bcode" maxlength="12" placeholder="Klassen-Code" autocomplete="off" autocapitalize="characters">
     </div>
     <div class="hsbox"><b id="hsTitle">🏆 Bestenliste</b><ol id="hsList"></ol><small id="hsNote"></small></div>
-    <div style="opacity:.55;font-size:12px;font-weight:700">Version 3.26</div>
+    <div style="opacity:.55;font-size:12px;font-weight:700">Version 3.27</div>
   </div>
   <div id="menuBot">
     <div class="help">◀ ▶ Spur wechseln &nbsp;·&nbsp; ⬆ Springen<br>2× tippen = Doppelsprung!</div>
@@ -1833,6 +1833,7 @@ function worldUpdate(dt){
     if(state==='play'||state==='menu'){ VW.rideY=waveH(P.x,P.z,time)-.08; VW.rideP=waveDZ(P.x,P.z,time)*1.6; }
   }
   VW.rideY+=VW.rampY;
+  if(VW.space&&VW.keep){ VW.hT=(VW.hT||0)-(dt||.016); if(VW.hT<=0){ VW.hT=.4; scene.children.forEach(function(o){ if(VW.keep.indexOf(o)<0&&!(o.userData&&o.userData.keep)&&VW.hidden.indexOf(o)<0){ VW.hidden.push(o); o.visible=false; } }); } }
   if(VW.space&&VW.spFollow) VW.spFollow.position.z=(state==='win'?SLED_Z:P.z);
 }
 /* ---------- Rampen und Schienen ---------- */
@@ -1965,7 +1966,7 @@ function setSpace(on){
     if(!VW.hidden.length){
       var keep=[hemi,moonLight,moonLight.target,warm,santa,shadow,haloPts,sparkPts,puffPts,sledGroup,VW.grp,VW.sp];
       itemMeshes.forEach(function(m){ keep.push(m); }); snowmen.forEach(function(m){ keep.push(m.mesh); }); balls.forEach(function(m){ keep.push(m.mesh); }); cps.forEach(function(c){ if(c.g) keep.push(c.g); });
-      scene.children.forEach(function(o){ if(keep.indexOf(o)<0) VW.hidden.push(o); });
+      VW.keep=keep; scene.children.forEach(function(o){ if(keep.indexOf(o)<0&&!(o.userData&&o.userData.keep)) VW.hidden.push(o); });
     }
     VW.hidden.forEach(function(o){ o.visible=false; });
     VW.sp.visible=true;
@@ -3092,7 +3093,7 @@ function mkGhost(col,name,css){
     G(cn(.42,.75,12),{c:col,c2:col,p:[0,1.85,0]}), G(sp(.11,8,6),{c:FUR,p:[0,2.25,0]}),
     G(tor(.42,.08,6,16),{c:FUR,r:[Math.PI/2,0,0],p:[0,1.5,0]}), G(bx(.5,.12,.22),{c:BLK,p:[-.18,.02,0]}), G(bx(.5,.12,.22),{c:BLK,p:[.18,.02,0]})
   ]),VC));
-  g.add(nameSprite(name,css)); g.userData.name=name; scene.add(g); return g;
+  g.add(nameSprite(name,css)); g.userData.name=name; g.userData.keep=true; scene.add(g); return g;
 }
 function ghostOf(p){
   var ci=colIdx(p.uid);
@@ -3104,7 +3105,7 @@ function ghostOf(p){
 var ballGeo=null;
 function raceAddBall(x,z,own,t0){
   if(!ballGeo) ballGeo=new THREE.Mesh(new THREE.SphereGeometry(.45,12,10),new THREE.MeshLambertMaterial({color:0xffffff,emissive:0x8ab8ff,emissiveIntensity:.5}));
-  var m=ballGeo.clone(); scene.add(m); RACE.balls.push({m:m,x:x,z:z,own:own,t0:t0});
+  var m=ballGeo.clone(); m.userData.keep=true; scene.add(m); RACE.balls.push({m:m,x:x,z:z,own:own,t0:t0});
 }
 function raceBuildBoxes(){
   RACE.boxes.forEach(function(b){ scene.remove(b.m); }); RACE.boxes=[];
@@ -3114,7 +3115,7 @@ function raceBuildBoxes(){
     var lane=((k*7+3)%3)-1,x=lane*LANE,ok=VW.space,dz;
     for(dz=0;dz<14&&!ok;dz+=1){ if(supported(x,z-dz)){ z-=dz; ok=true; } }
     if(!ok) continue;
-    var m=new THREE.Mesh(mat,VC); m.position.set(x,1.15+vwGY(x,z)+(VW.space?spCen(z)-.7:0),z); scene.add(m);
+    var m=new THREE.Mesh(mat,VC); m.userData.keep=true; m.position.set(x,1.15+vwGY(x,z)+(VW.space?spCen(z)-.7:0),z); scene.add(m);
     RACE.boxes.push({m:m,x:x,z:z,base:1.15+(VW.space?spCen(z)-.7:0),y:m.position.y,act:true,t:0});
   }
 }
