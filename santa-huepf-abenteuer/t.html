@@ -6,7 +6,7 @@
 <script>
 /* Immer die neueste Version: beim Start kurz nachsehen, ob auf dem Server eine neuere Version liegt, und dann frisch laden. */
 (function(){
-  var B='3.32'; window.__BUILD=B;
+  var B='3.33'; window.__BUILD=B;
   try{
     if(location.protocol==='file:'||!window.fetch) return;
     var base=location.pathname.replace(/[^\/]*$/,'');
@@ -246,7 +246,7 @@ h1 span{color:#ffd23e}
       <input class="inp" id="bcode" maxlength="12" placeholder="Klassen-Code" autocomplete="off" autocapitalize="characters">
     </div>
     <div class="hsbox"><b id="hsTitle">🏆 Bestenliste</b><ol id="hsList"></ol><small id="hsNote"></small></div>
-    <div style="opacity:.55;font-size:12px;font-weight:700">Version 3.32</div>
+    <div style="opacity:.55;font-size:12px;font-weight:700">Version 3.33</div>
   </div>
   <div id="menuBot">
     <div class="help">◀ ▶ Spur wechseln &nbsp;·&nbsp; ⬆ Springen<br>2× tippen = Doppelsprung!</div>
@@ -2599,7 +2599,7 @@ function padNote(f,t0,dur){
 }
 /* Musik-Dateien (selbst erzeugt, lizenzfrei): A = Pop, B = Karibik, E = Swing, C = Boss. Werden pro Welt geladen;
    klappt das Laden nicht (offline), spielt die eingebaute Synthesizer-Musik weiter. */
-var MTRACK={nordpol:'a',zenting:'f',bahamas:'b',newyork:'e',london:'e',paris:'e'},mBufs={},mDelay=0,mJ=null,mJStage='',mSrc=null,mSample=0,mGen=0;
+var MTRACK={nordpol:'a',zenting:'f',bahamas:'b',newyork:'g',london:'e',paris:'h'},mRate=1,mBufs={},mDelay=0,mJ=null,mJStage='',mSrc=null,mSample=0,mGen=0;
 function trackFor(){ return STAGE.type==='boss'?'c':(MTRACK[STAGE.theme]||'a'); }
 function playSample(buf,gen){
   if(gen!==mGen||!musicOn||!AC) return;
@@ -2961,6 +2961,7 @@ function animate(dt){
     c.stars[0].rotation.y=c.stars[1].rotation.y=time*(c.on?2:.5);
     if(c.on){ c.haloMat.opacity=.5+Math.sin(time*4+i)*.14; c.rayMat.rotation=time*.6; } }
   bossAnim(dt);
+  if(mSrc&&mSrc.playbackRate){ var tr_=state==='play'?Math.max(.88,Math.min(1.25,1+(relSp-1)*.9)):1; mRate+=(tr_-mRate)*Math.min(1,dt*2); mSrc.playbackRate.value=mRate; }
   updateParticles(dt);
 }
 function updateCamera(dt,snap){
