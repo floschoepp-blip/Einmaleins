@@ -212,7 +212,7 @@ h1 span{color:#ffd23e}
       <input class="inp" id="bcode" maxlength="12" placeholder="Klassen-Code" autocomplete="off" autocapitalize="characters">
     </div>
     <div class="hsbox"><b id="hsTitle">🏆 Bestenliste</b><ol id="hsList"></ol><small id="hsNote"></small></div>
-    <div style="opacity:.55;font-size:12px;font-weight:700">Version 3.19</div>
+    <div style="opacity:.55;font-size:12px;font-weight:700">Version 3.20</div>
   </div>
   <div id="menuBot">
     <div class="help">◀ ▶ Spur wechseln &nbsp;·&nbsp; ⬆ Springen<br>2× tippen = Doppelsprung!</div>
@@ -1534,8 +1534,210 @@ function setVehicle(id){
   vehH=VEH.h*1.5; model.position.y=-.9+vehH;
   if(typeof vehAudioStart==='function'&&AC&&state==='play') vehAudioStart();
   if(VEH.id!=='foot'){ vehG=new THREE.Mesh(build(vehParts(VEH.id)),VC); vehG.castShadow=true; vehG.scale.set(1.6,1.5,1.6); model.add(vehG); }
+  if(typeof applyWorld==='function') applyWorld();
 }
 setVehicle(vehOk(SV.veh)?SV.veh:'foot');
+
+/* =====================================================================
+   Fahrzeug-Welten: je Fahrzeug eine eigene Bahn und eigene Hindernisse.
+   Skateboard = Skatepark mit Halfpipe-Wänden, Surfbrett = Wellen, Roller = Gehweg, Schwebebrett = Eisfeld.
+   Die Bahn wird nur über die breiten Platten gelegt (nicht über Lücken); die Spielregeln bleiben gleich.
+   ===================================================================== */
+var VW={grp:new THREE.Group(),cache:{},cur:null,rideY:0,rideP:0,obstSaved:false,water:[]};
+scene.add(VW.grp);
+function hexRGB(h){ var c=LIN(h); return [c.r,c.g,c.b]; }
+// Streifen entlang z: prof = Liste [x,y], colFn(i,k) = Farbe des Feldes i (zwischen Profilpunkt i und i+1) in der Platte k
+function stripGeo(prof,z0,z1,zlen,colFn){
+  var pos=[],col=[],k=0,z,i,n=Math.max(1,Math.round((z1-z0)/zlen)),dz=(z1-z0)/n;
+  for(k=0;k<n;k++){ var za=z0+k*dz,zb=za+dz;
+    for(i=0;i<prof.length-1;i++){
+      var a=prof[i],b=prof[i+1],c=hexRGB(colFn(i,k)),vv=[[a[0],a[1],za],[a[0],a[1],zb],[b[0],b[1],za],[b[0],b[1],za],[a[0],a[1],zb],[b[0],b[1],zb]];
+      vv.forEach(function(v){ pos.push(v[0],v[1],v[2]); col.push(c[0],c[1],c[2]); });
+    } }
+  var g=new THREE.BufferGeometry();
+  g.setAttribute('position',new THREE.BufferAttribute(new Float32Array(pos),3));
+  g.setAttribute('color',new THREE.BufferAttribute(new Float32Array(col),3));
+  g.computeVertexNormals(); return g;
+}
+function mergeGeos(list){
+  var n=0,i; for(i=0;i<list.length;i++) n+=list[i].attributes.position.count;
+  var pos=new Float32Array(n*3),nor=new Float32Array(n*3),col=new Float32Array(n*3),o=0;
+  for(i=0;i<list.length;i++){ var g=list[i],c=g.attributes.position.count;
+    pos.set(g.attributes.position.array,o*3); nor.set(g.attributes.normal.array,o*3); col.set(g.attributes.color.array,o*3); o+=c; }
+  var B=new THREE.BufferGeometry();
+  B.setAttribute('position',new THREE.BufferAttribute(pos,3)); B.setAttribute('normal',new THREE.BufferAttribute(nor,3)); B.setAttribute('color',new THREE.BufferAttribute(col,3));
+  return B;
+}
+function vwMesh(list){ var m=new THREE.Mesh(mergeGeos(list),VC); m.receiveShadow=true; return m; }
+var VWR=rng(4242);
+function buildSkate(){
+  var L=[],D=[],PI=Math.PI,t,prof=[],wl=[],wr=[];
+  for(t=0;t<=8;t++){ var ang=t/8*PI/2; wl.push([-(2.2+.8*Math.sin(ang)),.8*(1-Math.cos(ang))]); wr.push([2.2+.8*Math.sin(ang),.8*(1-Math.cos(ang))]); }
+  prof=wl.slice().reverse().concat([[-1.1,.02],[0,.02],[1.1,.02]],wr);   // links Wand -> Boden -> rechts Wand
+  fullPlats.forEach(function(p){
+    var z0=-(p.s+p.len),z1=-p.s;
+    L.push(stripGeo(prof,z0,z1,2.4,function(i,k){
+      var floor=i>=wl.length-1&&i<wl.length+3; if(floor) return k%2?0xb4b9c4:0xc4c9d3;
+      var up=(i<wl.length-1?i:(prof.length-2-i)); return up<2?0xffd23e:(up<5?0x8d96a8:0x6f7a90); }));
+    for(t=-1;t<=1;t+=2) D.push(G(cy(.06,.06,p.len,8),{c:0xe6ebf5,r:[PI/2,0,0],p:[t*3.0,.83,(z0+z1)/2]}));
+    // Farbkleckse an den Wänden (Graffiti-Streifen)
+    var cc=[0xff4a6e,0x4fb4ff,0x7dff8a,0xffd23e,0xff7ad9],q;
+    for(q=z0+3;q<z1-3;q+=5+VWR()*7){ t=VWR()<.5?-1:1; D.push(G(bx(.03,.22,1.2+VWR()*1.6),{c:cc[Math.floor(VWR()*5)],p:[t*2.82,.3,q],r:[0,0,t*-.62]})); }
+  });
+  var m=vwMesh(L); var g=new THREE.Group(); g.add(m);
+  if(D.length){ var dm=new THREE.Mesh(build(D),VC); g.add(dm); }
+  return {grp:g};
+}
+function buildRoller(){
+  var L=[],D=[],PI=Math.PI,i,prof=[[-3.06,.2],[-2.93,.2],[-2.88,.02]];
+  for(i=1;i<6;i++) prof.push([-2.88+i*.96,.02]); prof.push([2.88,.02],[2.93,.2],[3.06,.2]);
+  fullPlats.forEach(function(p){
+    var z0=-(p.s+p.len),z1=-p.s;
+    L.push(stripGeo(prof,z0,z1,1.2,function(c,k){
+      if(c===0||c===prof.length-2) return k%2?0xeceef2:0xffd23e;
+      if(c===1||c===prof.length-3) return 0xaeb4c0;
+      return (c+k)%2?0xcfd3da:0xbfc4cd; }));
+    for(var q=z0+4;q<z1-2;q+=14) for(var t=-1;t<=1;t+=2){
+      D.push(G(cy(.05,.07,2.5,8),{c:0x2a2f3c,p:[t*2.98,1.45,q]}),G(cy(.14,.14,.12,10),{c:0x2a2f3c,p:[t*2.98,.26,q]}),
+        G(cy(.03,.03,.7,6),{c:0x2a2f3c,r:[0,0,PI/2],p:[t*2.65,2.65,q]}),G(sp(.16,10,8),{c:0xfff1b0,s:[1.1,.7,1.1],p:[t*2.33,2.58,q]}));
+    }
+  });
+  var g=new THREE.Group(); g.add(vwMesh(L)); if(D.length) g.add(new THREE.Mesh(build(D),VC)); return {grp:g};
+}
+function buildHover(){
+  var L=[],D=[],PI=Math.PI,i,prof=[];
+  for(i=0;i<=10;i++) prof.push([-2.95+i*.59,.02]);
+  fullPlats.forEach(function(p){
+    var z0=-(p.s+p.len),z1=-p.s,pal=[0xd2f1ff,0xc2e9fb,0xb4e1f8,0xdff6ff,0xa8dcf5];
+    L.push(stripGeo(prof,z0,z1,1.1,function(c,k){ return pal[Math.floor(VWR()*5)]; }));
+    var q;
+    for(q=z0+2;q<z1-1;q+=3.5+VWR()*4) D.push(G(bx(1.2+VWR()*1.6,.012,.045),{c:0xffffff,r:[0,VWR()*3.1,0],p:[(VWR()-.5)*5,.036,q]}));
+    for(q=z0+1;q<z1;q+=2.6+VWR()*3) for(var t=-1;t<=1;t+=2){ if(VWR()<.35) continue; var h=.5+VWR()*.9;
+      D.push(G(cn(.13+VWR()*.1,h,5),{c:0xeafaff,c2:0x6fc4f2,flat:true,r:[0,VWR()*3,(VWR()-.5)*.25],p:[t*(2.95+VWR()*.12),h/2,q]})); }
+  });
+  var g=new THREE.Group(); g.add(vwMesh(L)); if(D.length) g.add(new THREE.Mesh(build(D),VC)); return {grp:g};
+}
+// Wellen: Teilstücke von 20 m, nur in der Nähe von Santa neu berechnet
+function waveH(x,z,t){ return .15+.07*Math.sin(.55*z-t*1.6+.25*x)+.04*Math.sin(1.3*z-t*2.7-.6*x+1.3)+.02*Math.sin(2.1*x+1.1*z-t*1.4); }
+function waveDZ(x,z,t){ return .07*.55*Math.cos(.55*z-t*1.6+.25*x)+.04*1.3*Math.cos(1.3*z-t*2.7-.6*x+1.3)+.02*1.1*Math.cos(2.1*x+1.1*z-t*1.4); }
+function buildSurf(){
+  var g=new THREE.Group(),NX=12,XW=2.96,chunks=[];
+  fullPlats.forEach(function(p){
+    var z0=-(p.s+p.len),z1=-p.s,n=Math.max(1,Math.round((z1-z0)/20)),i;
+    for(i=0;i<n;i++){
+      var a=z0+(z1-z0)*i/n,b=z0+(z1-z0)*(i+1)/n,NZ=Math.max(2,Math.round((b-a)/.5)),cnt=(NX+1)*(NZ+1);
+      var geo=new THREE.BufferGeometry(),idx=[],r,c;
+      geo.setAttribute('position',new THREE.BufferAttribute(new Float32Array(cnt*3),3));
+      geo.setAttribute('color',new THREE.BufferAttribute(new Float32Array(cnt*3),3));
+      for(r=0;r<NZ;r++) for(c=0;c<NX;c++){ var v=r*(NX+1)+c; idx.push(v,v+NX+1,v+1, v+1,v+NX+1,v+NX+2); }
+      geo.setIndex(idx);
+      var m=new THREE.Mesh(geo,VC); m.receiveShadow=true; m.frustumCulled=false; m.visible=false; g.add(m);
+      chunks.push({m:m,a:a,b:b,NZ:NZ,done:false});
+    }
+  });
+  VW.water=chunks; return {grp:g,chunks:chunks};
+}
+var WC=[hexRGB(0x1b86ad),hexRGB(0x2fb5d6),hexRGB(0xe9fbff)];
+function updateWater(t){
+  var ch=VW.water,i,r,c,k,m,zc=P.z;
+  for(i=0;i<ch.length;i++){ var C=ch[i],near=(C.b>zc-55&&C.a<zc+30);
+    if(!near){ C.m.visible=false; continue; }
+    C.m.visible=true;
+    var geo=C.m.geometry,pos=geo.attributes.position,col=geo.attributes.color,NZ=C.NZ;
+    for(r=0;r<=NZ;r++){ var z=C.a+(C.b-C.a)*r/NZ;
+      for(c=0;c<=12;c++){ var x=-2.96+5.92*c/12,h=waveH(x,z,t),vi=r*13+c,u=Math.max(0,Math.min(1,(h-.06)/.2)),q=u<.55?u/.55:1,col0=u<.55?WC[0]:WC[1],col1=u<.55?WC[1]:WC[2],f=u<.55?q:(u-.55)/.45;
+        pos.setXYZ(vi,x,.02+h,z); col.setXYZ(vi,col0[0]+(col1[0]-col0[0])*f,col0[1]+(col1[1]-col0[1])*f,col0[2]+(col1[2]-col0[2])*f); } }
+    pos.needsUpdate=true; col.needsUpdate=true; geo.computeVertexNormals();
+  }
+}
+/* ---------- Hindernisse und Kugeln je Fahrzeug ---------- */
+function recolorSectors(g,cols){
+  var pos=g.attributes.position,col=g.attributes.color,i,N=cols.length;
+  for(i=0;i<pos.count;i++){ var s=Math.floor((Math.atan2(pos.getZ(i),pos.getX(i))+Math.PI)/(2*Math.PI)*N)%N,c=LIN(cols[s]); col.setXYZ(i,c.r,c.g,c.b); }
+}
+function vwObst(id,k){
+  var P=[],PI=Math.PI,i,m;
+  if(id==='skate'){
+    if(k===0){ // Pylone
+      P.push(G(bx(.7,.06,.7),{c:0x2a2f3c,p:[0,.03,0]}),G(cn(.36,1.1,14),{c:0xff8a1a,c2:0xe05a00,p:[0,.61,0]}),G(tor(.245,.045,6,16),{c:0xffffff,r:[PI/2,0,0],p:[0,.42,0]}),G(tor(.16,.04,6,14),{c:0xffffff,r:[PI/2,0,0],p:[0,.72,0]}));
+    } else if(k===1){ // Absperrung
+      P.push(G(bx(.09,1.0,.09),{c:0x9aa0ac,p:[-.72,.5,0]}),G(bx(.09,1.0,.09),{c:0x9aa0ac,p:[.72,.5,0]}),G(bx(.1,.06,.55),{c:0x6f7584,p:[-.72,.03,0]}),G(bx(.1,.06,.55),{c:0x6f7584,p:[.72,.03,0]}));
+      for(i=0;i<5;i++){ var cc=i%2?0xffffff:0xe8212e; P.push(G(bx(.29,.22,.07),{c:cc,p:[-.58+i*.29,.88,0]}),G(bx(.29,.22,.07),{c:i%2?0xe8212e:0xffffff,p:[-.58+i*.29,.6,0]})); }
+    } else { // Mülltonne
+      P.push(G(cy(.4,.34,.95,14),{c:0x3aa655,c2:0x1f7a3a,p:[0,.48,0]}),G(cy(.44,.44,.1,14),{c:0x2a8a46,p:[0,1.0,0]}),G(sp(.14,8,6),{c:0x1f7a3a,s:[1,.5,1],p:[0,1.1,0]}),G(tor(.38,.025,4,14),{c:0x1f7a3a,r:[PI/2,0,0],p:[0,.5,0]}));
+    }
+  } else if(id==='surf'){
+    if(k===0){ // Boje
+      P.push(G(sp(.5,14,10),{c:0xe8212e,c2:0xa01020,s:[1,.85,1],p:[0,.45,0]}),G(tor(.5,.06,6,18),{c:0xffffff,r:[PI/2,0,0],p:[0,.5,0]}),G(cy(.05,.05,.8,6),{c:0x6f7584,p:[0,1.1,0]}),G(sp(.12,8,6),{c:0xffe066,p:[0,1.55,0]}),G(tor(.62,.04,5,18),{c:0xffffff,r:[PI/2,0,0],p:[0,.05,0]}));
+    } else if(k===1){ // Felsen mit Tang
+      P.push(G(new THREE.IcosahedronGeometry(.62,1),{c:0x9097a6,c2:0x585e6e,flat:true,s:[1.1,1.15,.95],p:[0,.5,0]}),G(new THREE.IcosahedronGeometry(.34,1),{c:0x8a91a0,c2:0x585e6e,flat:true,p:[.6,.26,.2]}),
+        G(cn(.07,.6,4),{c:0x2fa05a,c2:0x1a6e3a,r:[0,0,.3],p:[-.5,.55,.3]}),G(cn(.06,.5,4),{c:0x2fa05a,c2:0x1a6e3a,r:[0,0,-.3],p:[-.4,.5,.4]}),G(tor(.8,.04,5,18),{c:0xffffff,r:[PI/2,0,0],p:[0,.04,0]}));
+    } else { // Haiflosse
+      P.push(G(cn(.5,1.15,3),{c:0x7d8aa0,c2:0x434e63,flat:true,s:[1,1,.2],r:[-.28,0,0],p:[0,.62,0]}),G(tor(.55,.05,5,18),{c:0xffffff,r:[PI/2,0,0],p:[0,.04,0]}),G(tor(.8,.035,5,18),{c:0xe9fbff,r:[PI/2,0,0],p:[0,.03,0]}));
+    }
+  } else if(id==='roller'){
+    if(k===0){ // Poller-Reihe
+      for(i=-1;i<=1;i++) P.push(G(cy(.15,.17,.95,12),{c:0x6f7584,c2:0x3e4452,p:[i*.52,.48,0]}),G(cy(.155,.155,.14,12),{c:0xffd23e,p:[i*.52,.72,0]}),G(sp(.15,10,6),{c:0x6f7584,s:[1,.7,1],p:[i*.52,.97,0]}));
+    } else if(k===1){ // Parkbank
+      P.push(G(bx(1.6,.09,.5),{c:0xa5703c,c2:0x7a4d26,p:[0,.5,0]}),G(bx(1.6,.5,.07),{c:0xa5703c,c2:0x7a4d26,r:[-.12,0,0],p:[0,.85,-.24]}),
+        G(bx(.09,.5,.5),{c:0x3e4452,p:[-.7,.25,0]}),G(bx(.09,.5,.5),{c:0x3e4452,p:[.7,.25,0]}),G(bx(.09,.55,.07),{c:0x3e4452,p:[-.7,.8,-.25]}),G(bx(.09,.55,.07),{c:0x3e4452,p:[.7,.8,-.25]}));
+    } else { // Blumenkübel
+      P.push(G(bx(.95,.55,.95),{c:0xc9cdd6,c2:0x8f95a3,p:[0,.28,0]}),G(bx(1.0,.07,1.0),{c:0xe6e8ee,p:[0,.58,0]}),G(sp(.42,10,8),{c:0x3aa655,c2:0x1f7a3a,p:[0,.95,0]}),G(sp(.3,10,8),{c:0x45c060,p:[-.3,.8,.2]}),G(sp(.3,10,8),{c:0x45c060,p:[.3,.82,-.2]}),G(sp(.09,6,5),{c:0xff4a6e,p:[0,1.35,.1]}),G(sp(.08,6,5),{c:0xffd23e,p:[-.25,1.1,.4]}));
+    }
+  } else if(id==='hover'){
+    if(k===0){ // Eiszapfen-Gruppe
+      var sp0=[[0,0,1.4],[-.38,.2,.9],[.4,-.15,1.0],[-.15,-.35,.7],[.2,.35,.6]];
+      sp0.forEach(function(s){ P.push(G(cn(.27,s[2],5),{c:0xeafaff,c2:0x5cb8f0,flat:true,r:[s[1]*.3,0,s[0]*.5],p:[s[0],s[2]/2,s[1]]})); });
+    } else if(k===1){ // Eisblock mit Schneehaube
+      P.push(G(bx(1.0,1.0,1.0),{c:0xd5f3ff,c2:0x7fc8f2,flat:true,r:[.08,.5,.06],p:[0,.55,0]}),G(sp(.55,10,6),{c:0xffffff,c2:0xe6f4ff,s:[1,.35,1],p:[0,1.08,0]}));
+    } else { // Kristall
+      P.push(G(new THREE.OctahedronGeometry(.5),{c:0xb9a7ff,c2:0x6a8cff,flat:true,s:[.8,1.7,.8],p:[0,.85,0]}),G(new THREE.OctahedronGeometry(.3),{c:0x9ef6ff,c2:0x4a9cff,flat:true,s:[.8,1.5,.8],r:[0,0,.4],p:[.5,.45,.1]}),G(new THREE.OctahedronGeometry(.25),{c:0xd0c4ff,c2:0x7a8cff,flat:true,s:[.8,1.4,.8],r:[0,0,-.4],p:[-.45,.38,.15]}));
+    }
+  }
+  return P.length?build(P):null;
+}
+function vwBall(id){
+  var P,PI=Math.PI,g,i;
+  if(id==='skate'){ P=[G(tor(.4,.2,10,18),{c:0x23232c,c2:0x3a3a46,r:[0,PI/2,0]}),G(cy(.28,.28,.12,12),{c:0xcfd3dc,r:[0,0,PI/2]})]; }
+  else if(id==='surf'){ g=G(sp(.6,18,12),{c:0xffffff}); recolorSectors(g,[0xe8212e,0xffffff,0xffd23e,0xffffff,0x2f8dff,0xffffff]); P=[g]; }
+  else if(id==='roller'){ P=[G(cy(.5,.5,.95,16),{c:0xa5703c,c2:0x7a4d26,r:[0,0,PI/2]}),G(tor(.5,.04,5,16),{c:0x3e4452,r:[0,PI/2,0],p:[-.28,0,0]}),G(tor(.5,.04,5,16),{c:0x3e4452,r:[0,PI/2,0],p:[.28,0,0]})]; }
+  else if(id==='hover'){ P=[G(new THREE.IcosahedronGeometry(.6,1),{c:0xeafaff,c2:0x7fc8f2,flat:true}),G(cn(.16,.4,5),{c:0xffffff,c2:0x6fc4f2,p:[0,.62,0]}),G(cn(.14,.34,5),{c:0xffffff,c2:0x6fc4f2,r:[PI/2,0,0],p:[0,0,.6]})]; }
+  return P?build(P):null;
+}
+function applyWorld(){
+  if(!VW) return;
+  var id=VEH.id,k;
+  for(k in VW.cache) if(VW.cache[k].grp) VW.cache[k].grp.visible=false;
+  VW.cur=null;
+  if(id==='skate'||id==='surf'||id==='roller'||id==='hover'){
+    if(!VW.cache[id]){
+      var w=id==='skate'?buildSkate():id==='surf'?buildSurf():id==='roller'?buildRoller():buildHover();
+      VW.cache[id]=w; VW.grp.add(w.grp);
+      if(id==='surf') VW.water=w.chunks;
+    }
+    VW.cache[id].grp.visible=true; VW.cur=id;
+    if(id==='surf') VW.water=VW.cache.surf.chunks;
+  }
+  // Hindernisse und Kugeln (nicht in Boss-Leveln)
+  if(!BOSSLV){
+    snowmen.forEach(function(sm){ if(!sm.geo0) sm.geo0=sm.mesh.geometry; });
+    balls.forEach(function(b){ if(b.mode!=='boss'&&!b.geo0) b.geo0=b.mesh.geometry; });
+    var og=null;
+    if(VW.cur){ og=[0,1,2].map(function(q){ var key=VW.cur+q; if(!VW.cache['o'+key]) VW.cache['o'+key]={geo:vwObst(VW.cur,q)}; return VW.cache['o'+key].geo; });
+      if(!VW.cache['b'+VW.cur]) VW.cache['b'+VW.cur]={geo:vwBall(VW.cur)}; }
+    snowmen.forEach(function(sm,i){ sm.mesh.geometry=(og&&og[i%3])||sm.geo0; });
+    balls.forEach(function(b){ if(b.mode==='boss') return; b.mesh.geometry=(VW.cur&&VW.cache['b'+VW.cur].geo)||b.geo0; });
+  }
+}
+// pro Bild: Wellen berechnen, Santa auf der Welle bewegen
+function worldUpdate(){
+  VW.rideY=0; VW.rideP=0;
+  if(VW.cur==='surf'){
+    updateWater(time);
+    if(state==='play'||state==='menu'){ VW.rideY=waveH(P.x,P.z,time)-.08; VW.rideP=waveDZ(P.x,P.z,time)*1.1; }
+  }
+}
+applyWorld();
 
 /* =====================================================================
    Endgegner: Modelle, Schneeball-Wellen, Treffer durch Glocken
@@ -2124,7 +2326,7 @@ function animate(dt){
     armR.rotation.set(0,0,2.5+Math.sin(time*8)*.4); armL.rotation.set(0,0,-.3); legL.rotation.x=legR.rotation.x=0;
     hatTip.rotation.z=-.9+Math.sin(time*5)*.15;
   } else {
-    santa.position.set(P.x,P.y,P.z);
+    worldUpdate(); santa.position.set(P.x,P.y+VW.rideY,P.z);
     if(state==='menu'){
       santa.rotation.y=Math.sin(time*.8)*.25; santa.position.y=Math.abs(Math.sin(time*3))*.12;
       armR.rotation.set(0,0,2.5+Math.sin(time*7)*.4); armL.rotation.set(0,0,-.3); legL.rotation.x=legR.rotation.x=0;
@@ -2136,6 +2338,7 @@ function animate(dt){
         model.position.y=-.9+vehH+Math.abs(Math.cos(runPh))*(vehG?.02:.08); inner.rotation.x=.1; }
       else { legL.rotation.x=.8; legR.rotation.x=-.5; armL.rotation.set(0,0,-2.3); armR.rotation.set(0,0,2.3); model.position.y=-.9+vehH; inner.rotation.x=0; }
       if(vehG){ vehPose(); }
+      if(VW.rideP&&P.ground) inner.rotation.x+=VW.rideP;
       model.scale.set(1-sq*.5,1+sq,1-sq*.5);
       hatTip.rotation.z=-.9+Math.sin(runPh*2)*.18+Math.max(-.6,Math.min(.6,P.vy*.05));
       if(state==='play'){
@@ -2149,7 +2352,7 @@ function animate(dt){
   if(!shadowsOn){
     var sup=supported(P.x,P.z)&&P.y>-.2&&santa.parent===scene;
     shadow.visible=sup;
-    if(sup){ shadow.position.set(P.x,.03,P.z); var ss=Math.max(.5,1.3-P.y*.25); shadow.scale.set(ss,ss,ss); }
+    if(sup){ shadow.position.set(P.x,.03+(VW.rideY>0?VW.rideY+.03:0),P.z); var ss=Math.max(.5,1.3-P.y*.25); shadow.scale.set(ss,ss,ss); }
   }
   // Schneemänner wackeln, Schneebälle rollen
   for(i=0;i<snowmen.length;i++){var sm=snowmen[i].mesh; sm.rotation.z=Math.sin(time*3+i*1.7)*.12; sm.rotation.y=Math.sin(time*1.3+i)*.25; sm.scale.y=1+Math.sin(time*6+i)*.04;}
