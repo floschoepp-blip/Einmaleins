@@ -6,7 +6,7 @@
 <script>
 /* Immer die neueste Version: beim Start kurz nachsehen, ob auf dem Server eine neuere Version liegt, und dann frisch laden. */
 (function(){
-  var B='3.25'; window.__BUILD=B;
+  var B='3.26'; window.__BUILD=B;
   try{
     if(location.protocol==='file:'||!window.fetch) return;
     var base=location.pathname.replace(/[^\/]*$/,'');
@@ -246,7 +246,7 @@ h1 span{color:#ffd23e}
       <input class="inp" id="bcode" maxlength="12" placeholder="Klassen-Code" autocomplete="off" autocapitalize="characters">
     </div>
     <div class="hsbox"><b id="hsTitle">🏆 Bestenliste</b><ol id="hsList"></ol><small id="hsNote"></small></div>
-    <div style="opacity:.55;font-size:12px;font-weight:700">Version 3.25</div>
+    <div style="opacity:.55;font-size:12px;font-weight:700">Version 3.26</div>
   </div>
   <div id="menuBot">
     <div class="help">◀ ▶ Spur wechseln &nbsp;·&nbsp; ⬆ Springen<br>2× tippen = Doppelsprung!</div>
@@ -1592,7 +1592,7 @@ setVehicle(vehOk(SV.veh)?SV.veh:'foot');
    Skateboard = Skatepark mit Halfpipe-Wänden, Surfbrett = Wellen, Roller = Gehweg, Schwebebrett = Eisfeld.
    Die Bahn wird nur über die breiten Platten gelegt (nicht über Lücken); die Spielregeln bleiben gleich.
    ===================================================================== */
-var VW={grp:new THREE.Group(),cache:{},cur:null,rideY:0,rideP:0,roll:0,rampY:0,rampT:0,grind:false,obstSaved:false,water:[]};
+var VW={grp:new THREE.Group(),cache:{},cur:null,rideY:0,rideP:0,roll:0,rampY:0,rampT:0,grind:false,obstSaved:false,water:[],wz:0,base:7.6};
 scene.add(VW.grp);
 function hexRGB(h){ var c=LIN(h); return [c.r,c.g,c.b]; }
 // Streifen entlang z: prof = Liste [x,y], colFn(i,k) = Farbe des Feldes i (zwischen Profilpunkt i und i+1) in der Platte k
@@ -1622,37 +1622,36 @@ var VWR=rng(4242);
 function wallY(x){ var a=Math.abs(x); if(a<=.5) return 0; var u=Math.min(1,(a-.5)/2.5); return 1.4*u*u; }
 function wallSlope(x){ var a=Math.abs(x); if(a<=.5) return 0; var u=Math.min(1,(a-.5)/2.5); return (x<0?-1:1)*2*1.4*u/2.5; }
 function vwGY(x,zz){ if(!VW) return 0; if(VW.cur==='skate') return wallY(x); if(VW.cur==='surf'&&zz!==undefined) return waveH(x,zz,(typeof time==='number'?time:0))-.08; return 0; }
-// Sichtbare Halfpipe: Spielbereich (|x|<=3,05) wie bisher, darüber geht die Wand weiter hoch bis zum Coping und zur Plattform
-function wallYv(x){ var a=Math.abs(x); if(a<=3.05) return wallY(x); var d=a-3.05; return 1.4+1.12*d+.62*d*d; }
+// Halfpipe: Spielbereich (|x|<=3,05) wie bisher, darüber läuft die Wand sanft bis zur niedrigen Kante weiter (Stadt bleibt sichtbar)
+function wallYv(x){ var a=Math.abs(x); if(a<=3.05) return wallY(x); var d=a-3.05; return 1.4+.8*d+.35*d*d; }
+var SKP={
+  nordpol:{f1:0xdce9f6,f2:0xc7dbef,w1:0xb2d0ea,w2:0xc9e0f4,cop:0xffffff,deck:0x8aa0bb,acc:[0x4fb4ff,0xffffff,0x9be0ff,0xff6a6a,0x7dff8a]},
+  bahamas:{f1:0xf2d9a0,f2:0xe6c680,w1:0x3fc4d6,w2:0x5fd6e4,cop:0xffffff,deck:0xe9cf94,acc:[0xff7ad9,0xffd23e,0x4fb4ff,0xff8a3a,0x7dff8a]},
+  newyork:{f1:0x8c919b,f2:0x7b808b,w1:0x70757f,w2:0x80858f,cop:0xffd23e,deck:0x4f535d,acc:[0xffd23e,0xff4a6e,0x4fb4ff,0xffffff,0x7dff8a]},
+  london:{f1:0x8f7560,f2:0x7e644f,w1:0xa8503c,w2:0xb35f46,cop:0xe9e3d6,deck:0x6f5e50,acc:[0x2f5fc8,0xffffff,0xd8303a,0xffd23e,0x7dff8a]},
+  paris:{f1:0xe8dcc3,f2:0xdacdab,w1:0xf0e6d2,w2:0xe3d6ba,cop:0xd9a93a,deck:0xcfc1a1,acc:[0x2d4aa8,0xd9a93a,0xff7ad9,0xffffff,0x7dff8a]},
+  zenting:{f1:0xcfdae8,f2:0xbccbdf,w1:0x1c6ecb,w2:0xffffff,cop:0xffffff,deck:0x7f91aa,acc:[0x1c6ecb,0xffffff,0xffd23e,0x7dff8a,0xff4a6e]}
+};
 function buildSkate(){
-  var L=[],D=[],PI=Math.PI,t,prof=[],xx,XT=4.5,XE=5.6;
-  for(xx=-XT;xx<=XT+.001;xx+=.25) prof.push([xx,wallYv(xx)+.02]);
+  var L=[],D=[],PI=Math.PI,t,prof=[],xx,XT=3.6,XE=4.5,K=SKP[STAGE.theme]||SKP.nordpol;
+  for(xx=-XT;xx<=XT+.001;xx+=.2) prof.push([xx,wallYv(xx)+.02]);
   var yT=wallYv(XT)+.02;
   fullPlats.forEach(function(p){
     var z0=-(p.s+p.len),z1=-p.s,zm=(z0+z1)/2;
-    // Bahn: Holzplanken am Boden, glatte blaugraue Wandflächen
     L.push(stripGeo(prof,z0,z1,1.2,function(i,k){
       var x=Math.abs((prof[i][0]+prof[i+1][0])/2);
-      if(x<.55) return k%2?0xc98a4b:0xb87a3e;
-      if(x<2.95) return ((Math.floor(x*2)+k)%2)?0xc58447:0xb4753a;
-      return (Math.floor(x*3)%2)?0x7fa6d6:0x8db2df; }));
-    // Plattformen oben (Deck) mit Kante
+      if(x<2.95) return ((Math.floor(x*2)+k)%2)?K.f1:K.f2;
+      return ((Math.floor(x*3)+k)%2)?K.w1:K.w2; }));
     for(t=-1;t<=1;t+=2){
-      var deck=[[t*XT,yT],[t*XT+t*.5,yT],[t*XE,yT],[t*XE,yT-.7]]; if(t<0) deck.reverse();
-      L.push(stripGeo(deck,z0,z1,2.4,function(i,k){ return i===1?0xffd23e:(i===0&&t>0||i===2&&t<0?0x3a4256:0x50596f); }));
-      // Coping (Stahlrohr) an der Kante
-      D.push(G(cy(.1,.1,p.len,10),{c:0xeef2f8,c2:0x9aa3b4,r:[PI/2,0,0],p:[t*XT,yT+.06,zm]}));
-      // Geländer: Pfosten + Holm
-      var q; for(q=z0+1.5;q<z1-.5;q+=3) D.push(G(cy(.04,.04,.75,6),{c:0xcfd5e2,p:[t*(XT+.75),yT+.4,q]}));
-      D.push(G(cy(.035,.035,p.len,6),{c:0xcfd5e2,r:[PI/2,0,0],p:[t*(XT+.75),yT+.78,zm]}));
-      // Stahlrippen unter der Wand (Spanten)
-      for(q=z0+2;q<z1;q+=4) D.push(G(bx(.12,.12,.12),{c:0x2a3348,p:[t*3.3,wallYv(3.3)-.15,q]}));
+      var deck=[[t*XT,yT],[t*XT+t*.35,yT],[t*XE,yT],[t*XE,yT-.5]]; if(t<0) deck.reverse();
+      L.push(stripGeo(deck,z0,z1,2.4,function(i,k){ return (i===1&&t>0||i===1&&t<0)?K.cop:K.deck; }));
+      D.push(G(cy(.075,.075,p.len,10),{c:K.cop,c2:0x9aa3b4,r:[PI/2,0,0],p:[t*XT,yT+.05,zm]}));
+      var q; for(q=z0+1.5;q<z1-.5;q+=3) D.push(G(cy(.035,.035,.5,6),{c:0xcfd5e2,p:[t*(XT+.6),yT+.27,q]}));
+      D.push(G(cy(.03,.03,p.len,6),{c:0xcfd5e2,r:[PI/2,0,0],p:[t*(XT+.6),yT+.53,zm]}));
     }
-    // Rand-Linien und Graffiti auf den Wänden
-    var cc=[0xff4a6e,0x4fb4ff,0x7dff8a,0xffd23e,0xff7ad9],q2,ax;
-    for(q2=z0+3;q2<z1-3;q2+=5+VWR()*7){ t=VWR()<.5?-1:1; ax=3.2+VWR()*.9; var sl=1.12+1.24*(ax-3.05);
-      D.push(G(bx(.05,1.3+VWR()*.8,1.3+VWR()*1.7),{c:cc[Math.floor(VWR()*5)],c2:cc[Math.floor(VWR()*5)],r:[0,0,t*Math.atan(sl)],p:[t*ax,wallYv(ax)+.03,q2]})); }
-    // Mittellinie auf dem Boden
+    var q2,ax;
+    for(q2=z0+3;q2<z1-3;q2+=6+VWR()*8){ t=VWR()<.5?-1:1; ax=3.15+VWR()*.3; var sl=.8+.7*(ax-3.05);
+      D.push(G(bx(.05,.7+VWR()*.4,1.2+VWR()*1.4),{c:K.acc[Math.floor(VWR()*5)],r:[0,0,t*Math.atan(sl)],p:[t*ax,wallYv(ax)+.03,q2]})); }
     for(q2=z0+1;q2<z1-1;q2+=3) D.push(G(bx(.08,.02,1.2),{c:0xfff2c4,p:[0,.035,q2]}));
   });
   var m=vwMesh(L); var g=new THREE.Group(); g.add(m);
@@ -1690,10 +1689,13 @@ function buildHover(){
 }
 // Wellen: Teilstücke von 20 m, nur in der Nähe von Santa neu berechnet
 // Echte Dünung: lange Wellen laufen mit Santas Tempo in Fahrtrichtung (−z); Kämme sind spitz, Täler flach
-var WK=.4,WSP=7.6;
-function wavePh(x,z,t){ return WK*(z+WSP*t)+.10*x; }
-function waveH(x,z,t){ var p=wavePh(x,z,t); return .1+.5*Math.sin(p)+.15*Math.sin(2*p+.9)-.05*Math.sin(3*p)+.035*Math.sin(1.7*z-t*2.9+x*.6)+.02*Math.sin(2.3*x+1.1*z-t*1.6); }
-function waveDZ(x,z,t){ var p=wavePh(x,z,t); return .5*WK*Math.cos(p)+.3*WK*Math.cos(2*p+.9)-.15*WK*Math.cos(3*p)+.0595*Math.cos(1.7*z-t*2.9+x*.6)+.022*Math.cos(2.3*x+1.1*z-t*1.6); }
+var WK=.4;
+function wavePh(x,z){ return WK*(z+VW.wz)+.10*x; }
+function waveDelta(){ return .9+.9*Math.sin((typeof time==='number'?time:0)*1.3); }   // Santa carvt langsam an der Wellenwand hoch und runter
+function waveFace(x,z){ return Math.cos(wavePh(x,z)-waveDelta()); }
+function waveLock(){ VW.wz=(waveDelta()-Math.PI/3)/WK-P.z-.1*P.x/WK; }
+function waveH(x,z,t){ var p=wavePh(x,z); return .1+.5*Math.sin(p)+.15*Math.sin(2*p+.9)-.05*Math.sin(3*p)+.035*Math.sin(1.7*z-t*2.9+x*.6)+.02*Math.sin(2.3*x+1.1*z-t*1.6); }
+function waveDZ(x,z,t){ var p=wavePh(x,z); return .5*WK*Math.cos(p)+.3*WK*Math.cos(2*p+.9)-.15*WK*Math.cos(3*p)+.0595*Math.cos(1.7*z-t*2.9+x*.6)+.022*Math.cos(2.3*x+1.1*z-t*1.6); }
 function buildSurf(){
   var g=new THREE.Group(),NX=12,XW=2.96,chunks=[];
   fullPlats.forEach(function(p){
@@ -1820,6 +1822,7 @@ function applyWorld(){
 }
 // pro Bild: Wellen berechnen, Santa auf der Welle bewegen
 function worldUpdate(dt){
+  if(VW.cur==='surf') VW.wz+=(state==='play'?VW.base:7.6)*(dt||.016);
   VW.rideY=0; VW.rideP=0; VW.roll=0;
   VW.rampY+=((state==='play'?VW.rampT:0)-VW.rampY)*Math.min(1,(dt||.016)*10);
   if(VW.cur==='skate'&&(state==='play'||state==='menu')){ VW.rideY=wallY(P.x); VW.roll=-Math.atan(wallSlope(P.x))*.85; }
@@ -1827,7 +1830,7 @@ function worldUpdate(dt){
     updateWater(time);
     var zc_=P.z; snowmen.forEach(function(sm){ if(Math.abs(sm.z-zc_)<70) sm.mesh.position.y=vwGY(sm.x,sm.z); });
     items.forEach(function(it,i){ if(!it.taken&&Math.abs(it.z-zc_)<70) haloPos.setY(i,it.y+vwGY(it.x,it.z)); }); haloPos.needsUpdate=true;
-    if(state==='play'||state==='menu'){ VW.rideY=waveH(P.x,P.z,time)-.08; VW.rideP=waveDZ(P.x,P.z,time)*1.1; }
+    if(state==='play'||state==='menu'){ VW.rideY=waveH(P.x,P.z,time)-.08; VW.rideP=waveDZ(P.x,P.z,time)*1.6; }
   }
   VW.rideY+=VW.rampY;
   if(VW.space&&VW.spFollow) VW.spFollow.position.z=(state==='win'?SLED_Z:P.z);
@@ -2383,7 +2386,7 @@ function supported(x,z){
   return false;
 }
 function placeAtCp(){
-  P.x=0;P.lane=0;P.y=0;P.vy=0;P.z=curCp.z;P.ground=true;P.jumps=0;flip=0;wantJump=0;sq=0;
+  P.x=0;P.lane=0;P.y=0;P.vy=0;P.z=curCp.z;P.ground=true;P.jumps=0;flip=0;wantJump=0;sq=0; if(VW.cur==='surf') waveLock();
   inner.rotation.set(0,0,0); santa.rotation.set(0,Math.PI,0); santa.visible=true;
 }
 var toastTimer=0;
@@ -2475,7 +2478,7 @@ function updatePlay(dt){
   cleanT+=dt; var tg=.95+.1*Math.min(1,dist/TOTAL)+Math.min(.17,cleanT*.008);
   dynSp+=(tg-dynSp)*Math.min(1,dt*.6); dynSp=Math.max(.85,Math.min(1.2,dynSp));
   if(dynSp>1.1&&!fastToast){ fastToast=true; toast('Santa wird schneller! ⚡',1500); } else if(dynSp<1.04) fastToast=false;
-  var speed=(6.5+1.5*Math.min(1,dist/TOTAL))*DF.speed*(TH.spd||1)*dynSp*VEH.sp; var bm=(turboT>0?1.45:(boostT>0?1.22:1))*(RACE.hit>0?.4:1); if(RACE.hit>0) RACE.hit-=dt; speed*=bm; if(VW.cur==='surf'&&!VW.space) speed*=1+Math.max(-.1,Math.min(.22,waveDZ(P.x,P.z,time)*1.1)); curSpeed=speed; relSp=dynSp*VEH.sp*bm;
+  var speed=(6.5+1.5*Math.min(1,dist/TOTAL))*DF.speed*(TH.spd||1)*dynSp*VEH.sp; var bm=(turboT>0?1.45:(boostT>0?1.22:1))*(RACE.hit>0?.4:1); if(RACE.hit>0) RACE.hit-=dt; speed*=bm; VW.base=speed; if(VW.cur==='surf'&&!VW.space) speed*=Math.max(.6,1+.35*(waveFace(P.x,P.z)-.5)); curSpeed=speed; relSp=dynSp*VEH.sp*bm;
   if(turboT>0){ turboT-=dt; invuln=Math.max(invuln,.15); if(Math.random()<dt*50) emit(P.x,P.y+.3,P.z+1.4,1,3,Math.random()<.5?0xffa040:0xffe066,.5); }
   if(boostT>0) boostT-=dt;
   if(auto) autopilot();
