@@ -6,7 +6,7 @@
 <script>
 /* Immer die neueste Version: beim Start kurz nachsehen, ob auf dem Server eine neuere Version liegt, und dann frisch laden. */
 (function(){
-  var B='3.31'; window.__BUILD=B;
+  var B='3.33'; window.__BUILD=B;
   try{
     if(location.protocol==='file:'||!window.fetch) return;
     var base=location.pathname.replace(/[^\/]*$/,'');
@@ -246,7 +246,7 @@ h1 span{color:#ffd23e}
       <input class="inp" id="bcode" maxlength="12" placeholder="Klassen-Code" autocomplete="off" autocapitalize="characters">
     </div>
     <div class="hsbox"><b id="hsTitle">🏆 Bestenliste</b><ol id="hsList"></ol><small id="hsNote"></small></div>
-    <div style="opacity:.55;font-size:12px;font-weight:700">Version 3.31</div>
+    <div style="opacity:.55;font-size:12px;font-weight:700">Version 3.33</div>
   </div>
   <div id="menuBot">
     <div class="help">◀ ▶ Spur wechseln &nbsp;·&nbsp; ⬆ Springen<br>2× tippen = Doppelsprung!</div>
@@ -334,7 +334,7 @@ var SV=loadSave();
 SV.lv=Math.max(0,Math.min(STAGES.length-1,SV.lv|0));
 SV.diff=Math.max(0,Math.min(2,SV.diff|0));
 var STAGE=STAGES[SV.lv],DIFF=SV.diff,BOSSLV=STAGE.type==='boss';
-var DF={gap:[.9,1,1.1][DIFF],speed:[.88,1,1.1][DIFF],bs:[.85,1,1.15][DIFF],mult:[1,1.5,2][DIFF],hp:[3,4,5][DIFF],wave:[2.5,2.0,1.6][DIFF]};
+var DF={gap:[.9,1,1.1][DIFF],speed:[.88,1,1.1][DIFF],bs:[.85,1,1.15][DIFF],mult:[1,1.5,2][DIFF],hp:[5,7,9][DIFF],wave:[2.5,2.0,1.6][DIFF]};
 var DIFF_NAMES=['Leicht','Normal','Schwer'];
 
 /* ---------- Themes ---------- */
@@ -900,8 +900,8 @@ function layoutBoss(){
   d=0; var st,i,j,lanes=[0,1,-1,0,-1,1,0,1,-1,0,-1,1],bl=[];
   st=full(26); cp(st+4); hint(st+5,'Sammle Glocken 🔔 als Munition und wirf mit dem 🎁-Knopf auf den Boss! Weiche seinen Angriffen aus!');
   var a=full(250); cp(a+3); cp(a+90); cp(a+170);
-  for(i=0;i<12;i++){ var dd=a+16+i*18.5; bell(dd,lanes[i],0); bl.push([dd,lanes[i]]); if(i%2===0) row(dd+5,lanes[(i+3)%12],3); else gift(dd+7,lanes[(i+5)%12]); }
-  for(i=0;i<8;i++){ bell(a+20+i*28,-lanes[i],0.0); bl.push([a+20+i*28,-lanes[i]]); }
+  for(i=0;i<12;i++){ var dd=a+16+i*18.5; if(i%2===0){ bell(dd,lanes[i],0); bl.push([dd,lanes[i]]); } if(i%2===0) row(dd+5,lanes[(i+3)%12],3); else gift(dd+7,lanes[(i+5)%12]); }
+  for(i=0;i<8;i+=2){ bell(a+20+i*28,-lanes[i],0.0); bl.push([a+20+i*28,-lanes[i]]); }
   // Hindernisse im ganzen Kampfbereich: die Strecke bleibt auch nach dem Boss spannend
   function freeLane(z,pref){
     var o=[pref,0,1,-1,pref===0?1:-pref],k,l,ok;
@@ -2363,7 +2363,7 @@ function hzUpdate(dt){
 }
 function bossAttack(){
   var ph=1-BOSS.hp/BOSS.max,k=BOSS.kind,n=BOSS.n++,spec=ph>=.3,w=1.35-.35*ph,l=bossAim(),others=[-1,0,1].filter(function(x){ return x!==l; });
-  if(n<2||Math.random()<(spec?.3:.5)){ BPAT[Math.floor(Math.random()*BPAT.length)].forEach(bossSpawn); }
+  if(n<1||Math.random()<(spec?.3:.5)){ BPAT[Math.floor(Math.random()*BPAT.length)].forEach(bossSpawn); }
   else if(k==='snowman'){
     if(spec&&Math.random()<.55){ hzLob(l,w+.5,true); hzLob(others[Math.floor(Math.random()*2)],w+.7,true); if(ph>.6) hzLob(others[Math.floor(Math.random()*2)],w+.9,true); }
     else hzLob(l,w,false);
@@ -2599,7 +2599,7 @@ function padNote(f,t0,dur){
 }
 /* Musik-Dateien (selbst erzeugt, lizenzfrei): A = Pop, B = Karibik, E = Swing, C = Boss. Werden pro Welt geladen;
    klappt das Laden nicht (offline), spielt die eingebaute Synthesizer-Musik weiter. */
-var MTRACK={nordpol:'a',zenting:'f',bahamas:'b',newyork:'e',london:'e',paris:'e'},mBufs={},mDelay=0,mJ=null,mJStage='',mSrc=null,mSample=0,mGen=0;
+var MTRACK={nordpol:'a',zenting:'f',bahamas:'b',newyork:'g',london:'e',paris:'h'},mRate=1,mBufs={},mDelay=0,mJ=null,mJStage='',mSrc=null,mSample=0,mGen=0;
 function trackFor(){ return STAGE.type==='boss'?'c':(MTRACK[STAGE.theme]||'a'); }
 function playSample(buf,gen){
   if(gen!==mGen||!musicOn||!AC) return;
@@ -2961,6 +2961,7 @@ function animate(dt){
     c.stars[0].rotation.y=c.stars[1].rotation.y=time*(c.on?2:.5);
     if(c.on){ c.haloMat.opacity=.5+Math.sin(time*4+i)*.14; c.rayMat.rotation=time*.6; } }
   bossAnim(dt);
+  if(mSrc&&mSrc.playbackRate){ var tr_=state==='play'?Math.max(1,Math.min(1.25,1+(relSp-1)*.9)):1; mRate+=(tr_-mRate)*Math.min(1,dt*2); mSrc.playbackRate.value=mRate; }
   updateParticles(dt);
 }
 function updateCamera(dt,snap){
