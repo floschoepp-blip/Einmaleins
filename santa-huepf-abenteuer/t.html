@@ -1707,7 +1707,7 @@ function vwBall(id){
 function applyWorld(){
   if(!VW) return;
   var id=VEH.id,k;
-  for(k in VW.cache) VW.cache[k].grp.visible=false;
+  for(k in VW.cache) if(VW.cache[k].grp) VW.cache[k].grp.visible=false;
   VW.cur=null;
   if(id==='skate'||id==='surf'||id==='roller'||id==='hover'){
     if(!VW.cache[id]){
