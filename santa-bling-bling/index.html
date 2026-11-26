@@ -138,7 +138,7 @@ input{width:100%;max-width:280px;padding:10px 12px;border-radius:12px;border:0;f
 <path d="M146 118 Q158 112 164 100" fill="none" stroke="#ffd54a" stroke-width="2" stroke-linecap="round"/>
 <path d="M164 100 l1.8 -4.6 l1.8 4.6 l4.6 1.8 l-4.6 1.8 l-1.8 4.6 l-1.8 -4.6 l-4.6 -1.8z" fill="url(#lg)"/>
 </svg>
-<div class="lt"><small>SANTA</small><h1><span class="logo">Bling Bling</span></h1><div class="tag">Die wilde Bescherung</div><div class="sub">v1.36 · 7 Städte · bring alle Geschenke zu den Kindern!</div></div></div>
+<div class="lt"><small>SANTA</small><h1><span class="logo">Bling Bling</span></h1><div class="tag">Die wilde Bescherung</div><div class="sub">v1.37 · 7 Städte · bring alle Geschenke zu den Kindern!</div></div></div>
   <div class="cols">
    <section class="sec"><h3><i>1</i> Wer bist du? <em id="stot"></em></h3>
     <input id="name" maxlength="12" placeholder="Dein Name" autocomplete="off">
@@ -253,8 +253,18 @@ input{width:100%;max-width:280px;padding:10px 12px;border-radius:12px;border:0;f
 /* ===== core.js: Hilfen, Zustand, Ton ===== */
 const $=id=>document.getElementById(id);
 const cv=$('c');let ctx=cv.getContext('2d');let cw=800,chh=600,dpr=1;
-function resize(){dpr=Math.min(window.devicePixelRatio||1,2);cw=innerWidth;chh=innerHeight;cv.width=Math.round(cw*dpr);cv.height=Math.round(chh*dpr);}
+let dprMax=2,ar={fa:16,slow:0,fast:0};
+function resize(){dpr=Math.min(window.devicePixelRatio||1,dprMax);cw=innerWidth;chh=innerHeight;cv.width=Math.round(cw*dpr);cv.height=Math.round(chh*dpr);}
 addEventListener('resize',resize);resize();
+/* Automatische Auflösung: nur wenn das Gerät dauerhaft zu langsam ist, wird die Zeichenauflösung leicht gesenkt (min. 1.25) und bei Entlastung wieder erhöht */
+function autoRes(gap){
+ if(document.hidden||gap>200)return;
+ const dev=Math.min(window.devicePixelRatio||1,2);if(dev<=1.25)return;
+ ar.fa=ar.fa*.96+Math.min(gap,100)*.04;
+ if(ar.fa>25){ar.slow++;ar.fast=0;}else if(ar.fa<18.5){ar.fast++;ar.slow=0;}else{ar.slow=0;ar.fast=0;}
+ if(ar.slow>90&&dprMax>1.25){dprMax=Math.max(1.25,Math.min(dprMax,dpr)*.85);ar.slow=0;ar.fa=16;resize();}
+ else if(ar.fast>600&&dprMax<dev){dprMax=Math.min(dev,dprMax/.85);ar.fast=0;resize();}
+}
 const clamp=(v,a,b)=>v<a?a:v>b?b:v;
 const store={get(k,d){try{const v=localStorage.getItem(k);return v?JSON.parse(v):d}catch(e){return d}},set(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}};
 function mulberry(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
@@ -6957,6 +6967,7 @@ let lastTs=0;
 const PERF=/[?&]perf/.test(location.search);let pf={u:0,d:0,gap:0,n:0,t:0,el:null,w:''};
 function frame(ts){
  const gap=ts-lastTs,dt=Math.min(.05,(gap)/1000||.016);lastTs=ts;
+ if(G&&G.mode==='play'){autoRes(gap);prewarm(gap);}
  try{
   if(G){if(G.mode==='fp'||(FP&&G.mode==='bake')){if(G.mode==='bake')update(dt);fpUpdate(dt);}else{const t0=PERF?performance.now():0;update(dt);const t1=PERF?performance.now():0;if(G){draw(ts/1000);if(G.mode!=='end')hud();}if(PERF){const t2=performance.now();pf.u=Math.max(pf.u,t1-t0);pf.d=Math.max(pf.d,t2-t1);pf.gap=Math.max(pf.gap,gap);pf.n++;pf.t+=dt;if(pf.t>=2){if(!pf.el){pf.el=document.createElement('div');pf.el.style.cssText='position:fixed;left:6px;top:6px;z-index:999;background:rgba(0,0,0,.75);color:#0f0;font:11px monospace;padding:4px 6px;border-radius:6px;pointer-events:none;white-space:pre';document.body.appendChild(pf.el);}pf.el.textContent='fps '+Math.round(pf.n/pf.t)+'  max-Abstand '+Math.round(pf.gap)+'ms\nupdate max '+pf.u.toFixed(1)+'ms  draw max '+pf.d.toFixed(1)+'ms';pf.u=pf.d=pf.gap=0;pf.n=0;pf.t=0;}}}}
   else if(!$('menu').hidden){drawPreviews(ts/1000);}
@@ -6965,6 +6976,15 @@ function frame(ts){
 }
 setMute(muted);renderMenu();requestAnimationFrame(frame);
 window.__sbb={clip:clipPlay,bull:startBull,slide:startSlide3,fpSet:(y,p)=>{FP.yaw=y;FP.pitch=p;},r3:()=>R3.Z,fpState:()=>FP&&FP.foes,playDe,fnvKey,VBD,VB,voxSay,startRide,enter,startEvent,speak,hohoho,room:startRoom,fp:startFP,start:startGame,state:()=>({W,G,P}),update,draw,setZoom,doAction,finish,keys,stick,tp:(x,y)=>{P.x=x;P.y=y;cam.x=x;cam.y=y;},CITIES,sel,findAction,spriteOf,setMood:(d)=>{W.sp.mood.dark=d;},tick:(n,dt)=>{for(let i=0;i<n;i++)update(dt||.016);}};
+
+let pwI=0;
+function prewarm(gap){
+ if(!G||G.mode!=='play'||!W.bld||gap>22)return;
+ const n=W.bld.length;if(!n)return;
+ for(let k=0;k<40;k++){pwI=(pwI+1)%n;const b=W.bld[pwI];if(b.spr||!b.paint)continue;
+  const bx=b.x+(b.w||0)/2,by=b.y+(b.h||0)/2;if(Math.hypot(bx-P.x,by-P.y)>1500)continue;
+  try{spriteOf(b);}catch(e){}return;}
+}
 
 /* ===== game_c.js: Radio-Wechsel, Fahndung/Polizei ===== */
 function radioTick(){
