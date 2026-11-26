@@ -552,7 +552,7 @@ function bakeLight(g,L,amb,dif){
   return g;
 }
 var _m=new THREE.Matrix4(),_q=new THREE.Quaternion(),_s=new THREE.Vector3(),_p=new THREE.Vector3(),_e=new THREE.Euler();
-var instChunks=[],INST_CH=60;
+var instChunks=[],INST_CH=30;
 function inst(geo,mat,list,dynamic){
   var groups=[];
   if(!dynamic&&list.length>24){            // statische Dinge in Streckenabschnitte teilen, damit nur das Sichtbare gezeichnet wird
@@ -654,8 +654,8 @@ function makeTreeGeo(T){
   parts=[G(cy(.14,.21,.7,6),{c:0x7a4b28,c2:0x4a2c16,p:[0,.35,0]})];
   var R=[1.08,.88,.66,.44],yb=[.55,1.22,1.84,2.4],h=[1.2,1.08,.98,.9];
   for(k=0;k<4;k++){
-    parts.push(G(starCone(R[k],h[k],8,.1,.8),{c:T.nosnow?0x4aa23e:0x33b06c,c2:T.nosnow?0x1c5a24:0x0c5536,flat:true,r:[0,k*.4,0],p:[0,yb[k],0]}));
-    if(!T.nosnow) parts.push(G(starCone(R[k]*.76,h[k]*.64,8,.07,.74),{c:0xffffff,c2:0xb9d0f2,flat:true,r:[0,k*.4,0],p:[0,yb[k]+h[k]*.39,0]}));
+    parts.push(G(starCone(R[k],h[k],WEAK?6:8,.1,.8),{c:T.nosnow?0x4aa23e:0x33b06c,c2:T.nosnow?0x1c5a24:0x0c5536,flat:true,r:[0,k*.4,0],p:[0,yb[k],0]}));
+    if(!T.nosnow&&!(WEAK&&k>=2)) parts.push(G(starCone(R[k]*.76,h[k]*.64,8,.07,.74),{c:0xffffff,c2:0xb9d0f2,flat:true,r:[0,k*.4,0],p:[0,yb[k]+h[k]*.39,0]}));
   }
   return build(parts);
 }
