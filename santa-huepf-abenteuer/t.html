@@ -391,7 +391,7 @@ var renderer;
 try{ renderer=new THREE.WebGLRenderer({canvas:canvas,antialias:DPR<2,powerPreference:'high-performance'}); }
 catch(e){ $('err').style.display='flex'; return; }
 // Schwache Geräte (iPhone 6/7/8/SE: 375x667 bzw. 320x568, Android mit kleinem Display) starten gleich mit weniger Last
-var WEAK=/iPhone|iPod/.test(navigator.userAgent)&&Math.max(screen.width,screen.height)<=667;
+var WEAK=(/iPhone|iPod/.test(navigator.userAgent)&&Math.max(screen.width,screen.height)<=667)||location.hash==='#weak';
 var pixelRatio=WEAK?Math.min(DPR,1.25):Math.min(DPR,1.75),shadowsOn=!WEAK;
 renderer.setPixelRatio(pixelRatio);
 renderer.outputEncoding=THREE.sRGBEncoding;
