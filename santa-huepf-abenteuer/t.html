@@ -582,7 +582,7 @@ function instShadow(im,on){ (im.allChunks||[im]).forEach(function(m){ m.castShad
 // pro Bild: nur Abschnitte nahe an Santa (bis zum Nebelende) zeichnen
 function updateInstChunks(pz,far){
   if(typeof VW!=='undefined'&&VW&&VW.space) return;
-  for(var i=0;i<instChunks.length;i++){ var m=instChunks[i]; m.visible=m.userData.z1>pz-far&&m.userData.z0<pz+40; }
+  for(var i=0;i<instChunks.length;i++){ var m=instChunks[i]; m.visible=m.userData.z1>pz-far&&m.userData.z0<pz+22; }
 }
 
 var VC=new THREE.MeshLambertMaterial({vertexColors:true});
@@ -3111,12 +3111,16 @@ function lowerQuality(){
   if(pixelRatio>1.5){ pixelRatio=1.5; }
   else if(shadowsOn){ shadowsOn=false; moonLight.castShadow=false; hemi.intensity=1.05; }
   else if(pixelRatio>1){ pixelRatio=1; }
+  else if(viewK>.62){ viewK=Math.max(.6,viewK-.14); applyView(); instT=0; return; }
   else if(pixelRatio>.8){ pixelRatio=.8; }
   else return;
   renderer.setPixelRatio(pixelRatio); resize();
 }
 if(!shadowsOn){ hemi.intensity=1.05; }
 var skipAcc=0,instT=0;
+var viewK=WEAK?.72:1;
+function applyView(){ scene.fog.near=TH.fogN*Math.min(1,viewK+.12); scene.fog.far=viewK<1?TH.fogF*viewK+12:TH.fogF; }
+applyView();
 function loop(nowMs){
   requestAnimationFrame(loop);
   var raw=(nowMs-last)/1000; last=nowMs;
@@ -3127,7 +3131,7 @@ function loop(nowMs){
   var dtRaw=skipAcc; skipAcc=0;
   var dt=Math.min(dtRaw,.05); if(dt<=0) return;
   step(dt);
-  instT-=dt; if(instT<=0){ instT=.12; updateInstChunks(P.z,(scene.fog?scene.fog.far:120)+18); }
+  instT-=dt; if(instT<=0){ instT=.12; updateInstChunks(P.z,scene.fog.far+8); }
   renderer.render(scene,camera);
   if(state==='play'&&raw<.25){
     acc+=raw; frames++;
