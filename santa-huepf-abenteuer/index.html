@@ -6,7 +6,7 @@
 <script>
 /* Immer die neueste Version: beim Start kurz nachsehen, ob auf dem Server eine neuere Version liegt, und dann frisch laden. */
 (function(){
-  var B='3.36'; window.__BUILD=B;
+  var B='3.37'; window.__BUILD=B;
   try{
     if(location.protocol==='file:'||!window.fetch) return;
     var base=location.pathname.replace(/[^\/]*$/,'');
@@ -246,7 +246,7 @@ h1 span{color:#ffd23e}
       <input class="inp" id="bcode" maxlength="12" placeholder="Klassen-Code" autocomplete="off" autocapitalize="characters">
     </div>
     <div class="hsbox"><b id="hsTitle">🏆 Bestenliste</b><ol id="hsList"></ol><small id="hsNote"></small></div>
-    <div style="opacity:.55;font-size:12px;font-weight:700">Version 3.36</div>
+    <div style="opacity:.55;font-size:12px;font-weight:700">Version 3.37</div>
   </div>
   <div id="menuBot">
     <div class="help">◀ ▶ Spur wechseln &nbsp;·&nbsp; ⬆ Springen<br>2× tippen = Doppelsprung!</div>
@@ -392,11 +392,11 @@ try{ renderer=new THREE.WebGLRenderer({canvas:canvas,antialias:DPR<2,powerPrefer
 catch(e){ $('err').style.display='flex'; return; }
 // Schwache Geräte (iPhone 6/7/8/SE: 375x667 bzw. 320x568, Android mit kleinem Display) starten gleich mit weniger Last
 var WEAK=(/iPhone|iPod/.test(navigator.userAgent)&&Math.max(screen.width,screen.height)<=667)||location.hash==='#weak';
-var pixelRatio=WEAK?Math.min(DPR,1.25):Math.min(DPR,1.75),shadowsOn=!WEAK;
+var pixelRatio=DPR,shadowsOn=true;
 renderer.setPixelRatio(pixelRatio);
 renderer.outputEncoding=THREE.sRGBEncoding;
 renderer.shadowMap.enabled=true;
-renderer.shadowMap.type=WEAK?THREE.PCFShadowMap:THREE.PCFSoftShadowMap;
+renderer.shadowMap.type=THREE.PCFSoftShadowMap;
 
 function LIN(hex){return new THREE.Color(hex).convertSRGBToLinear();}
 var HORIZON=TH.hor, ZENITH=TH.zen, MIDSKY=TH.mid;
@@ -411,7 +411,7 @@ var hemi=new THREE.HemisphereLight(TH.hemiS,TH.hemiG,TH.hemiI); scene.add(hemi);
 var moonLight=new THREE.DirectionalLight(TH.sunC,TH.sunI);            // kühles Mondlicht von vorne rechts, wirft Schatten
 var LDIR=new THREE.Vector3(0.38,0.8,-0.46).normalize();
 moonLight.castShadow=shadowsOn;
-moonLight.shadow.mapSize.set(WEAK?512:1024,WEAK?512:1024);
+moonLight.shadow.mapSize.set(1024,1024);
 moonLight.shadow.camera.left=-26; moonLight.shadow.camera.right=26; moonLight.shadow.camera.top=26; moonLight.shadow.camera.bottom=-26;
 moonLight.shadow.camera.near=1; moonLight.shadow.camera.far=90;
 moonLight.shadow.bias=-0.0015; moonLight.shadow.normalBias=0.04;
@@ -654,8 +654,8 @@ function makeTreeGeo(T){
   parts=[G(cy(.14,.21,.7,6),{c:0x7a4b28,c2:0x4a2c16,p:[0,.35,0]})];
   var R=[1.08,.88,.66,.44],yb=[.55,1.22,1.84,2.4],h=[1.2,1.08,.98,.9];
   for(k=0;k<4;k++){
-    parts.push(G(starCone(R[k],h[k],WEAK?6:8,.1,.8),{c:T.nosnow?0x4aa23e:0x33b06c,c2:T.nosnow?0x1c5a24:0x0c5536,flat:true,r:[0,k*.4,0],p:[0,yb[k],0]}));
-    if(!T.nosnow&&!(WEAK&&k>=2)) parts.push(G(starCone(R[k]*.76,h[k]*.64,8,.07,.74),{c:0xffffff,c2:0xb9d0f2,flat:true,r:[0,k*.4,0],p:[0,yb[k]+h[k]*.39,0]}));
+    parts.push(G(starCone(R[k],h[k],8,.1,.8),{c:T.nosnow?0x4aa23e:0x33b06c,c2:T.nosnow?0x1c5a24:0x0c5536,flat:true,r:[0,k*.4,0],p:[0,yb[k],0]}));
+    if(!T.nosnow&&true) parts.push(G(starCone(R[k]*.76,h[k]*.64,8,.07,.74),{c:0xffffff,c2:0xb9d0f2,flat:true,r:[0,k*.4,0],p:[0,yb[k]+h[k]*.39,0]}));
   }
   return build(parts);
 }
@@ -3110,13 +3110,13 @@ var landscapeBlock=window.matchMedia?window.matchMedia('(orientation:landscape) 
 function lowerQuality(){
   if(pixelRatio>1.5){ pixelRatio=1.5; }
   else if(shadowsOn){ shadowsOn=false; moonLight.castShadow=false; hemi.intensity=1.05; }
+  else if(pixelRatio>1.25){ pixelRatio=1.25; }
   else if(pixelRatio>1){ pixelRatio=1; }
-  else if(viewK>.62){ viewK=Math.max(.6,viewK-.14); applyView(); instT=0; return; }
-  else if(pixelRatio>.8){ pixelRatio=.8; }
   else return;
   renderer.setPixelRatio(pixelRatio); resize();
 }
-if(!shadowsOn){ hemi.intensity=1.05; }
+var viewK=1;
+function applyView(){ scene.fog.near=TH.fogN; scene.fog.far=TH.fogF; }
 var dcList=null;
 function updateDistCull(pz,far){
   if(typeof VW!=='undefined'&&VW&&VW.space) return;
@@ -3140,7 +3140,7 @@ function updateDistCull(pz,far){
   }
 }
 var skipAcc=0,instT=0;
-var viewK=WEAK?.72:1;
+var viewK=1;
 function applyView(){ scene.fog.near=TH.fogN*Math.min(1,viewK+.12); scene.fog.far=viewK<1?TH.fogF*viewK+12:TH.fogF; }
 applyView();
 function loop(nowMs){
@@ -3157,7 +3157,7 @@ function loop(nowMs){
   renderer.render(scene,camera);
   if(state==='play'&&raw<.25){
     acc+=raw; frames++;
-    if(frames>=30){ if(acc/frames>1/48) lowerQuality(); acc=0; frames=0; }
+    if(frames>=45){ if(acc/frames>1/38) lowerQuality(); acc=0; frames=0; }
   }
 }
 requestAnimationFrame(loop);
