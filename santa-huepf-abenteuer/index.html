@@ -6,7 +6,7 @@
 <script>
 /* Immer die neueste Version: beim Start kurz nachsehen, ob auf dem Server eine neuere Version liegt, und dann frisch laden. */
 (function(){
-  var B='3.38'; window.__BUILD=B;
+  var B='3.39'; window.__BUILD=B;
   try{
     if(location.protocol==='file:'||!window.fetch) return;
     var base=location.pathname.replace(/[^\/]*$/,'');
@@ -256,7 +256,7 @@ h1 span{color:#ffd23e}
       <input class="inp" id="bcode" maxlength="12" placeholder="Klassen-Code" autocomplete="off" autocapitalize="characters">
     </div>
     <div class="hsbox"><b id="hsTitle">🏆 Bestenliste</b><ol id="hsList"></ol><small id="hsNote"></small></div>
-    <div style="opacity:.55;font-size:12px;font-weight:700">Version 3.38</div>
+    <div style="opacity:.55;font-size:12px;font-weight:700">Version 3.39</div>
     <button id="privBtn">🔒 Datenschutz</button>
   </div>
   <div id="menuBot">
@@ -278,7 +278,7 @@ h1 span{color:#ffd23e}
       <li><b>Bestenliste:</b> Wenn ein Spielstand eingetragen wird, gehen Spitzname, Punktzahl, Station, gesammelte Dinge, Klassen-Code und Zeitpunkt an eine Datenbank (Google Firebase, Server in Europa). Dazu wird anonym eine zufällige Nutzer-Kennung angelegt, ohne Namen oder E-Mail.</li>
       <li><b>Rennen mit Freunden:</b> Während des Rennens werden Spitzname, Raumcode, Fahrzeug und Position live übertragen. Beim Verlassen des Rennens wird dieser Eintrag gelöscht.</li>
       <li><b>Beim Laden</b> der Seite werden das 3D-Programm (Three.js von cdnjs/Cloudflare) und die Schrift (Google Fonts) nachgeladen. Dabei erfährt der jeweilige Anbieter die IP-Adresse des Geräts. Das Spiel selbst hostet GitHub Pages, auch dort fällt die IP-Adresse an.</li>
-      <li>Das Spiel prüft Spitznamen <b>nicht</b> auf Inhalte. Bitte sprecht mit euren Kindern darüber.</li>
+      <li>Spitznamen werden mit einer Wortliste auf Beleidigungen, Schimpfwörter und Kontaktdaten (E-Mail, Telefonnummer, Internetadresse) geprüft und dann nicht übernommen. Das ist ein Hilfsmittel, aber keine Garantie. Bitte sprecht trotzdem mit euren Kindern darüber.</li>
     </ul>
     <h2>Löschen</h2>
     <ul><li>Einen Bestenlisten-Eintrag oder Fragen zu Daten klärt gern der Entwickler. Meldet euch bei Flo Schöpp (Papa von Lina und Ella).</li></ul>
@@ -414,6 +414,27 @@ var TH=THEMES[STAGE.theme];
 var $=function(id){return document.getElementById(id);};
 if(!window.THREE){ $('err').style.display='flex'; return; }
 var DEMO=location.hash==='#demo';
+/* ---------- Spitznamen-Filter (Beleidigungen, Schimpfwörter, Kontaktdaten) ---------- */
+function nameNorm(s){
+  s=String(s).toLowerCase().replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss');
+  s=s.replace(/@/g,'a').replace(/\$/g,'s').replace(/!/g,'i').replace(/0/g,'o').replace(/1/g,'i').replace(/3/g,'e').replace(/4/g,'a').replace(/5/g,'s').replace(/7/g,'t').replace(/[^a-z]/g,'');
+  return s.replace(/(.)\1+/g,'$1');
+}
+var NAME_SUB=('fuck,fick,fotze,hurensohn,wichser,wixer,schlampe,scheis,kacke,pisse,pimmel,titten,arschloch,arschgeige,bastard,spast,idiot,trottel,penner,behindert,missgeburt,bitch,asshole,slut,whore,cunt,nigg,faggot,retard,porn,vagina,penis,dildo,nazi,hitler,siegheil,heilhitler,kanake,neger,schwuchtel,schwanzlutsch,sexy,shit,vollpfosten').split(',').map(nameNorm);
+var NAME_EXACT=('hure,nutte,arsch,sex,anal,dick,cock,kack,doof,loser,looser,rape,schwanz,fck,lutscher,drecksau,vollhorst,depp,mongo,vollidiot').split(',').map(nameNorm);
+function nameBad(s){
+  s=String(s||'');
+  if(/\d{5,}|@|https?:|www\.|\.(de|com|net|org)\b/i.test(s.replace(/\s/g,''))) return true;
+  var n=nameNorm(s),i;
+  if(!n) return false;
+  for(i=0;i<NAME_SUB.length;i++) if(n.indexOf(NAME_SUB[i])>=0) return true;
+  var toks=String(s).split(/[\s._\-]+/).map(nameNorm);
+  toks.push(n);
+  for(i=0;i<NAME_EXACT.length;i++) if(toks.indexOf(NAME_EXACT[i])>=0) return true;
+  return false;
+}
+function safeName(s,def){ s=String(s==null?'':s).slice(0,12); return nameBad(s)?(def===undefined?'Santa':def):s; }
+
 
 /* =====================================================================
    Renderer, Szene, Kamera, Licht
@@ -3226,8 +3247,8 @@ function boardId(stageId,diff){ return 'hupf-'+stageId+'-'+diff; }
 var BCODE=cleanCode(lsGet('sbb-bcode',''));
 var PNAME=(SV.name||lsGet('sbb-name','')||'');
 if(typeof PNAME!=='string') PNAME='';
-PNAME=PNAME.slice(0,12);
-function playerName(){ return (PNAME||'Santa').slice(0,12); }
+PNAME=safeName(PNAME,'');
+function playerName(){ return safeName(PNAME||'Santa').slice(0,12); }
 
 function boardPush(id,e){
   if(!BCODE||!codeOk(BCODE)) return Promise.resolve(false);
@@ -3252,7 +3273,7 @@ function fillList(listEl,noteEl,rows,id){
   if(rows===null){ listEl.innerHTML=''; noteEl.textContent=BCODE?'Online gerade nicht erreichbar.':'Gib oben den Klassen-Code ein, dann siehst du hier die Bestenliste.'; return; }
   if(!rows.length){ listEl.innerHTML=''; noteEl.textContent='Noch kein Eintrag – sei die/der Erste! 🥇'; return; }
   noteEl.textContent='';
-  listEl.innerHTML=rows.map(function(r,i){ return '<li'+(String(r.n).toLowerCase()===me?' class="me"':'')+'>'+(['🥇 ','🥈 ','🥉 '][i]||'')+esc(r.n)+' – '+r.s+'</li>'; }).join('');
+  listEl.innerHTML=rows.map(function(r,i){ return '<li'+(String(r.n).toLowerCase()===me?' class="me"':'')+'>'+(['🥇 ','🥈 ','🥉 '][i]||'')+esc(safeName(r.n))+' – '+r.s+'</li>'; }).join('');
 }
 
 /* ---------- Freischalten ---------- */
@@ -3302,7 +3323,7 @@ $('diffRow').addEventListener('click',function(e){
   var el=e.target.closest?e.target.closest('.dbtn'):null; if(!el) return;
   var d=+el.getAttribute('data-d'); if(d===DIFF) return; SV.diff=d; writeSave(); reloadClean();
 });
-$('pname').addEventListener('change',function(){ PNAME=this.value.trim().slice(0,12); this.value=PNAME; SV.name=PNAME; writeSave(); lsSet('sbb-name',PNAME); renderMenu(); });
+$('pname').addEventListener('change',function(){ var raw=this.value.trim().slice(0,12); if(nameBad(raw)){ raw=''; this.placeholder='Bitte einen netten Namen 🙂'; setTimeout(function(){ $('pname').placeholder='Dein Spitzname'; },3500); } PNAME=raw; this.value=PNAME; SV.name=PNAME; writeSave(); lsSet('sbb-name',PNAME); renderMenu(); });
 $('bcode').addEventListener('change',function(){ BCODE=cleanCode(this.value); this.value=BCODE; lsSet('sbb-bcode',BCODE); renderMenu(); });
 // Tastatur auf dem Handy: Eingabefeld muss sichtbar bleiben (Startknopf-Leiste weg, Feld in die Mitte scrollen)
 ['pname','bcode'].forEach(function(id){ var el=$(id);
@@ -3449,7 +3470,7 @@ function raceApply(o){
     var nd=o[u]; if(!nd||typeof nd!=='object') return;
     if(u===RC.uid){ if(typeof nd.fin==='number') RACE.myFin=nd.fin; return; }
     var p=RACE.pl[u]||(RACE.pl[u]={uid:u,z:0,x:0,y:0,rx:0,vz:0,sbId:0});
-    p.n=String(nd.n||'Santa').slice(0,12); p.st=nd.st; p.rid=nd.rid; p.sg=nd.sg; p.df=nd.df; p.vh=String(nd.vh||'foot').slice(0,10); p.fin=typeof nd.fin==='number'?nd.fin:0;
+    p.n=safeName(nd.n||'Santa'); p.st=nd.st; p.rid=nd.rid; p.sg=nd.sg; p.df=nd.df; p.vh=String(nd.vh||'foot').slice(0,10); p.fin=typeof nd.fin==='number'?nd.fin:0;
     p.live=typeof nd.ts==='number'&&nd.ts>=maxTs-7000;
     if(typeof nd.z==='number'){
       if(p.rx){ var dd=(t-p.rx)/1000; if(dd>.05){ p.vz=p.vz*.5+((nd.z-p.z)/dd)*.5; if(p.vz>0) p.vz=0; p.vz=Math.max(p.vz,-16); } }
