@@ -86,6 +86,19 @@ input{width:100%;max-width:280px;padding:10px 12px;border-radius:12px;border:0;f
 @media (max-width:520px){#mm{width:92px;height:60px}.zb{width:38px;height:38px;font-size:20px}.zr{gap:5px}#toast{top:250px;max-width:88vw}#say{width:calc(100vw - 20px);bottom:150px}}
 @media (max-height:420px){.zb{width:40px;height:40px;font-size:22px}.zr{gap:6px}#toast{max-width:50vw}#say{left:8px;transform:none;width:min(44vw,300px);bottom:8px;font-size:12.5px}}
 .chip.lock .pv{filter:brightness(0) opacity(.55)}.stars{font-size:44px;letter-spacing:6px;color:#ffd54a;text-shadow:0 2px 0 #a86a00;margin-bottom:4px}.stars span{color:#fff3;text-shadow:none}.st{color:#ffd54a;font-size:11px}.st span{color:#fff4}.newc{margin:8px 0;padding:8px;border-radius:12px;background:#ffd54a;color:#4a2b00;font-size:16px}.sec h3 em{font-style:normal;float:right;font-size:13px;color:#ffd54a}#cmsg:not(:empty){font-size:12px;margin-top:8px;padding:6px 8px;border-radius:8px;background:#0006}.chip small{font-size:10px;opacity:.9}
+#advov,#privacy{position:fixed;inset:0;z-index:60;background:rgba(6,14,40,.96);display:flex;flex-direction:column;align-items:center;overflow-y:auto;-webkit-overflow-scrolling:touch;padding:12px 0 24px;color:#fff}
+#advov[hidden],#privacy[hidden]{display:none}
+#advov .card,#privacy .card{background:linear-gradient(180deg,rgba(26,48,130,.92),rgba(8,18,70,.92));border:4px solid #ffd54a;border-radius:24px;padding:16px;width:min(94vw,520px);margin:10px 0;text-align:left}
+#advov h2,#privacy h1{text-align:center;margin:0 0 6px;font-size:24px}
+#privacy h2{font-size:16px;margin:14px 0 4px;color:#ffd54a}
+#privacy ul{margin:4px 0 4px 18px;padding:0}#privacy li{margin:4px 0;font-size:14px}
+#privacy .kid{background:rgba(255,255,255,.12);border-radius:14px;padding:10px 12px;margin:8px 0;font-size:14px}
+#advov p{font-size:14px;margin:6px 0}#advov .hint{opacity:.8;font-size:12px}
+#advov .doors{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 0}
+#advov .door{background:#6b2a2a;border:2px solid #b8860b;border-radius:12px;text-align:center;padding:6px 2px;min-height:64px}
+#advov .door.o{background:#1f6b3a;border-color:#ffd54a}#advov .door.now{box-shadow:0 0 0 3px #fff,0 0 14px #ffd54a}
+#advov .door b{display:block;font-size:16px}#advov .door span{font-size:22px}#advov .door small{display:block;font-size:10px;line-height:1.1}
+#advov .big,#privacy .big{margin:8px auto 0;display:block}
 </style>
 </head>
 <body>
@@ -138,7 +151,7 @@ input{width:100%;max-width:280px;padding:10px 12px;border-radius:12px;border:0;f
 <path d="M146 118 Q158 112 164 100" fill="none" stroke="#ffd54a" stroke-width="2" stroke-linecap="round"/>
 <path d="M164 100 l1.8 -4.6 l1.8 4.6 l4.6 1.8 l-4.6 1.8 l-1.8 4.6 l-1.8 -4.6 l-4.6 -1.8z" fill="url(#lg)"/>
 </svg>
-<div class="lt"><small>SANTA</small><h1><span class="logo">Bling Bling</span></h1><div class="tag">Die wilde Bescherung</div><div class="sub">v1.38 · 7 Städte · bring alle Geschenke zu den Kindern!</div></div></div>
+<div class="lt"><small>SANTA</small><h1><span class="logo">Bling Bling</span></h1><div class="tag">Die wilde Bescherung</div><div class="sub">v1.39 · <span id="ncity">12</span> Städte · bring alle Geschenke zu den Kindern!</div></div></div>
   <div class="cols">
    <section class="sec"><h3><i>1</i> Wer bist du? <em id="stot"></em></h3>
     <input id="name" maxlength="12" placeholder="Dein Name" autocomplete="off">
@@ -146,6 +159,7 @@ input{width:100%;max-width:280px;padding:10px 12px;border-radius:12px;border:0;f
    </section>
    <div class="rcol">
     <section class="sec"><h3><i>2</i> Wohin geht's?</h3>
+     <button class="ghost" id="advBtn" style="width:100%;margin:0 0 8px;font-size:13px"><span id="advtxt"></span> ›</button>
      <div class="grid" id="levels"></div>
      <div id="sel"></div>
     </section>
@@ -156,6 +170,7 @@ input{width:100%;max-width:280px;padding:10px 12px;border-radius:12px;border:0;f
   </div>
   <button class="big" id="start">Los geht's! 🛷</button>
   <button class="ghost" id="albumBtn" style="margin-top:8px">📒 Stickerbuch</button>
+  <button class="ghost" id="privBtn" style="margin-top:8px">🔒 Datenschutz</button>
   <button class="ghost" id="tvBtn" style="margin-top:8px">📺 Fernseher-Modus (Handy als Controller)</button>
   <details class="more"><summary>🏆 Bestenliste &amp; Steuerung</summary>
    <label style="display:block;margin:8px 0;font-size:14px"><input type="checkbox" id="tts" style="width:auto;margin-right:8px;vertical-align:middle">🗣️ Gesprochene Sätze</label>
@@ -166,6 +181,27 @@ input{width:100%;max-width:280px;padding:10px 12px;border-radius:12px;border:0;f
  </div>
 </div>
 
+<div id="advov" hidden></div>
+<div id="privacy" hidden>
+  <div class="card">
+    <h1>🔒 Datenschutz</h1>
+    <div class="kid"><b>Für Kinder:</b> Du brauchst kein Konto und keine E-Mail. Trag als Namen <b>nie deinen echten Namen</b> ein, auch keine Adresse oder Telefonnummer. Nimm lieber einen lustigen Namen wie „Schneeflocke“. Wenn du nicht sicher bist, frag deine Eltern. 🎅</div>
+    <h2>Für Eltern: Was passiert mit Daten?</h2>
+    <ul>
+      <li><b>Keine Werbung, kein Tracking, keine Analyse-Dienste</b> und keine Käufe im Spiel. Das Spiel lädt keine Schriften, Programme oder Bilder von fremden Servern nach.</li>
+      <li><b>Nur auf dem Gerät gespeichert:</b> Spielstand, Sterne, Stickerbuch, Einstellungen, Name und Bestenlisten-Code (im Browserspeicher). Das lässt sich über die Browser-Einstellungen löschen.</li>
+      <li><b>Online-Bestenliste (nur mit Code):</b> Wenn ein Code eingetragen ist, gehen nach einem Level Name, Punktzahl, Figur, Zeit, Code und Zeitpunkt an eine Datenbank (Google Firebase, Server in Europa). Dazu wird anonym eine zufällige Nutzer-Kennung angelegt, ohne Namen oder E-Mail. Ohne Code bleibt alles auf dem Gerät.</li>
+      <li><b>Fernseher-Modus:</b> Das Handy und der Fernseher verbinden sich über einen 4-stelligen Raumcode ebenfalls über Firebase. Übertragen werden Tasten-Eingaben und der Name. Diese Raum-Einträge werden derzeit nicht automatisch gelöscht.</li>
+      <li><b>Zeit:</b> Für den Adventskalender wird die aktuelle Uhrzeit vom Server geholt, von dem das Spiel kommt (GitHub Pages). Dabei fällt dort wie bei jedem Webseiten-Aufruf die IP-Adresse an.</li>
+      <li>Namen werden mit einer Wortliste auf Beleidigungen, Schimpfwörter und Kontaktdaten (E-Mail, Telefonnummer, Internetadresse) geprüft und dann nicht übernommen. Das ist ein Hilfsmittel, aber keine Garantie. Bitte sprecht trotzdem mit euren Kindern darüber.</li>
+    </ul>
+    <h2>Löschen</h2>
+    <ul><li>Einen Bestenlisten-Eintrag oder Fragen zu Daten klärt gern der Entwickler. Meldet euch bei Flo Schöpp (Papa von Lina und Ella).</li></ul>
+    <h2>Verantwortlich</h2>
+    <div style="font-size:14px">Florian Schöpp, Zenting. Ein privates, nicht kommerzielles Familienprojekt.</div>
+  </div>
+  <button class="big" id="privBack">Zurück</button>
+</div>
 <div id="hud" hidden>
  <div class="tl sa">
   <div class="pill" id="hc">🎄</div>
@@ -3217,6 +3253,68 @@ function roadPointNear(ax,ay,rad,minr){
 }
 function roadByIdAt(id,f){const r=W.roads.find(r=>r.id===id)||W.roads[0],s=r.smp[Math.floor(clamp(f,0,.999)*r.smp.length)],nx=s.ux!=null?s.ux:1,ny=s.uy!=null?s.uy:0;return{x:s.x,y:s.y,ang:Math.atan2(ny,nx)};}
 
+/* ===== advent.js: Adventskalender (ab 11 Uhr deutscher Zeit) + Spitznamenfilter ===== */
+const ADV_DAYS={berlin:2,london:4,paris:6,newyork:8,vegas:11,texas:13,tropen:15,australien:17,amazonas:19,venedig:21,nordpol:24};
+const ADV_TAGP=(location.search.match(/[?&]tag=(\d+)/)||[])[1];
+const ADV={off:0,ok:false};
+/* Serverzeit aus dem HTTP-Date-Header der eigenen Seite (Kinder können die Handy-Uhr nicht vorstellen); sonst Geräteuhr */
+function advSync(){
+ try{fetch(location.href.split('#')[0],{method:'HEAD',cache:'no-store'}).then(r=>{const d=r.headers.get('date');if(!d)return;const t=Date.parse(d);if(!isFinite(t))return;const o=t-Date.now();ADV.off=o;ADV.ok=true;try{renderMenu();}catch(e){}}).catch(()=>{});}catch(e){}
+}
+function advDay(){ /* 1 = 1. Dezember (ab 11:00 Berlin), 24 = 24. Dezember; <=0 vorher */
+ if(ADV_TAGP!=null)return +ADV_TAGP;
+ let p={};
+ try{new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Berlin',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',hourCycle:'h23'}).formatToParts(new Date(Date.now()+ADV.off)).forEach(x=>{p[x.type]=+x.value;});}catch(e){const d=new Date(Date.now()+ADV.off+3600000);p={year:d.getUTCFullYear(),month:d.getUTCMonth()+1,day:d.getUTCDate(),hour:d.getUTCHours()};}
+ let o=Date.UTC(p.year,p.month-1,p.day)/864e5;
+ if(p.hour<11)o-=1;
+ return Math.round(o-Date.UTC(p.year,10,30)/864e5);
+}
+const MONATE=['Januar','Februar','März','April','Mai','Juni','Juli','August','September','Oktober','November','Dezember'];
+function advOpen(i){const c=CITIES[i];if(!c)return false;if(i===0||ALL)return true;const d=ADV_DAYS[c.id];return d==null||advDay()>=d||!!(PROG0.done&&PROG0.done[c.id]);}
+function advNext(){const d=advDay();let n=null;for(const c of CITIES){const x=ADV_DAYS[c.id];if(x!=null&&x>d&&(n==null||x<n.d))n={d:x,c};}return n;}
+function advText(){
+ const d=advDay(),open=CITIES.filter((c,i)=>advOpen(i)).length,n=advNext();
+ let t='🎄 '+open+' von '+CITIES.length+' Städten offen';
+ if(ALL)return t+' (alle freigeschaltet)';
+ if(n){const dd=n.d-d;t+=' · nächstes Türchen: '+(dd===1?'morgen':'am '+n.d+'. Dezember')+' ab 11 Uhr';}
+ else t+=' · alle Türchen sind offen! 🎅';
+ return t;
+}
+function advOverlay(){
+ const d=advDay(),el=$('advov');if(!el)return;
+ const byDay={};CITIES.forEach(c=>{if(ADV_DAYS[c.id]!=null)byDay[ADV_DAYS[c.id]]=c;});
+ let h='<div class="card"><h2>🎄 Adventskalender</h2><p>Jeden Tag ab 11 Uhr (deutsche Zeit) geht ein neues Türchen auf – bis Heiligabend!</p><div class="doors">';
+ for(let i=1;i<=24;i++){const c=byDay[i],ok=ALL||d>=i;h+='<div class="door'+(ok?' o':'')+(d===i?' now':'')+'"><b>'+i+'</b><span>'+(ok?(c?c.icon:'⭐'):'🔒')+'</span>'+(c&&ok?'<small>'+esc(c.name)+'</small>':'')+'</div>';}
+ h+='</div><p class="hint">Tage ohne neue Stadt: Spiel eine Stadt nochmal und hol dir alle 3 ⭐!</p><button class="big" id="advx">Zurück</button></div>';
+ el.innerHTML=h;el.hidden=false;$('advx').onclick=()=>{el.hidden=true;};
+}
+/* ---------- Spitznamen-Filter (Beleidigungen, Schimpfwörter, Kontaktdaten) – Wortliste wie bei Jingle Jump ---------- */
+function nameNorm(s){
+ s=String(s).toLowerCase().replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss');
+ s=s.replace(/@/g,'a').replace(/\$/g,'s').replace(/!/g,'i').replace(/0/g,'o').replace(/1/g,'i').replace(/3/g,'e').replace(/4/g,'a').replace(/5/g,'s').replace(/7/g,'t').replace(/[^a-z]/g,'');
+ return s.replace(/(.)\1+/g,'$1');
+}
+const NAME_SUB=('fuck,fick,fotze,hurensohn,wichser,wixer,schlampe,scheis,kacke,pisse,pimmel,titten,arschloch,arschgeige,bastard,spast,idiot,trottel,penner,behindert,missgeburt,bitch,asshole,slut,whore,cunt,nigg,faggot,retard,porn,vagina,penis,dildo,nazi,hitler,siegheil,heilhitler,kanake,neger,schwuchtel,schwanzlutsch,sexy,shit,vollpfosten').split(',').map(nameNorm);
+const NAME_EXACT=('hure,nutte,arsch,sex,anal,dick,cock,kack,doof,loser,looser,rape,schwanz,fck,lutscher,drecksau,vollhorst,depp,mongo,vollidiot').split(',').map(nameNorm);
+function nameBad(s){
+ s=String(s||'');
+ if(/\d{5,}|@|https?:|www\.|\.(de|com|net|org)\b/i.test(s.replace(/\s/g,'')))return true;
+ const n=nameNorm(s);if(!n)return false;
+ for(const w of NAME_SUB)if(n.indexOf(w)>=0)return true;
+ const toks=s.split(/[\s._\-]+/).map(nameNorm);toks.push(n);
+ for(const w of NAME_EXACT)if(toks.indexOf(w)>=0)return true;
+ return false;
+}
+function safeName(s,def){s=String(s==null?'':s).trim().slice(0,12);return nameBad(s)?(def===undefined?'':def):s;}
+{const ni=$('name');if(ni){
+ const fix=()=>{const raw=ni.value.trim().slice(0,12);if(nameBad(raw)){ni.value='';ni.placeholder='Bitte einen netten Namen 🙂';setTimeout(()=>{ni.placeholder='Dein Name';},3500);store.set('sbb-name','');}else{ni.value=raw;store.set('sbb-name',raw);}};
+ ni.addEventListener('change',fix);ni.addEventListener('blur',fix);ni._fix=fix;
+ if(nameBad(store.get('sbb-name','')))store.set('sbb-name','');
+}}
+{const pb=$('privBtn'),po=$('privacy');if(pb&&po){pb.addEventListener('click',()=>{po.hidden=false;po.scrollTop=0;});$('privBack').addEventListener('click',()=>{po.hidden=true;});}}
+{const ab=$('advBtn');if(ab)ab.addEventListener('click',advOverlay);}
+advSync();document.addEventListener('visibilitychange',()=>{if(!document.hidden){advSync();try{renderMenu();}catch(e){}}});
+
 /* ===== game_a.js: Start, Eingabe, Aktionen, Update ===== */
 const mm=$('mm'),mx=mm.getContext('2d');
 const PROG0=store.get('sbb-prog',{done:{}});
@@ -3227,7 +3325,7 @@ const CHAR_REQ={santa:0,snow:2,ginger:5,christ:9,elf:13};
 const totalStars=()=>Object.values(STARS).reduce((a,b)=>a+b,0);
 const charOk=k=>ALL||totalStars()>=(CHAR_REQ[k]||0);
 if(!charOk(sel.ch))sel.ch='santa';
-function unlocked(i){return ALL||i===0||!!PROG0.done[CITIES[i-1].id]||!!PROG0.done[CITIES[i].id];}
+function unlocked(i){return advOpen(i);}
 function toast(t,ms){if(typeof FP!=='undefined'&&FP&&FP.kind==='room'){roomBubble(t,ms?ms/1000+1:4);return;}const el=$('toast');el.textContent=t;el.hidden=false;if(G)G.toastT=(ms||2200)/1000;else setTimeout(()=>el.hidden=true,ms||2200);}
 function say(e,t,ms){if(typeof FP!=='undefined'&&FP&&FP.kind==='room'){roomBubble(e+' '+t,ms?ms/1000+1:6);return;}const el=$('say');el.innerHTML='<b>'+e+'</b>'+t;el.hidden=false;if(G)G.sayT=(ms||4500)/1000;}
 function burst(x,y,n,cols){for(let i=0;i<n;i++){const a=Math.random()*6.283,s=40+Math.random()*120;particles.push({x,y,vx:Math.cos(a)*s,vy:Math.sin(a)*s-30,life:.8+Math.random()*.5,c:cols[i%cols.length]});}}
@@ -3570,7 +3668,7 @@ function finish(){
  G.mode='end';musicStop();
  const par=G.lvl.par||300,tb=Math.max(0,Math.round((par-G.t)*2));G.score+=tb;
  const hs=store.get('sbb-hs-v1',{}),id=G.lvl.id;hs[id]=hs[id]||[];
- const nm=($('name').value||'Spieler').trim().slice(0,12)||'Spieler';
+ const nm=safeName($('name').value,'')||'Spieler';
  hs[id].push({n:nm,s:G.score,c:sel.ch,t:Math.round(G.t)});hs[id].sort((a,b)=>b.s-a.s);hs[id]=hs[id].slice(0,8);store.set('sbb-hs-v1',hs);
  try{boardPush(id,{n:nm,s:G.score,c:sel.ch,t:Math.round(G.t)}).then(()=>{if(G&&G.mode==='end')renderHS('hs3',id);});}catch(e){}
  PROG0.done[id]=true;store.set('sbb-prog',PROG0);
@@ -6996,12 +7094,13 @@ function renderHS(id,lvId){
 function renderMenu(){
  const ch=$('chars');ch.innerHTML='';
  const cm=$('cmsg');cm.textContent='';
+ {const nc=$('ncity');if(nc)nc.textContent=CITIES.length;const ad=$('advtxt');if(ad)ad.textContent=advText();}
  $('stot').textContent='⭐ '+totalStars()+'/'+CITIES.length*3;
  for(const k in CHARS){const ok=charOk(k),b=document.createElement('button');b.className='chip'+(sel.ch===k?' sel':'')+(ok?'':' lock');b.innerHTML='<canvas class="pv" width="128" height="128" data-k="'+k+'"></canvas>'+CHARS[k].name+(ok?'':'<br><small>🔒 ab '+CHAR_REQ[k]+' ⭐</small>');b.onclick=()=>{if(!ok){cm.textContent='🔒 '+CHARS[k].name+' wird freigeschaltet, wenn du insgesamt '+CHAR_REQ[k]+' ⭐ gesammelt hast (du hast '+totalStars()+'). Schnelle Level geben bis zu 3 ⭐!';return;}sel.ch=k;store.set('sbb-ch',k);renderMenu();};ch.appendChild(b);}
  const lv=$('levels');lv.innerHTML='';
- CITIES.forEach((c,i)=>{const b=document.createElement('button'),ok=unlocked(i);b.className='chip'+(sel.lv===i?' sel':'')+(ok?'':' lock');b.innerHTML='<b>'+(ok?c.icon:'🔒')+'</b>'+c.name+(STARS[c.id]?'<br><small class="st">'+'★'.repeat(STARS[c.id])+'<span>'+'★'.repeat(3-STARS[c.id])+'</span></small>':'');b.onclick=()=>{sel.lv=i;renderMenu();};lv.appendChild(b);});
+ CITIES.forEach((c,i)=>{const b=document.createElement('button'),ok=unlocked(i);b.className='chip'+(sel.lv===i?' sel':'')+(ok?'':' lock');b.innerHTML='<b>'+(ok?c.icon:'🔒')+'</b>'+c.name+(ok?'':'<br><small>'+ADV_DAYS[c.id]+'. Dez.</small>')+(STARS[c.id]?'<br><small class="st">'+'★'.repeat(STARS[c.id])+'<span>'+'★'.repeat(3-STARS[c.id])+'</span></small>':'');b.onclick=()=>{sel.lv=i;renderMenu();};lv.appendChild(b);});
  const c=CITIES[sel.lv],ok=unlocked(sel.lv);
- $('sel').innerHTML=ok?'<b>'+esc(c.name)+'</b> · '+esc(c.blurb)+' · 🎁 '+c.gifts:'🔒 Schließe zuerst '+esc(CITIES[sel.lv-1].name)+' ab.';
+ $('sel').innerHTML=ok?'<b>'+esc(c.name)+'</b> · '+esc(c.blurb)+' · 🎁 '+c.gifts:'🔒 Dieses Türchen öffnet sich am '+ADV_DAYS[c.id]+'. Dezember um 11 Uhr.';
  $('start').disabled=!ok;$('start').style.opacity=ok?1:.5;
  renderHS('hs');
  const dd=$('diff');dd.innerHTML='';['Leicht 😊','Normal 🙂','Schwer 😤'].forEach((n,i)=>{const b=document.createElement('button');b.className='chip'+(store.get('sbb-diff',1)===i?' sel':'');b.textContent=n;b.onclick=()=>{store.set('sbb-diff',i);renderMenu();};dd.appendChild(b);});
@@ -7012,12 +7111,12 @@ function drawPreviews(tm){
  ctx=save;
 }
 {const tc=$('tts');tc.checked=store.get('sbb-tts',true)!==false;tc.addEventListener('change',()=>{store.set('sbb-tts',tc.checked);if(!tc.checked){try{if(VNOW)VNOW.stop();}catch(e){}}});}
-$('start').addEventListener('click',()=>{auInit();if(!unlocked(sel.lv))return;store.set('sbb-name',$('name').value);startGame(sel.lv);setTimeout(()=>{if(G&&!muted&&(!AC||AC.state!=='running'))toast('🔇 Kein Ton? Prüfe den Stummschalter seitlich am iPhone und tippe einmal auf 🔊.',5000);},1800);});
+$('start').addEventListener('click',()=>{auInit();if(!unlocked(sel.lv))return;if($('name')._fix)$('name')._fix();startGame(sel.lv);setTimeout(()=>{if(G&&!muted&&(!AC||AC.state!=='running'))toast('🔇 Kein Ton? Prüfe den Stummschalter seitlich am iPhone und tippe einmal auf 🔊.',5000);},1800);});
 $('again').addEventListener('click',()=>{startGame(sel.lv);});
-$('next').addEventListener('click',()=>{if(sel.lv+1<CITIES.length)startGame(sel.lv+1);});
+$('next').addEventListener('click',()=>{if(sel.lv+1<CITIES.length&&unlocked(sel.lv+1))startGame(sel.lv+1);else{toMenu();setTimeout(()=>toast('🔒 Das nächste Türchen ist noch zu! '+advText(),5000),300);}});
 $('tomenu').addEventListener('click',toMenu);
 $('name').value=store.get('sbb-name','');
-$('name').addEventListener('input',()=>store.set('sbb-name',$('name').value));
+$('name').addEventListener('input',()=>{if(!nameBad($('name').value))store.set('sbb-name',$('name').value);});
 let lastTs=0;
 const PERF=/[?&]perf/.test(location.search);let pf={u:0,d:0,gap:0,n:0,t:0,el:null,w:''};
 function frame(ts){
@@ -7289,7 +7388,7 @@ function tvInit(){
   if(m==='menu'){
    if(mk==='L'||mk==='R'){const i=sel.lv+(mk==='R'?1:-1);if(i>=0&&i<CITIES.length&&unlocked(i)){sel.lv=i;renderMenu();}}
    else if(mk==='CL'||mk==='CR'){const ks=Object.keys(CHARS).filter(charOk),j=ks.indexOf(sel.ch),n=ks[(j+(mk==='CR'?1:-1)+ks.length)%ks.length];if(n){sel.ch=n;store.set('sbb-ch',n);renderMenu();}}
-   else if(mk==='S'){if(v&&v.n)$('name').value=String(v.n).slice(0,12);auInit();clk('start');}
+   else if(mk==='S'){if(v&&v.n)$('name').value=safeName(v.n,'');auInit();clk('start');}
   }else if(m==='end'){if(mk==='N')clk('next');else if(mk==='AG')clk('again');else if(mk==='M')clk('tomenu');}
  }
  function padFire(k,v){
@@ -7351,7 +7450,7 @@ function boardPush(city,e){
  if(!BCODE||!bcodeOk(BCODE))return Promise.resolve();
  return token().then(a=>{const u=DB+'/santa/boards/'+BCODE+'/'+city+'/'+a.uid+'_'+bslug(e.n)+'.json?auth='+a.tok;
   return fetch(u).then(r=>r.json()).then(old=>{if(old&&old.s>=e.s)return;
-   return fetch(u,{method:'PUT',body:JSON.stringify({n:e.n.slice(0,12),s:e.s,c:e.c,t:e.t,u:Date.now()})});});}).catch(()=>{});
+   return fetch(u,{method:'PUT',body:JSON.stringify({n:safeName(e.n,'Spieler')||'Spieler',s:e.s,c:e.c,t:e.t,u:Date.now()})});});}).catch(()=>{});
 }
 function boardLoad(city){
  if(!BCODE||!bcodeOk(BCODE))return Promise.resolve(null);
