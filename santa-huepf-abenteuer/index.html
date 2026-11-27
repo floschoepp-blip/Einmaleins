@@ -6,7 +6,7 @@
 <script>
 /* Immer die neueste Version: beim Start kurz nachsehen, ob auf dem Server eine neuere Version liegt, und dann frisch laden. */
 (function(){
-  var B='3.39'; window.__BUILD=B;
+  var B='3.40'; window.__BUILD=B;
   try{
     if(location.protocol==='file:'||!window.fetch) return;
     var base=location.pathname.replace(/[^\/]*$/,'');
@@ -207,6 +207,17 @@ h1 span{color:#ffd23e}
 #privacy li{margin:3px 0}
 #privacy .kid{background:rgba(255,255,255,.12);border-radius:16px;padding:10px 12px;margin:8px 0}
 #privBtn{margin-top:4px;background:none;border:none;color:#fff;opacity:.7;font-family:inherit;font-weight:800;font-size:13px;text-decoration:underline;padding:8px 14px;touch-action:manipulation}
+
+#advov{background:rgba(4,8,36,.96);justify-content:flex-start;overflow-y:auto;touch-action:pan-y;z-index:30;padding-bottom:24px}
+#advov,#advov *{touch-action:pan-y}
+#advov .card{background:linear-gradient(180deg,rgba(26,48,130,.92),rgba(8,18,70,.92));border:4px solid #ffd23e;border-radius:26px;padding:16px;width:min(92vw,480px);margin:14px 0 12px;color:#fff;font-weight:600;font-size:15px;line-height:1.35}
+#advov h1{font-size:26px;margin:0 0 6px}
+#advov .doors{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:10px 0}
+#advov .door{background:rgba(255,255,255,.1);border:2px solid rgba(255,255,255,.35);border-radius:14px;padding:6px 2px;display:flex;flex-direction:column;align-items:center;min-height:68px;justify-content:center}
+#advov .door b{font-size:15px;opacity:.9}#advov .door span{font-size:24px;line-height:1.1}#advov .door small{font-size:10px;line-height:1.1}
+#advov .door.o{background:rgba(255,210,62,.25);border-color:#ffd23e}
+#advov .door.now{box-shadow:0 0 0 3px #fff}
+#advov .hint{opacity:.85;font-size:13px}
 </style>
 </head>
 <body>
@@ -247,6 +258,7 @@ h1 span{color:#ffd23e}
   </div>
   <div id="menuMid">
     <div id="map"></div>
+    <button id="advLine" style="background:rgba(255,255,255,.14);border:2px solid rgba(255,255,255,.4);border-radius:999px;color:#fff;font-family:inherit;font-weight:800;font-size:13px;padding:7px 14px;margin:2px 4px;touch-action:manipulation"></button>
     <div id="diffRow"></div>
     <button class="mid" id="raceBtn" style="display:none">🏁 Rennen mit Freunden</button>
     <div id="vehRow"></div>
@@ -256,7 +268,7 @@ h1 span{color:#ffd23e}
       <input class="inp" id="bcode" maxlength="12" placeholder="Klassen-Code" autocomplete="off" autocapitalize="characters">
     </div>
     <div class="hsbox"><b id="hsTitle">🏆 Bestenliste</b><ol id="hsList"></ol><small id="hsNote"></small></div>
-    <div style="opacity:.55;font-size:12px;font-weight:700">Version 3.39</div>
+    <div style="opacity:.55;font-size:12px;font-weight:700">Version 3.40</div>
     <button id="privBtn">🔒 Datenschutz</button>
   </div>
   <div id="menuBot">
@@ -277,7 +289,7 @@ h1 span{color:#ffd23e}
       <li><b>Nur auf dem Gerät gespeichert:</b> Spielstand, Einstellungen, Spitzname und Klassen-Code (im Browserspeicher). Das lässt sich über die Browser-Einstellungen löschen.</li>
       <li><b>Bestenliste:</b> Wenn ein Spielstand eingetragen wird, gehen Spitzname, Punktzahl, Station, gesammelte Dinge, Klassen-Code und Zeitpunkt an eine Datenbank (Google Firebase, Server in Europa). Dazu wird anonym eine zufällige Nutzer-Kennung angelegt, ohne Namen oder E-Mail.</li>
       <li><b>Rennen mit Freunden:</b> Während des Rennens werden Spitzname, Raumcode, Fahrzeug und Position live übertragen. Beim Verlassen des Rennens wird dieser Eintrag gelöscht.</li>
-      <li><b>Beim Laden</b> der Seite werden das 3D-Programm (Three.js von cdnjs/Cloudflare) und die Schrift (Google Fonts) nachgeladen. Dabei erfährt der jeweilige Anbieter die IP-Adresse des Geräts. Das Spiel selbst hostet GitHub Pages, auch dort fällt die IP-Adresse an.</li>
+      <li><b>Beim Laden</b> der Seite werden das 3D-Programm (Three.js von cdnjs/Cloudflare) und die Schrift (Google Fonts) nachgeladen. Dabei erfährt der jeweilige Anbieter die IP-Adresse des Geräts. Das Spiel selbst hostet GitHub Pages, auch dort fällt die IP-Adresse an. Für den Adventskalender wird die aktuelle Uhrzeit von dieser Seite abgefragt.</li>
       <li>Spitznamen werden mit einer Wortliste auf Beleidigungen, Schimpfwörter und Kontaktdaten (E-Mail, Telefonnummer, Internetadresse) geprüft und dann nicht übernommen. Das ist ein Hilfsmittel, aber keine Garantie. Bitte sprecht trotzdem mit euren Kindern darüber.</li>
     </ul>
     <h2>Löschen</h2>
@@ -287,6 +299,8 @@ h1 span{color:#ffd23e}
   </div>
   <button class="big" id="privBack">Zurück</button>
 </div>
+
+<div id="advov" class="overlay hidden"></div>
 
 <div id="raceLobby" class="overlay hidden">
   <div class="card" style="width:min(92vw,420px)">
@@ -1809,7 +1823,7 @@ var VEHS=[
 ];
 function totalStars(){ var t=0,k; for(k in SV.best) if(SV.best[k]&&SV.best[k].st) t+=SV.best[k].st; return t; }
 function vehById(id){ for(var i=0;i<VEHS.length;i++) if(VEHS[i].id===id) return VEHS[i]; return VEHS[0]; }
-function vehUnl(v){ return !!SV.all||v.need<=totalStars(); }
+function vehUnl(v){ return !!(typeof ADVALL!=='undefined'&&ADVALL)||v.need<=totalStars(); }
 function vehOk(id){ return vehUnl(vehById(id)); }
 /* Brett-Hüllen: Umriss aus Stationen [z,halbe Breite] (vorne = +z), mit Aufbiegung (rk) und Dicke; wird mit loft() zu einem weichen Körper */
 function stCap(a,L,seg){   // Kapsel: gerade Seiten, runde Enden
@@ -3144,7 +3158,7 @@ if(window.visualViewport){
     resize();
   });
 }
-document.addEventListener('touchmove',function(e){ if(e.target&&e.target.closest&&e.target.closest('#start,#win,#pause,#privacy')) return; e.preventDefault(); },{passive:false});   // Menüs müssen scrollen/wischen dürfen
+document.addEventListener('touchmove',function(e){ if(e.target&&e.target.closest&&e.target.closest('#start,#win,#pause,#privacy,#advov')) return; e.preventDefault(); },{passive:false});   // Menüs müssen scrollen/wischen dürfen
 ['gesturestart','gesturechange','gestureend'].forEach(function(n){document.addEventListener(n,function(e){e.preventDefault();});});
 document.addEventListener('dblclick',function(e){e.preventDefault();});
 document.addEventListener('contextmenu',function(e){e.preventDefault();});
@@ -3277,8 +3291,45 @@ function fillList(listEl,noteEl,rows,id){
 }
 
 /* ---------- Freischalten ---------- */
-var ALL=/[#?&]all\b/.test(location.href); if(ALL){ SV.all=true; writeSave(); }
-function unlocked(i){ return SV.all||i===0||!!SV.done[STAGES[i-1].id]; }
+var ALL=/[#?&]all\b/.test(location.href); try{ if(ALL) sessionStorage.setItem('jj-all','1'); }catch(e){}
+var ADVALL=ALL; try{ ADVALL=ALL||sessionStorage.getItem('jj-all')==='1'; }catch(e){}
+if(SV.all){ delete SV.all; writeSave(); }   // früher dauerhaft gespeichert – jetzt nur noch für die laufende Sitzung zum Testen
+/* ---------- Adventskalender: jeden Tag ab 11 Uhr (deutsche Zeit) geht ein neues Türchen auf ---------- */
+var ADV_DAYS={bahamas:2,boss1:5,newyork:8,london:12,boss2:15,paris:18,zenting:21,boss3:24};
+var ADV_TAGP=(location.search.match(/[?&]tag=(\d+)/)||[])[1];
+var ADV={off:0,ok:false};
+/* Serverzeit aus dem HTTP-Date-Header der eigenen Seite (die Handy-Uhr lässt sich nicht verstellen); sonst Geräteuhr */
+function advSync(){
+  try{ fetch(location.href.split('#')[0],{method:'HEAD',cache:'no-store'}).then(function(r){ var d=r.headers.get('date'); if(!d) return; var t=Date.parse(d); if(!isFinite(t)) return; ADV.off=t-Date.now(); ADV.ok=true; try{ renderMenu(); }catch(e){} }).catch(function(){}); }catch(e){}
+}
+function advDay(){ /* 1 = 1. Dezember (ab 11:00 Berlin) … 24 = 24. Dezember; <=0 davor */
+  if(ADV_TAGP!=null) return +ADV_TAGP;
+  var p={};
+  try{ new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Berlin',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',hourCycle:'h23'}).formatToParts(new Date(Date.now()+ADV.off)).forEach(function(x){ p[x.type]=+x.value; }); }
+  catch(e){ var d=new Date(Date.now()+ADV.off+3600000); p={year:d.getUTCFullYear(),month:d.getUTCMonth()+1,day:d.getUTCDate(),hour:d.getUTCHours()}; }
+  var o=Date.UTC(p.year,p.month-1,p.day)/864e5;
+  if(p.hour<11) o-=1;
+  return Math.round(o-Date.UTC(p.year,10,30)/864e5);
+}
+function unlocked(i){ var st=STAGES[i]; if(!st) return false; if(ADVALL||i===0) return true; var d=ADV_DAYS[st.id]; return d==null||advDay()>=d||!!SV.done[st.id]; }
+function advNext(){ var d=advDay(),n=null; STAGES.forEach(function(st){ var x=ADV_DAYS[st.id]; if(x!=null&&x>d&&!SV.done[st.id]&&(n==null||x<n.d)) n={d:x,st:st}; }); return n; }
+function advText(){
+  var open=0,n=advNext(); STAGES.forEach(function(st,i){ if(unlocked(i)) open++; });
+  var t='🎄 '+open+' von '+STAGES.length+' Stationen offen';
+  if(ADVALL) return t+' (alle freigeschaltet)';
+  if(n){ var dd=n.d-advDay(); t+=' · nächstes Türchen: '+(dd===1?'morgen':'am '+n.d+'. Dezember')+' ab 11 Uhr'; }
+  else t+=' · alle Türchen sind offen! 🎅';
+  return t;
+}
+function advOverlay(){
+  var d=advDay(),el=$('advov'),byDay={},i; if(!el) return;
+  STAGES.forEach(function(st){ if(ADV_DAYS[st.id]!=null) byDay[ADV_DAYS[st.id]]=st; });
+  var h='<div class="card"><h1>🎄 Adventskalender</h1><p>Jeden Tag ab 11 Uhr (deutsche Zeit) kann ein neues Türchen aufgehen – bis Heiligabend! Die erste Station ist von Anfang an offen.</p><div class="doors">';
+  for(i=1;i<=24;i++){ var st=byDay[i],ok=ADVALL||d>=i; h+='<div class="door'+(ok?' o':'')+(d===i?' now':'')+'"><b>'+i+'</b><span>'+(ok?(st?st.emoji:'⭐'):'🔒')+'</span>'+(st&&ok?'<small>'+esc(st.name)+'</small>':'')+'</div>'; }
+  h+='</div><p class="hint">Eine Station, die du schon geschafft hast, bleibt immer offen. Spiel gern eine Station nochmal und hol dir alle 3 ⭐!</p></div><button class="big" id="advx">Zurück</button>';
+  el.innerHTML=h; el.classList.remove('hidden'); el.scrollTop=0; $('advx').onclick=function(){ el.classList.add('hidden'); };
+}
+advSync();
 function starsText(n){ return n?('⭐⭐⭐'.slice(0,n)):''; }
 
 /* ---------- Menü ---------- */
@@ -3304,6 +3355,7 @@ function renderMenu(){
        (st.type==='boss'?'Boss: ':'')+esc(st.name)+'</div><div class="stz">'+(b?starsText(b.st):(ok?'':'gesperrt'))+'</div></button>';
   });
   map.innerHTML=h;
+  $('advLine').textContent=advText();
   var sel=map.querySelector('.sel'); if(sel&&sel.scrollIntoView){ try{ map.scrollLeft=sel.offsetLeft-(map.clientWidth-sel.offsetWidth)/2; }catch(e){} }
   var dr=$('diffRow'); dr.innerHTML=['😊 Leicht','🙂 Normal','😎 Schwer'].map(function(t,i){ return '<button class="dbtn'+(i===DIFF?' sel':'')+'" data-d="'+i+'">'+t+'</button>'; }).join('');
   renderVeh();
@@ -3316,7 +3368,7 @@ function renderMenu(){
 $('map').addEventListener('click',function(e){
   var el=e.target.closest?e.target.closest('.stg'):null; if(!el) return;
   var i=+el.getAttribute('data-i');
-  if(!unlocked(i)){ el.style.transform='translateX(4px)'; setTimeout(function(){ el.style.transform=''; },120); $('hsNote').textContent='Schaffe erst „'+STAGES[i-1].name+'“, dann geht diese Station auf! 🔓'; return; }
+  if(!unlocked(i)){ el.style.transform='translateX(4px)'; setTimeout(function(){ el.style.transform=''; },120); $('hsNote').textContent='🔒 Dieses Türchen öffnet sich am '+ADV_DAYS[STAGES[i].id]+'. Dezember um 11 Uhr.'; return; }
   if(i===SV.lv) return; SV.lv=i; writeSave(); reloadClean();
 });
 $('diffRow').addEventListener('click',function(e){
@@ -3333,12 +3385,13 @@ $('bcode').addEventListener('change',function(){ BCODE=cleanCode(this.value); th
 if(window.visualViewport) window.visualViewport.addEventListener('resize',function(){ var a=document.activeElement; if(a&&a.tagName==='INPUT') setTimeout(function(){ try{ a.scrollIntoView({block:'center'}); }catch(e){} },100); });
 ['pname','bcode'].forEach(function(id){ $(id).addEventListener('keydown',function(e){ e.stopPropagation(); if(e.key==='Enter') this.blur(); }); });
 $('menuBtn').addEventListener('click',reloadClean);
+$('advLine').addEventListener('click',advOverlay);
 $('privBtn').addEventListener('click',function(){ $('privacy').classList.remove('hidden'); $('privacy').scrollTop=0; });
 $('privBack').addEventListener('click',function(){ $('privacy').classList.add('hidden'); });
 $('pMenu').addEventListener('click',reloadClean);
 $('pResume').addEventListener('click',function(){ setPause(false); });
 $('pRestart').addEventListener('click',function(){ setPause(false); startGame(); });
-$('next').addEventListener('click',function(){ if(SV.lv<STAGES.length-1){ SV.lv++; writeSave(); reloadClean(); } });
+$('next').addEventListener('click',function(){ if(SV.lv<STAGES.length-1){ if(!unlocked(SV.lv+1)){ advOverlay(); return; } SV.lv++; writeSave(); reloadClean(); } });
 renderMenu();
 
 /* ---------- Belohnungen ---------- */
@@ -3373,6 +3426,7 @@ function winScreenExtra(st){
   var last=SV.lv>=STAGES.length-1;
   $('next').style.display=last?'none':'';
   if(last) $('winH').innerHTML='Du hast alle Stationen geschafft! <span>🎅</span>';
+  else if(!unlocked(SV.lv+1)) $('next').textContent='🔒 Öffnet am '+ADV_DAYS[STAGES[SV.lv+1].id]+'. Dezember';
   else $('next').textContent='Weiter: '+STAGES[SV.lv+1].emoji+' '+STAGES[SV.lv+1].name+' ▶';
   $('again').textContent='Nochmal spielen';
   $('wTitle').textContent='🏆 '+STAGE.name+' · '+DIFF_NAMES[DIFF];
