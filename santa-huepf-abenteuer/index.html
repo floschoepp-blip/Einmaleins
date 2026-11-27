@@ -6,7 +6,7 @@
 <script>
 /* Immer die neueste Version: beim Start kurz nachsehen, ob auf dem Server eine neuere Version liegt, und dann frisch laden. */
 (function(){
-  var B='3.37'; window.__BUILD=B;
+  var B='3.38'; window.__BUILD=B;
   try{
     if(location.protocol==='file:'||!window.fetch) return;
     var base=location.pathname.replace(/[^\/]*$/,'');
@@ -197,6 +197,16 @@ h1 span{color:#ffd23e}
 #raceLobby .hsbox li{font-size:clamp(15px,4.2vw,19px)}
 #raceLobby{background:linear-gradient(#0c1a5e,#16308f 60%,#0c1a5e)}
 #raceLobby .sub{font-size:clamp(14px,3.8vw,18px)}
+
+#privacy{background:rgba(4,8,36,.96);justify-content:flex-start;overflow-y:auto;touch-action:pan-y;z-index:30;padding-bottom:24px}
+#privacy,#privacy *{touch-action:pan-y}
+#privacy .card{background:linear-gradient(180deg,rgba(26,48,130,.92),rgba(8,18,70,.92));border:4px solid #ffd23e;border-radius:26px;padding:18px 18px 16px;width:min(92vw,480px);margin:14px 0 12px;text-align:left;color:#fff;font-weight:600;font-size:15px;line-height:1.4}
+#privacy h1{font-size:26px;text-align:center;margin:0 0 6px}
+#privacy h2{font-size:17px;margin:14px 0 4px;color:#ffd23e}
+#privacy ul{margin:4px 0 4px 18px;padding:0}
+#privacy li{margin:3px 0}
+#privacy .kid{background:rgba(255,255,255,.12);border-radius:16px;padding:10px 12px;margin:8px 0}
+#privBtn{margin-top:4px;background:none;border:none;color:#fff;opacity:.7;font-family:inherit;font-weight:800;font-size:13px;text-decoration:underline;padding:8px 14px;touch-action:manipulation}
 </style>
 </head>
 <body>
@@ -246,7 +256,8 @@ h1 span{color:#ffd23e}
       <input class="inp" id="bcode" maxlength="12" placeholder="Klassen-Code" autocomplete="off" autocapitalize="characters">
     </div>
     <div class="hsbox"><b id="hsTitle">🏆 Bestenliste</b><ol id="hsList"></ol><small id="hsNote"></small></div>
-    <div style="opacity:.55;font-size:12px;font-weight:700">Version 3.37</div>
+    <div style="opacity:.55;font-size:12px;font-weight:700">Version 3.38</div>
+    <button id="privBtn">🔒 Datenschutz</button>
   </div>
   <div id="menuBot">
     <div class="help">◀ ▶ Spur wechseln &nbsp;·&nbsp; ⬆ Springen<br>2× tippen = Doppelsprung!</div>
@@ -254,6 +265,28 @@ h1 span{color:#ffd23e}
   </div>
 </div>
 
+
+
+<div id="privacy" class="overlay hidden">
+  <div class="card">
+    <h1>🔒 Datenschutz</h1>
+    <div class="kid"><b>Für Kinder:</b> Du brauchst kein Konto und keine E-Mail. Trag als Spitznamen <b>nie deinen echten Namen</b> ein, auch keine Adresse oder Telefonnummer. Nimm lieber einen lustigen Namen wie „Schneeflocke“. Wenn du nicht sicher bist, frag deine Eltern. 🎅</div>
+    <h2>Für Eltern: Was passiert mit Daten?</h2>
+    <ul>
+      <li><b>Keine Werbung, kein Tracking, keine Analyse-Dienste</b> und keine Käufe im Spiel.</li>
+      <li><b>Nur auf dem Gerät gespeichert:</b> Spielstand, Einstellungen, Spitzname und Klassen-Code (im Browserspeicher). Das lässt sich über die Browser-Einstellungen löschen.</li>
+      <li><b>Bestenliste:</b> Wenn ein Spielstand eingetragen wird, gehen Spitzname, Punktzahl, Station, gesammelte Dinge, Klassen-Code und Zeitpunkt an eine Datenbank (Google Firebase, Server in Europa). Dazu wird anonym eine zufällige Nutzer-Kennung angelegt, ohne Namen oder E-Mail.</li>
+      <li><b>Rennen mit Freunden:</b> Während des Rennens werden Spitzname, Raumcode, Fahrzeug und Position live übertragen. Beim Verlassen des Rennens wird dieser Eintrag gelöscht.</li>
+      <li><b>Beim Laden</b> der Seite werden das 3D-Programm (Three.js von cdnjs/Cloudflare) und die Schrift (Google Fonts) nachgeladen. Dabei erfährt der jeweilige Anbieter die IP-Adresse des Geräts. Das Spiel selbst hostet GitHub Pages, auch dort fällt die IP-Adresse an.</li>
+      <li>Das Spiel prüft Spitznamen <b>nicht</b> auf Inhalte. Bitte sprecht mit euren Kindern darüber.</li>
+    </ul>
+    <h2>Löschen</h2>
+    <ul><li>Einen Bestenlisten-Eintrag oder Fragen zu Daten klärt gern der Entwickler. Meldet euch bei Flo Schöpp (Papa von Lina und Ella).</li></ul>
+    <h2>Verantwortlich</h2>
+    <div>Florian Schöpp, Zenting. Ein privates, nicht kommerzielles Familienprojekt.</div>
+  </div>
+  <button class="big" id="privBack">Zurück</button>
+</div>
 
 <div id="raceLobby" class="overlay hidden">
   <div class="card" style="width:min(92vw,420px)">
@@ -3090,7 +3123,7 @@ if(window.visualViewport){
     resize();
   });
 }
-document.addEventListener('touchmove',function(e){ if(e.target&&e.target.closest&&e.target.closest('#start,#win,#pause')) return; e.preventDefault(); },{passive:false});   // Menüs müssen scrollen/wischen dürfen
+document.addEventListener('touchmove',function(e){ if(e.target&&e.target.closest&&e.target.closest('#start,#win,#pause,#privacy')) return; e.preventDefault(); },{passive:false});   // Menüs müssen scrollen/wischen dürfen
 ['gesturestart','gesturechange','gestureend'].forEach(function(n){document.addEventListener(n,function(e){e.preventDefault();});});
 document.addEventListener('dblclick',function(e){e.preventDefault();});
 document.addEventListener('contextmenu',function(e){e.preventDefault();});
@@ -3279,6 +3312,8 @@ $('bcode').addEventListener('change',function(){ BCODE=cleanCode(this.value); th
 if(window.visualViewport) window.visualViewport.addEventListener('resize',function(){ var a=document.activeElement; if(a&&a.tagName==='INPUT') setTimeout(function(){ try{ a.scrollIntoView({block:'center'}); }catch(e){} },100); });
 ['pname','bcode'].forEach(function(id){ $(id).addEventListener('keydown',function(e){ e.stopPropagation(); if(e.key==='Enter') this.blur(); }); });
 $('menuBtn').addEventListener('click',reloadClean);
+$('privBtn').addEventListener('click',function(){ $('privacy').classList.remove('hidden'); $('privacy').scrollTop=0; });
+$('privBack').addEventListener('click',function(){ $('privacy').classList.add('hidden'); });
 $('pMenu').addEventListener('click',reloadClean);
 $('pResume').addEventListener('click',function(){ setPause(false); });
 $('pRestart').addEventListener('click',function(){ setPause(false); startGame(); });
