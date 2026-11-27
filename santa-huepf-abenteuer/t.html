@@ -3291,7 +3291,9 @@ function fillList(listEl,noteEl,rows,id){
 }
 
 /* ---------- Freischalten ---------- */
-var ALL=/[#?&]all\b/.test(location.href); if(ALL){ SV.all=true; writeSave(); }
+var ALL=/[#?&]all\b/.test(location.href); try{ if(ALL) sessionStorage.setItem('jj-all','1'); }catch(e){}
+var ADVALL=ALL; try{ ADVALL=ALL||sessionStorage.getItem('jj-all')==='1'; }catch(e){}
+if(SV.all){ delete SV.all; writeSave(); }   // früher dauerhaft gespeichert – jetzt nur noch für die laufende Sitzung zum Testen
 /* ---------- Adventskalender: jeden Tag ab 11 Uhr (deutsche Zeit) geht ein neues Türchen auf ---------- */
 var ADV_DAYS={bahamas:2,boss1:5,newyork:8,london:12,boss2:15,paris:18,zenting:21,boss3:24};
 var ADV_TAGP=(location.search.match(/[?&]tag=(\d+)/)||[])[1];
@@ -3309,12 +3311,12 @@ function advDay(){ /* 1 = 1. Dezember (ab 11:00 Berlin) … 24 = 24. Dezember; <
   if(p.hour<11) o-=1;
   return Math.round(o-Date.UTC(p.year,10,30)/864e5);
 }
-function unlocked(i){ var st=STAGES[i]; if(!st) return false; if(SV.all||i===0) return true; var d=ADV_DAYS[st.id]; return d==null||advDay()>=d||!!SV.done[st.id]; }
+function unlocked(i){ var st=STAGES[i]; if(!st) return false; if(ADVALL||i===0) return true; var d=ADV_DAYS[st.id]; return d==null||advDay()>=d||!!SV.done[st.id]; }
 function advNext(){ var d=advDay(),n=null; STAGES.forEach(function(st){ var x=ADV_DAYS[st.id]; if(x!=null&&x>d&&!SV.done[st.id]&&(n==null||x<n.d)) n={d:x,st:st}; }); return n; }
 function advText(){
   var open=0,n=advNext(); STAGES.forEach(function(st,i){ if(unlocked(i)) open++; });
   var t='🎄 '+open+' von '+STAGES.length+' Stationen offen';
-  if(SV.all) return t+' (alle freigeschaltet)';
+  if(ADVALL) return t+' (alle freigeschaltet)';
   if(n){ var dd=n.d-advDay(); t+=' · nächstes Türchen: '+(dd===1?'morgen':'am '+n.d+'. Dezember')+' ab 11 Uhr'; }
   else t+=' · alle Türchen sind offen! 🎅';
   return t;
@@ -3323,7 +3325,7 @@ function advOverlay(){
   var d=advDay(),el=$('advov'),byDay={},i; if(!el) return;
   STAGES.forEach(function(st){ if(ADV_DAYS[st.id]!=null) byDay[ADV_DAYS[st.id]]=st; });
   var h='<div class="card"><h1>🎄 Adventskalender</h1><p>Jeden Tag ab 11 Uhr (deutsche Zeit) kann ein neues Türchen aufgehen – bis Heiligabend! Die erste Station ist von Anfang an offen.</p><div class="doors">';
-  for(i=1;i<=24;i++){ var st=byDay[i],ok=SV.all||d>=i; h+='<div class="door'+(ok?' o':'')+(d===i?' now':'')+'"><b>'+i+'</b><span>'+(ok?(st?st.emoji:'⭐'):'🔒')+'</span>'+(st&&ok?'<small>'+esc(st.name)+'</small>':'')+'</div>'; }
+  for(i=1;i<=24;i++){ var st=byDay[i],ok=ADVALL||d>=i; h+='<div class="door'+(ok?' o':'')+(d===i?' now':'')+'"><b>'+i+'</b><span>'+(ok?(st?st.emoji:'⭐'):'🔒')+'</span>'+(st&&ok?'<small>'+esc(st.name)+'</small>':'')+'</div>'; }
   h+='</div><p class="hint">Eine Station, die du schon geschafft hast, bleibt immer offen. Spiel gern eine Station nochmal und hol dir alle 3 ⭐!</p></div><button class="big" id="advx">Zurück</button>';
   el.innerHTML=h; el.classList.remove('hidden'); el.scrollTop=0; $('advx').onclick=function(){ el.classList.add('hidden'); };
 }
