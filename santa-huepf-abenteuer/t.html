@@ -1823,7 +1823,7 @@ var VEHS=[
 ];
 function totalStars(){ var t=0,k; for(k in SV.best) if(SV.best[k]&&SV.best[k].st) t+=SV.best[k].st; return t; }
 function vehById(id){ for(var i=0;i<VEHS.length;i++) if(VEHS[i].id===id) return VEHS[i]; return VEHS[0]; }
-function vehUnl(v){ return !!SV.all||v.need<=totalStars(); }
+function vehUnl(v){ return !!(typeof ADVALL!=='undefined'&&ADVALL)||v.need<=totalStars(); }
 function vehOk(id){ return vehUnl(vehById(id)); }
 /* Brett-Hüllen: Umriss aus Stationen [z,halbe Breite] (vorne = +z), mit Aufbiegung (rk) und Dicke; wird mit loft() zu einem weichen Körper */
 function stCap(a,L,seg){   // Kapsel: gerade Seiten, runde Enden
